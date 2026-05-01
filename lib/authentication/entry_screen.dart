@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talcove/authentication/login_screen.dart';
 import 'package:talcove/authentication/signup_screen.dart';
 import 'package:talcove/core/constants/app_breakpoints.dart';
 import 'package:talcove/core/constants/app_dimensions.dart';
@@ -29,7 +30,13 @@ class EntryScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CustomButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        );
+                      },
                       child: Text(
                         S.of(context).login,
                         style: const TextStyle(fontSize: 20),
@@ -55,27 +62,39 @@ class EntryScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: CustomButton(
-                        onPressed: () {},
-                        child: Text(
-                          S.of(context).login,
-                          style: const TextStyle(fontSize: 22),
+                      child: SizedBox(
+                        height: 60,
+                        child: CustomButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            S.of(context).login,
+                            style: const TextStyle(fontSize: 32),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 20),
                     Expanded(
-                      child: CustomButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const SignupScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          S.of(context).signup,
-                          style: const TextStyle(fontSize: 22),
+                      child: SizedBox(
+                        height: 60,
+                        child: CustomButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const SignupScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            S.of(context).signup,
+                            style: const TextStyle(fontSize: 32),
+                          ),
                         ),
                       ),
                     ),
