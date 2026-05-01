@@ -10,5 +10,7 @@
     "confirm":"Re-Type your password",
     "passwordValidatorEmpty":"Password is required",
     "passwordValidatorShort":"Password must be at least 6 characters",
+    "confirmPasswordValidatorEmpty": "Please confirm your password",
+"confirmPasswordNotMatch": "Passwords do not match",
     "userNameValidatorEmpty":"UserName is required"
 }

@@ -22,7 +22,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "confirmPasswordNotMatch": MessageLookupByLibrary.simpleMessage(
+      "كلمتا المرور غير متطابقتين",
+    ),
+    "confirmPasswordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "الرجاء تأكيد كلمة المرور",
+    ),
     "login": MessageLookupByLibrary.simpleMessage("تسجيل الدخول"),
+    "passwordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "الرجاء إدخال كلمة المرور",
+    ),
+    "passwordValidatorShort": MessageLookupByLibrary.simpleMessage(
+      "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    ),
     "signup": MessageLookupByLibrary.simpleMessage("انشاء حساب"),
   };
 }

@@ -1,4 +1,9 @@
 {
     "login":"تسجيل الدخول",
-    "signup": "انشاء حساب"
+    "signup": "انشاء حساب",
+    "passwordValidatorEmpty": "الرجاء إدخال كلمة المرور",
+    "passwordValidatorShort": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    "confirmPasswordValidatorEmpty": "الرجاء تأكيد كلمة المرور",
+    "confirmPasswordNotMatch": "كلمتا المرور غير متطابقتين"
+    
 }

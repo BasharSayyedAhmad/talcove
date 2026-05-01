@@ -139,6 +139,26 @@ class S {
     );
   }
 
+  /// `Please confirm your password`
+  String get confirmPasswordValidatorEmpty {
+    return Intl.message(
+      'Please confirm your password',
+      name: 'confirmPasswordValidatorEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passwords do not match`
+  String get confirmPasswordNotMatch {
+    return Intl.message(
+      'Passwords do not match',
+      name: 'confirmPasswordNotMatch',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `UserName is required`
   String get userNameValidatorEmpty {
     return Intl.message(
