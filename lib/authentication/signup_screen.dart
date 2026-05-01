@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/core/utils/validators.dart';
 import 'package:talcove/generated/l10n.dart';
-import 'package:talcove/providers/theme_provider.dart';
+import 'package:talcove/features/providers/theme_provider.dart';
 import 'package:talcove/shared/widgets/custom_text.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -108,6 +108,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       color: Theme.of(context).colorScheme.surface,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.6),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: IconButton(
                       onPressed: () {},
@@ -116,14 +123,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                   ),
                   Container(
+                    height: 50,
+                    width: 50,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
                       color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.6),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    child: Image.asset(
-                      "assets/images/google_logo.jpg",
-                      width: 40,
-                      height: 40,
+                    child: Center(
+                      child: Image.asset(
+                        "assets/images/g_logo.png",
+                        width: 25,
+                        height: 25,
+                      ),
                     ),
                   ),
                 ],

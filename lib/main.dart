@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/core/themes/theme.dart';
 import 'package:talcove/features/home/home_screen.dart';
 import 'package:talcove/generated/l10n.dart';
-import 'package:talcove/providers/theme_provider.dart';
+import 'package:talcove/features/providers/theme_provider.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 

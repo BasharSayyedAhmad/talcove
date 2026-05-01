@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:talcove/providers/theme_provider.dart';
+import 'package:talcove/features/providers/theme_provider.dart';
 
 class ThemeIcon extends ConsumerWidget {
   const ThemeIcon({super.key});
