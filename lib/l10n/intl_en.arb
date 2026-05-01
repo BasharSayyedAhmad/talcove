@@ -1,0 +1,14 @@
+{
+    "login":"Login",
+    "signup": "Signup",
+    "password":"Password",
+    "createAccount":"Create account",
+    "createYourAccount":"Create your account",
+    "UserName":"UserName",
+    "email":"Email(optional)",
+    "orSignUpWith":" or sign up with",
+    "confirm":"Re-Type your password",
+    "passwordValidatorEmpty":"Password is required",
+    "passwordValidatorShort":"Password must be at least 6 characters",
+    "userNameValidatorEmpty":"UserName is required"
+}
