@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:talcove/authentication/widgets/password_field.dart';
 import 'package:talcove/core/constants/app_breakpoints.dart';
 import 'package:talcove/core/constants/app_dimensions.dart';
+import 'package:talcove/core/utils/validators.dart';
+import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/shared/widgets/custom_text.dart';
 
 class LoginForm extends StatelessWidget {
@@ -9,9 +11,11 @@ class LoginForm extends StatelessWidget {
     super.key,
     required this.userNameController,
     required this.passwordController,
+    required this.validatorKey,
   });
   final TextEditingController userNameController;
   final TextEditingController passwordController;
+  final GlobalKey<FormState> validatorKey;
   @override
   Widget build(BuildContext context) {
     final height = AppDimensions.screenHeight(context);
@@ -26,21 +30,18 @@ class LoginForm extends StatelessWidget {
         const SizedBox(height: 4),
         CustomText(
           controller: userNameController,
-          hintText: "User name",
+          hintText: S.of(context).UserName,
           prefixIcon: const Icon(Icons.person),
-          validator: (val) {
-            if (val!.isEmpty) {
-              return "This field can not be empty";
-            }
-            return null;
-          },
+          validator: (val) => Validators.username(context, val),
         ),
         const SizedBox(height: 10),
 
         PasswordFiled(passwordController: passwordController),
         const SizedBox(height: 10),
         ElevatedButton(
-          onPressed: () async {},
+          onPressed: () {
+            if (validatorKey.currentState!.validate()) {}
+          },
           child: const Text("Sign in", style: TextStyle(fontSize: 20)),
         ),
         const SizedBox(height: 10),
@@ -79,7 +80,7 @@ class LoginForm extends StatelessWidget {
               ),
             ),
 
-            GestureDetector(
+            InkWell(
               onTap: () {
                 print("Google sign in");
               },
