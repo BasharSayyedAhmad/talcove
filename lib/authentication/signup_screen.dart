@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:talcove/core/utils/validators.dart';
+import 'package:talcove/authentication/widgets/signup_form.dart';
+import 'package:talcove/core/constants/app_breakpoints.dart';
+import 'package:talcove/core/constants/app_dimensions.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
-import 'package:talcove/shared/widgets/custom_text.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -30,8 +31,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final width = AppDimensions.screenWidth(context);
+    final isMobile = width < AppBreakpoints.tablet;
     final theme = ref.watch(themeNotifierProvider);
-    final screenHeight = MediaQuery.of(context).size.height;
     return Form(
       key: validateKey,
       child: Scaffold(
@@ -54,195 +56,34 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           padding: const EdgeInsets.all(10),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 7.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: screenHeight * 0.12),
-                Text(
-                  S.of(context).createYourAccount,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                CustomText(
-                  controller: usernameController,
-                  hintText: "User name",
-                  prefixIcon: const Icon(Icons.person),
-                  validator: (val) {
-                    if (val!.isEmpty) {
-                      return "Enter your user name!";
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 10),
-                CustomText(
-                  controller: emailController,
-                  hintText: "Email(optional)",
-                  prefixIcon: const Icon(Icons.email),
-                ),
-                const SizedBox(height: 10),
-                PasswordFiledSignUp(passwordController: passwordController),
-                const SizedBox(height: 10),
-                ConfirmPasswordSignUp(
-                  passwordController: passwordController,
-                  confirmController: confirmPasswordController,
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (validateKey.currentState!.validate()) {
-                        await Future.delayed(const Duration(seconds: 1));
-                      }
-                    },
-                    child: const Text("SignUp", style: TextStyle(fontSize: 20)),
-                  ),
-                ),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Divider(indent: 5, thickness: 1, endIndent: 5),
-                    ),
-                    Text(S.of(context).orSignUpWith),
-                    const Expanded(
-                      child: Divider(indent: 5, thickness: 1, endIndent: 5),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: Theme.of(context).colorScheme.surface,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
+            child: isMobile
+                ? SignupForm(
+                    usernameController: usernameController,
+                    emailController: emailController,
+                    passwordController: passwordController,
+                    confirmPasswordController: confirmPasswordController,
+                    validateKey: validateKey,
+                  )
+                : Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: SignupForm(
+                            usernameController: usernameController,
+                            emailController: emailController,
+                            passwordController: passwordController,
+                            confirmPasswordController:
+                                confirmPasswordController,
+                            validateKey: validateKey,
                           ),
-                        ],
-                      ),
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.discord),
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                    Container(
-                      height: 50,
-                      width: 50,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          "assets/images/g_logo.png",
-                          width: 25,
-                          height: 25,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class PasswordFiledSignUp extends StatefulWidget {
-  const PasswordFiledSignUp({
-    super.key,
-    this.password,
-    this.onChanged,
-    required this.passwordController,
-  });
-  final String? password;
-  final Function(String)? onChanged;
-  final TextEditingController passwordController;
-
-  @override
-  State<PasswordFiledSignUp> createState() => _PasswordFiledSignUpState();
-}
-
-class _PasswordFiledSignUpState extends State<PasswordFiledSignUp> {
-  bool isVisible = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomText(
-      controller: widget.passwordController,
-      hintText: S.of(context).password,
-      onChanged: widget.onChanged,
-      show: isVisible,
-      validator: (val) => Validators.password(context, val),
-      prefixIcon: const Icon(Icons.lock),
-      suffixIcon: IconButton(
-        onPressed: () {
-          setState(() {
-            isVisible = !isVisible;
-          });
-        },
-        icon: Icon(isVisible ? Icons.visibility_off : Icons.visibility),
-      ),
-    );
-  }
-}
-
-class ConfirmPasswordSignUp extends StatefulWidget {
-  const ConfirmPasswordSignUp({
-    super.key,
-    required this.confirmController,
-    required this.passwordController,
-  });
-  final TextEditingController passwordController;
-  final TextEditingController confirmController;
-
-  @override
-  State<ConfirmPasswordSignUp> createState() => _ConfirmPasswordSignUpState();
-}
-
-class _ConfirmPasswordSignUpState extends State<ConfirmPasswordSignUp> {
-  bool isVisible = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomText(
-      controller: widget.confirmController,
-      hintText: S.of(context).confirm,
-
-      validator: (val) => Validators.confrimPassword(
-        context,
-        val,
-        widget.passwordController.text,
-      ),
-      show: isVisible,
-      prefixIcon: const Icon(Icons.password),
-      suffixIcon: IconButton(
-        onPressed: () {
-          setState(() {
-            isVisible = !isVisible;
-          });
-        },
-        icon: Icon(isVisible ? Icons.visibility_off : Icons.visibility),
       ),
     );
   }
