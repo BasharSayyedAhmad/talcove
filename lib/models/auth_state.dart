@@ -1,15 +1,18 @@
+import 'package:talcove/core/constants/auth_method.dart';
 import 'package:talcove/models/user.dart';
 
 class AuthState {
   final bool isLoading;
-  final bool isAuthinticated;
+  final bool isAuthenticated;
   final String? errorMessage;
   final User? user;
+  final AuthMethod? authMethod;
   AuthState({
     this.isLoading = false,
-    this.isAuthinticated = false,
+    this.isAuthenticated = false,
     this.errorMessage,
     this.user,
+    this.authMethod,
   });
   AuthState copyWith({
     bool? isLoading,
@@ -17,7 +20,7 @@ class AuthState {
     bool? isAuthenticated,
   }) {
     return AuthState(
-      isAuthinticated: isAuthinticated,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
     );

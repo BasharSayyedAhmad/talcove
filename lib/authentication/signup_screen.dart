@@ -34,6 +34,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
     final theme = ref.watch(themeNotifierProvider);
+
     return Form(
       key: validateKey,
       child: Scaffold(
