@@ -68,19 +68,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 : Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 600),
-                      child: IntrinsicHeight(
-                        child: Card(
-                          margin: const EdgeInsets.all(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: SignupForm(
-                              usernameController: usernameController,
-                              emailController: emailController,
-                              passwordController: passwordController,
-                              confirmPasswordController:
-                                  confirmPasswordController,
-                              validateKey: validateKey,
-                            ),
+                      child: Card(
+                        margin: const EdgeInsets.all(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: SignupForm(
+                            usernameController: usernameController,
+                            emailController: emailController,
+                            passwordController: passwordController,
+                            confirmPasswordController:
+                                confirmPasswordController,
+                            validateKey: validateKey,
                           ),
                         ),
                       ),

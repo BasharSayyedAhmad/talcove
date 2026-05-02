@@ -5,6 +5,7 @@ import 'package:talcove/core/constants/app_breakpoints.dart';
 import 'package:talcove/core/constants/app_dimensions.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/shared/widgets/custom_button.dart';
+import 'package:talcove/shared/widgets/language_icon.dart';
 import 'package:talcove/shared/widgets/theme_icon.dart';
 
 class EntryScreen extends StatelessWidget {
@@ -18,7 +19,7 @@ class EntryScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Talcove"),
         backgroundColor: Theme.of(context).colorScheme.primary,
-        actions: const [ThemeIcon()],
+        actions: const [LanguageIcon(), ThemeIcon()],
       ),
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Padding(

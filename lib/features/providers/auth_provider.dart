@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talcove/models/auth_state.dart';
 import 'package:google_sign_in/google_sign_in.dart';

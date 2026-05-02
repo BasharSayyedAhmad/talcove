@@ -1,9 +1,16 @@
 {
-    "login":"تسجيل الدخول",
-    "signup": "انشاء حساب",
-    "passwordValidatorEmpty": "الرجاء إدخال كلمة المرور",
-    "passwordValidatorShort": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
-    "confirmPasswordValidatorEmpty": "الرجاء تأكيد كلمة المرور",
-    "confirmPasswordNotMatch": "كلمتا المرور غير متطابقتين"
-    
+  "login": "تسجيل الدخول",
+  "signup": "إنشاء حساب",
+  "password": "كلمة المرور",
+  "createAccount": "إنشاء حساب",
+  "createYourAccount": "أنشئ حسابك",
+  "UserName": "اسم المستخدم",
+  "email": "البريد الإلكتروني (اختياري)",
+  "orSignUpWith": "أو سجّل باستخدام",
+  "confirm": "أعد كتابة كلمة المرور",
+  "passwordValidatorEmpty": "الرجاء إدخال كلمة المرور",
+  "passwordValidatorShort": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+  "confirmPasswordValidatorEmpty": "الرجاء تأكيد كلمة المرور",
+  "confirmPasswordNotMatch": "كلمتا المرور غير متطابقتين",
+  "userNameValidatorEmpty": "اسم المستخدم مطلوب"
 }

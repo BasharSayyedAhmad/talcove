@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:talcove/core/constants/app_settings_keys.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
 part 'theme_provider.g.dart';
-
-const String themeBoxKey = "settingsBox";
-const String themeModeKey = "themeMode";
 
 @riverpod
 class ThemeNotifier extends _$ThemeNotifier {

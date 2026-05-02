@@ -22,7 +22,35 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-    "login": MessageLookupByLibrary.simpleMessage("تسجيل الدخول"),
-    "signup": MessageLookupByLibrary.simpleMessage("انشاء حساب"),
+    "UserName": MessageLookupByLibrary.simpleMessage("Nom d\'utilisateur"),
+    "confirm": MessageLookupByLibrary.simpleMessage(
+      "Retapez votre mot de passe",
+    ),
+    "confirmPasswordNotMatch": MessageLookupByLibrary.simpleMessage(
+      "Les mots de passe ne correspondent pas",
+    ),
+    "confirmPasswordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "Veuillez confirmer votre mot de passe",
+    ),
+    "createAccount": MessageLookupByLibrary.simpleMessage("Créer un compte"),
+    "createYourAccount": MessageLookupByLibrary.simpleMessage(
+      "Créez votre compte",
+    ),
+    "email": MessageLookupByLibrary.simpleMessage("Email (optionnel)"),
+    "login": MessageLookupByLibrary.simpleMessage("Connexion"),
+    "orSignUpWith": MessageLookupByLibrary.simpleMessage(
+      "ou inscrivez-vous avec",
+    ),
+    "password": MessageLookupByLibrary.simpleMessage("Mot de passe"),
+    "passwordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "Le mot de passe est requis",
+    ),
+    "passwordValidatorShort": MessageLookupByLibrary.simpleMessage(
+      "Le mot de passe doit contenir au moins 6 caractères",
+    ),
+    "signup": MessageLookupByLibrary.simpleMessage("Créer un compte"),
+    "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "Le nom d\'utilisateur est requis",
+    ),
   };
 }

@@ -1,4 +1,16 @@
 {
-    "login":"تسجيل الدخول",
-    "signup": "انشاء حساب"
+  "login": "Connexion",
+  "signup": "Créer un compte",
+  "password": "Mot de passe",
+  "createAccount": "Créer un compte",
+  "createYourAccount": "Créez votre compte",
+  "UserName": "Nom d'utilisateur",
+  "email": "Email (optionnel)",
+  "orSignUpWith": "ou inscrivez-vous avec",
+  "confirm": "Retapez votre mot de passe",
+  "passwordValidatorEmpty": "Le mot de passe est requis",
+  "passwordValidatorShort": "Le mot de passe doit contenir au moins 6 caractères",
+  "confirmPasswordValidatorEmpty": "Veuillez confirmer votre mot de passe",
+  "confirmPasswordNotMatch": "Les mots de passe ne correspondent pas",
+  "userNameValidatorEmpty": "Le nom d'utilisateur est requis"
 }
