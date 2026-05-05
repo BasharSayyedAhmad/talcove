@@ -5,6 +5,7 @@ import 'package:talcove/core/constants/app_breakpoints.dart';
 import 'package:talcove/core/constants/app_dimensions.dart';
 
 import 'package:talcove/features/providers/theme_provider.dart';
+import 'package:talcove/generated/l10n.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -27,7 +28,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.background,
         appBar: AppBar(
-          title: const Text("Login"),
+          title: Text(S.of(context).login),
 
           actions: [
             IconButton(

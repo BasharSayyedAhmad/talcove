@@ -22,6 +22,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "DontHaveAccount": MessageLookupByLibrary.simpleMessage(
+      "don\'t have account",
+    ),
     "UserName": MessageLookupByLibrary.simpleMessage("UserName"),
     "confirm": MessageLookupByLibrary.simpleMessage("Re-Type your password"),
     "confirmPasswordNotMatch": MessageLookupByLibrary.simpleMessage(
@@ -36,7 +39,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "email": MessageLookupByLibrary.simpleMessage("Email(optional)"),
     "login": MessageLookupByLibrary.simpleMessage("Login"),
+    "loginToYourAccount": MessageLookupByLibrary.simpleMessage(
+      "Login to your account",
+    ),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage(" or sign up with"),
+    "orSigninWith": MessageLookupByLibrary.simpleMessage("or sign in with"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "passwordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "Password is required",
@@ -44,7 +51,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "passwordValidatorShort": MessageLookupByLibrary.simpleMessage(
       "Password must be at least 6 characters",
     ),
+    "signin": MessageLookupByLibrary.simpleMessage("Sign in"),
     "signup": MessageLookupByLibrary.simpleMessage("Signup"),
+    "signupSuccess": MessageLookupByLibrary.simpleMessage(
+      "Signup successful! Please log in.",
+    ),
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "UserName is required",
     ),

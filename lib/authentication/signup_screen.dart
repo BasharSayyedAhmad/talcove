@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/widgets/signup_form.dart';
 import 'package:talcove/core/constants/app_breakpoints.dart';
 import 'package:talcove/core/constants/app_dimensions.dart';
+import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
+import 'package:talcove/models/auth_state.dart';
+import 'package:talcove/shared/widgets/app_snackbar.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -34,7 +37,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
     final theme = ref.watch(themeNotifierProvider);
-
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
+      if (next.errorMessage != null) {
+        AppSnackBar.show(
+          context,
+          message: next.errorMessage!,
+          backgroundColor: Colors.red,
+        );
+        authNotifier.clearError();
+      }
+    });
+    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
+      if (next.isAuthenticated) {
+        AppSnackBar.show(
+          context,
+          message: S.of(context).signupSuccess,
+          backgroundColor: Colors.green,
+        );
+      }
+    });
     return Form(
       key: validateKey,
       child: Scaffold(

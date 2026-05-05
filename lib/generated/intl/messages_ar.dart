@@ -22,6 +22,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "DontHaveAccount": MessageLookupByLibrary.simpleMessage("ليس لديك حساب؟"),
     "UserName": MessageLookupByLibrary.simpleMessage("اسم المستخدم"),
     "confirm": MessageLookupByLibrary.simpleMessage("أعد كتابة كلمة المرور"),
     "confirmPasswordNotMatch": MessageLookupByLibrary.simpleMessage(
@@ -36,7 +37,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "البريد الإلكتروني (اختياري)",
     ),
     "login": MessageLookupByLibrary.simpleMessage("تسجيل الدخول"),
+    "loginToYourAccount": MessageLookupByLibrary.simpleMessage(
+      "تسجيل الدخول إلى حسابك",
+    ),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage("أو سجّل باستخدام"),
+    "orSigninWith": MessageLookupByLibrary.simpleMessage(
+      "او سجل الدخول عن طريق",
+    ),
     "password": MessageLookupByLibrary.simpleMessage("كلمة المرور"),
     "passwordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "الرجاء إدخال كلمة المرور",
@@ -44,6 +51,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "passwordValidatorShort": MessageLookupByLibrary.simpleMessage(
       "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
     ),
+    "signin": MessageLookupByLibrary.simpleMessage("تسجيل الدخول"),
     "signup": MessageLookupByLibrary.simpleMessage("إنشاء حساب"),
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "اسم المستخدم مطلوب",

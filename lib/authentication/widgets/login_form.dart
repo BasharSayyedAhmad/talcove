@@ -26,7 +26,7 @@ class LoginForm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: isMobile ? height * 0.15 : height * 0.2),
-        const Text("Login to your account", style: TextStyle(fontSize: 20)),
+        Text(S.of(context).loginToYourAccount, style: TextStyle(fontSize: 20)),
         const SizedBox(height: 4),
         CustomText(
           controller: userNameController,
@@ -42,16 +42,16 @@ class LoginForm extends StatelessWidget {
           onPressed: () {
             if (validatorKey.currentState!.validate()) {}
           },
-          child: const Text("Sign in", style: TextStyle(fontSize: 20)),
+          child: Text(S.of(context).signin, style: TextStyle(fontSize: 20)),
         ),
         const SizedBox(height: 10),
-        const Row(
+        Row(
           children: [
-            Expanded(
+            const Expanded(
               child: Divider(color: Colors.amber, thickness: 1, indent: 5),
             ),
-            Text(" or sign in with"),
-            Expanded(
+            Text(S.of(context).orSigninWith),
+            const Expanded(
               child: Divider(color: Colors.amber, thickness: 1, indent: 6),
             ),
           ],
@@ -113,8 +113,8 @@ class LoginForm extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("don't have account?"),
-            TextButton(onPressed: () {}, child: const Text("SignUp")),
+            Text(S.of(context).DontHaveAccount),
+            TextButton(onPressed: () {}, child: Text(S.of(context).signup)),
           ],
         ),
       ],

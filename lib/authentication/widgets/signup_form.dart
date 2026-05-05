@@ -29,6 +29,7 @@ class SignupForm extends ConsumerWidget {
     final isMobile = width < AppBreakpoints.tablet;
     final authState = ref.watch(authNotifierProvider);
     final authNotifier = ref.read(authNotifierProvider.notifier);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -40,7 +41,7 @@ class SignupForm extends ConsumerWidget {
         const SizedBox(height: 4),
         CustomText(
           controller: usernameController,
-          hintText: "User name",
+          hintText: S.of(context).UserName,
           prefixIcon: const Icon(Icons.person),
           validator: (val) {
             if (val!.isEmpty) {
@@ -52,7 +53,7 @@ class SignupForm extends ConsumerWidget {
         const SizedBox(height: 10),
         CustomText(
           controller: emailController,
-          hintText: "Email(optional)",
+          hintText: S.of(context).email,
           prefixIcon: const Icon(Icons.email),
         ),
         const SizedBox(height: 10),
@@ -71,7 +72,7 @@ class SignupForm extends ConsumerWidget {
                 await Future.delayed(const Duration(seconds: 1));
               }
             },
-            child: const Text("SignUp", style: TextStyle(fontSize: 20)),
+            child: Text(S.of(context).signup, style: TextStyle(fontSize: 20)),
           ),
         ),
         Row(
@@ -109,33 +110,35 @@ class SignupForm extends ConsumerWidget {
                 color: Colors.deepPurple,
               ),
             ),
-            GestureDetector(
-              onTap: () {
-                authNotifier.loginWithGoogle();
-              },
-              child: Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
+            authState.isLoading
+                ? const CircularProgressIndicator()
+                : GestureDetector(
+                    onTap: () {
+                      authNotifier.loginWithGoogle();
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          "assets/images/g_logo.png",
+                          width: 25,
+                          height: 25,
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Image.asset(
-                    "assets/images/g_logo.png",
-                    width: 25,
-                    height: 25,
                   ),
-                ),
-              ),
-            ),
           ],
         ),
       ],
