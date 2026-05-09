@@ -20,7 +20,7 @@ class EntryScreen extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [cs.background, cs.surface.withOpacity(0.7)],
+            colors: [cs.surface, cs.surface.withOpacity(0.7)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),

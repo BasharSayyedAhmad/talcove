@@ -67,21 +67,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return Form(
       key: validateKey,
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.background,
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          title: Text(S.of(context).createAccount),
-          actions: [
-            IconButton(
-              onPressed: () {
-                ref.watch(themeNotifierProvider.notifier).toggleTheme();
-              },
-              icon: Icon(
-                theme == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
-              ),
-            ),
-          ],
-        ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+
         body: authState.isLoading
             ? Center(
                 child: Transform.scale(

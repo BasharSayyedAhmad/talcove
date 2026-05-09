@@ -31,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
                   radius: 12,
                 )
               : const Icon(Icons.person),
-          label: Text(""),
+          label: const Text(""),
         ),
       ),
     );

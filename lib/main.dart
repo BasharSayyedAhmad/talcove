@@ -9,9 +9,15 @@ import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() async {
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   WidgetsFlutterBinding.ensureInitialized();
+  Future.delayed(const Duration(seconds: 1), () {
+    FlutterNativeSplash.remove();
+  });
   await LocalStorageService.init();
   runApp(const ProviderScope(child: MyApp()));
 }

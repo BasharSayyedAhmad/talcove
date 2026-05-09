@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/widgets/password_field.dart';
@@ -33,7 +32,7 @@ class LoginForm extends ConsumerWidget {
               ? Alignment.topRight
               : Alignment.topLeft,
           child: Padding(
-            padding: const EdgeInsets.only(top: 18.0),
+            padding: const EdgeInsets.only(top: 30.0),
             child: IconButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -47,7 +46,8 @@ class LoginForm extends ConsumerWidget {
             ),
           ),
         ),
-        Center(
+        SizedBox(
+          height: AppDimensions.screenHeight(context),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -70,7 +70,7 @@ class LoginForm extends ConsumerWidget {
                 S.of(context).loginToYourAccount,
                 style: const TextStyle(fontSize: 15),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 20),
 
               CustomText(
                 controller: userNameController,
@@ -81,7 +81,7 @@ class LoginForm extends ConsumerWidget {
               const SizedBox(height: 10),
 
               PasswordFiled(passwordController: passwordController),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (validatorKey.currentState!.validate()) {
@@ -98,7 +98,7 @@ class LoginForm extends ConsumerWidget {
                   style: const TextStyle(fontSize: 20),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -119,7 +119,7 @@ class LoginForm extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
 
               // ? const Center(child: RefreshProgressIndicator())
               // ? const Center(child: LinearProgressIndicator())
@@ -150,7 +150,7 @@ class LoginForm extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
