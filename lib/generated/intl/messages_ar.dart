@@ -56,5 +56,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "اسم المستخدم مطلوب",
     ),
+    "welcomeBack": MessageLookupByLibrary.simpleMessage("أهلًا بك"),
   };
 }

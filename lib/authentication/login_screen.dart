@@ -7,7 +7,6 @@ import 'package:talcove/core/constants/app_dimensions.dart';
 import 'package:talcove/features/home/home_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
 
-import 'package:talcove/features/providers/theme_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/models/auth_state.dart';
 import 'package:talcove/shared/widgets/app_snackbar.dart';
@@ -25,7 +24,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final GlobalKey<FormState> validateKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeNotifierProvider);
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
     final authState = ref.watch(authNotifierProvider);
@@ -55,44 +53,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Form(
       key: validateKey,
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.background,
-        appBar: AppBar(
-          title: Text(S.of(context).login),
-
-          actions: [
-            IconButton(
-              onPressed: () {
-                ref.read(themeNotifierProvider.notifier).toggleTheme();
-              },
-              icon: Icon(
-                theme == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
-              ),
+        // backgroundColor: Theme.of(context).colorScheme.background,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.background,
+                Theme.of(context).colorScheme.surface.withOpacity(0.6),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-          ],
-          backgroundColor: Theme.of(context).colorScheme.primary,
-        ),
-        body: authState.isLoading
-            ? Center(
-                child: Transform.scale(
-                  scale: 2,
-                  child: const CupertinoActivityIndicator(color: Colors.orange),
-                ),
-              )
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(10),
-                child: isMobile
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 7.0),
-                        child: LoginForm(
-                          userNameController: userNameController,
-                          passwordController: passwordController,
-                          validatorKey: validateKey,
-                        ),
-                      )
-                    : Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 600),
-                          child: IntrinsicHeight(
+          ),
+          child: authState.isLoading
+              ? Center(
+                  child: Transform.scale(
+                    scale: 2,
+                    child: CupertinoActivityIndicator(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(8),
+                  child: isMobile
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 7.0),
+                          child: LoginForm(
+                            userNameController: userNameController,
+                            passwordController: passwordController,
+                            validatorKey: validateKey,
+                          ),
+                        )
+                      : Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 600),
                             child: Card(
                               margin: const EdgeInsets.all(12),
                               child: Padding(
@@ -106,8 +101,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
-                      ),
-              ),
+                ),
+        ),
       ),
     );
   }

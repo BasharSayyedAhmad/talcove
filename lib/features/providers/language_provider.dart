@@ -52,4 +52,8 @@ class LanguageNotifier extends _$LanguageNotifier {
     state = newLocale;
     _saveLanguageToHive(newLocale);
   }
+
+  bool isArabic() {
+    return state.languageCode == 'ar';
+  }
 }

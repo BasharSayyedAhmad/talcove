@@ -57,5 +57,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "UserName is required",
     ),
+    "welcomeBack": MessageLookupByLibrary.simpleMessage("Welcome back!"),
   };
 }

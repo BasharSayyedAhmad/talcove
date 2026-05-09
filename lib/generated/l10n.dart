@@ -104,6 +104,16 @@ class S {
     );
   }
 
+  /// `Welcome back!`
+  String get welcomeBack {
+    return Intl.message(
+      'Welcome back!',
+      name: 'welcomeBack',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `or sign in with`
   String get orSigninWith {
     return Intl.message(
