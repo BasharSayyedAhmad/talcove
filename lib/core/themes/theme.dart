@@ -79,11 +79,7 @@ ThemeData lightMode = ThemeData(
     // 💚 secondary: للـ FloatingActionButton، الأزرار الثانوية، الـ Chat Bubbles للمستخدم
     secondary: Color(0xFF10B981), // Emerald 500 - أخضر زمردي جميل
     // 📝 onSecondary: النص فوق الـ secondary
-    onSecondary: Colors.white,
-
-    // ========== خلفيات ==========
-    // 🏠 background: الخلفية الرئيسية للـ Scaffold كله (الصفحات الرئيسية)
-    background: Color(0xFFE2E8F0), // Slate 50 - رمادي فاتح جداً
+    onSecondary: Colors.white, // Slate 50 - رمادي فاتح جداً
     // 🎴 surface: خلفية الـ Cards، الـ Dialogs، الـ BottomSheets، حاويات المحتوى
     surface: Colors.white, // أبيض نقي لصندوق المحتوى
     // 📄 onSurface: النص الرئيسي على الـ surface (عناوين، فقرات)
@@ -198,10 +194,6 @@ ThemeData darkMode = ThemeData(
     secondary: Color(0xFF34D399), // Emerald 400 - أخضر فاتح
     // 📝 onSecondary: النص فوق الـ secondary
     onSecondary: Colors.white,
-
-    // ========== خلفيات ==========
-    // 🏠 background: خلفية الـ Scaffold الرئيسية (رمادي داكن مريح)
-    background: Color.fromARGB(255, 40, 46, 51),
     // background: Color(0xFF0F172A), // Slate 900 - داكن جداً لكن مو أسود
     // 🎴 surface: خلفية الـ Cards، الـ Dialogs، حاويات المحتوى
     surface: Color(
