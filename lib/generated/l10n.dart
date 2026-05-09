@@ -124,10 +124,10 @@ class S {
     );
   }
 
-  /// `Signup successful! Please log in.`
+  /// `Signup successful!`
   String get signupSuccess {
     return Intl.message(
-      'Signup successful! Please log in.',
+      'Signup successful!',
       name: 'signupSuccess',
       desc: '',
       args: [],

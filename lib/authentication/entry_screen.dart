@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:talcove/authentication/login_screen.dart';
 import 'package:talcove/authentication/signup_screen.dart';
 import 'package:talcove/core/constants/app_breakpoints.dart';
-import 'package:talcove/core/constants/app_dimensions.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/shared/widgets/custom_button.dart';
 import 'package:talcove/shared/widgets/language_icon.dart';
@@ -13,94 +12,97 @@ class EntryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = AppDimensions.screenWidth(context);
-    bool isMobile = width < AppBreakpoints.tablet;
+    final cs = Theme.of(context).colorScheme;
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < AppBreakpoints.tablet;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Talcove"),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        actions: const [LanguageIcon(), ThemeIcon()],
-      ),
-      backgroundColor: Theme.of(context).colorScheme.background,
-      body: Padding(
-        padding: const EdgeInsetsGeometry.all(20),
-        child: Center(
-          child: isMobile
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        S.of(context).login,
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    CustomButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const SignupScreen(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        S.of(context).signup,
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 60,
-                        child: CustomButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            S.of(context).login,
-                            style: const TextStyle(fontSize: 32),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: SizedBox(
-                        height: 60,
-                        child: CustomButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const SignupScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            S.of(context).signup,
-                            style: const TextStyle(fontSize: 32),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [cs.background, cs.surface.withOpacity(0.7)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Top icons
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [LanguageIcon(), SizedBox(width: 12), ThemeIcon()],
                 ),
+
+                const Spacer(),
+
+                // Logo
+                Image.asset(
+                  "assets/images/talcove_logo.png",
+                  width: isMobile ? 130 : 170,
+                  height: isMobile ? 130 : 170,
+                ),
+
+                const SizedBox(height: 20),
+
+                // Subtitle
+                Text(
+                  "Connect • Share • Discover",
+                  style: TextStyle(
+                    fontSize: isMobile ? 16 : 20,
+                    color: cs.onSurface.withOpacity(0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                // Login button
+                CustomButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  ),
+                  child: Text(
+                    S.of(context).login,
+                    style: TextStyle(
+                      fontSize: isMobile ? 20 : 26,
+                      color: cs.onPrimary,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Signup button
+                CustomButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SignupScreen()),
+                  ),
+                  child: Text(
+                    S.of(context).signup,
+                    style: TextStyle(
+                      fontSize: isMobile ? 20 : 26,
+                      color: cs.onPrimary,
+                    ),
+                  ),
+                ),
+
+                const Spacer(),
+
+                Text(
+                  "© 2026 Talcove",
+                  style: TextStyle(
+                    color: cs.onSurface.withOpacity(0.5),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

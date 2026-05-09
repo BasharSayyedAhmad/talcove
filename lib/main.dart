@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/themes/theme.dart';
 import 'package:talcove/features/home/home_screen.dart';
+import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/features/providers/language_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
@@ -19,10 +21,17 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    Future.microtask(() {
+      ref.read(authNotifierProvider.notifier).restoreSession();
+    });
     final themeMode = ref.watch(themeNotifierProvider);
     final language = ref.watch(languageNotifierProvider);
+    final authState = ref.watch(authNotifierProvider);
+
     return MaterialApp(
-      home: const HomeScreen(),
+      home: authState.isAuthenticated
+          ? const HomeScreen()
+          : const EntryScreen(),
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       theme: lightMode,

@@ -53,9 +53,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "signin": MessageLookupByLibrary.simpleMessage("Sign in"),
     "signup": MessageLookupByLibrary.simpleMessage("Signup"),
-    "signupSuccess": MessageLookupByLibrary.simpleMessage(
-      "Signup successful! Please log in.",
-    ),
+    "signupSuccess": MessageLookupByLibrary.simpleMessage("Signup successful!"),
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "UserName is required",
     ),

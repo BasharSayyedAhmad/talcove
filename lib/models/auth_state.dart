@@ -18,11 +18,15 @@ class AuthState {
     bool? isLoading,
     String? errorMessage,
     bool? isAuthenticated,
+    User? user,
+    AuthMethod? authMethod,
   }) {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
+      user: user ?? this.user,
+      authMethod: authMethod ?? this.authMethod,
     );
   }
 }

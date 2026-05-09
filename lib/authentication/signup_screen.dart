@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/widgets/signup_form.dart';
 import 'package:talcove/core/constants/app_breakpoints.dart';
 import 'package:talcove/core/constants/app_dimensions.dart';
+import 'package:talcove/features/home/home_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
@@ -37,8 +39,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
     final theme = ref.watch(themeNotifierProvider);
+    final authState = ref.watch(authNotifierProvider);
     final authNotifier = ref.read(authNotifierProvider.notifier);
-    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
+    ref.listen<AuthState>(authNotifierProvider, (prev, next) {
       if (next.errorMessage != null) {
         AppSnackBar.show(
           context,
@@ -47,16 +50,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         );
         authNotifier.clearError();
       }
-    });
-    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-      if (next.isAuthenticated) {
+
+      if (next.isAuthenticated && prev?.isAuthenticated != true) {
         AppSnackBar.show(
           context,
           message: S.of(context).signupSuccess,
           backgroundColor: Colors.green,
         );
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       }
     });
+
     return Form(
       key: validateKey,
       child: Scaffold(
@@ -75,39 +82,46 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(10),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 7.0),
-            child: isMobile
-                ? SignupForm(
-                    usernameController: usernameController,
-                    emailController: emailController,
-                    passwordController: passwordController,
-                    confirmPasswordController: confirmPasswordController,
-                    validateKey: validateKey,
-                  )
-                : Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: Card(
-                        margin: const EdgeInsets.all(12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: SignupForm(
-                            usernameController: usernameController,
-                            emailController: emailController,
-                            passwordController: passwordController,
-                            confirmPasswordController:
-                                confirmPasswordController,
-                            validateKey: validateKey,
+        body: authState.isLoading
+            ? Center(
+                child: Transform.scale(
+                  scale: 2,
+                  child: const CupertinoActivityIndicator(),
+                ),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(10),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 7.0),
+                  child: isMobile
+                      ? SignupForm(
+                          usernameController: usernameController,
+                          emailController: emailController,
+                          passwordController: passwordController,
+                          confirmPasswordController: confirmPasswordController,
+                          validateKey: validateKey,
+                        )
+                      : Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 600),
+                            child: Card(
+                              margin: const EdgeInsets.all(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: SignupForm(
+                                  usernameController: usernameController,
+                                  emailController: emailController,
+                                  passwordController: passwordController,
+                                  confirmPasswordController:
+                                      confirmPasswordController,
+                                  validateKey: validateKey,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-          ),
-        ),
+                ),
+              ),
       ),
     );
   }

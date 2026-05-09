@@ -27,7 +27,6 @@ class SignupForm extends ConsumerWidget {
     final height = AppDimensions.screenHeight(context);
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
-    final authState = ref.watch(authNotifierProvider);
     final authNotifier = ref.read(authNotifierProvider.notifier);
 
     return Column(
@@ -69,10 +68,17 @@ class SignupForm extends ConsumerWidget {
           child: ElevatedButton(
             onPressed: () async {
               if (validateKey.currentState!.validate()) {
-                await Future.delayed(const Duration(seconds: 1));
+                await authNotifier.signUpWithUserNameAndPassword(
+                  usernameController.text.trim(),
+                  passwordController.text,
+                  emailController.text.trim(),
+                );
               }
             },
-            child: Text(S.of(context).signup, style: TextStyle(fontSize: 20)),
+            child: Text(
+              S.of(context).signup,
+              style: const TextStyle(fontSize: 20),
+            ),
           ),
         ),
         Row(
@@ -87,59 +93,34 @@ class SignupForm extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Container(
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: Theme.of(context).colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.discord),
-                color: Colors.deepPurple,
+
+        GestureDetector(
+          onTap: () {
+            authNotifier.loginWithGoogle();
+          },
+          child: Container(
+            height: 50,
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Image.asset(
+                "assets/images/g_logo.png",
+                width: 25,
+                height: 25,
               ),
             ),
-            authState.isLoading
-                ? const CircularProgressIndicator()
-                : GestureDetector(
-                    onTap: () {
-                      authNotifier.loginWithGoogle();
-                    },
-                    child: Container(
-                      height: 50,
-                      width: 50,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          "assets/images/g_logo.png",
-                          width: 25,
-                          height: 25,
-                        ),
-                      ),
-                    ),
-                  ),
-          ],
+          ),
         ),
       ],
     );

@@ -1,1 +1,1 @@
-enum AuthMethod { google, discord, password }
+enum AuthMethod { google, userNameAndPassword }
