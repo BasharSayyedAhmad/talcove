@@ -46,7 +46,7 @@ class LoginForm extends ConsumerWidget {
             ),
           ),
         ),
-        Container(
+        SizedBox(
           height: AppDimensions.screenHeight(context),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

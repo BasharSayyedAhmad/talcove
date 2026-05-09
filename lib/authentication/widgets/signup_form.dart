@@ -51,7 +51,7 @@ class SignupForm extends ConsumerWidget {
             ),
           ),
         ),
-        Container(
+        SizedBox(
           height: height,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -62,7 +62,7 @@ class SignupForm extends ConsumerWidget {
                 width: isMobile ? 130 : 170,
                 height: isMobile ? 130 : 170,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 S.of(context).createYourAccount,
                 style: const TextStyle(
@@ -114,7 +114,7 @@ class SignupForm extends ConsumerWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   const Expanded(
