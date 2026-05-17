@@ -32,12 +32,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirmPasswordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "Veuillez confirmer votre mot de passe",
     ),
+    "continueWithGoogle": MessageLookupByLibrary.simpleMessage(
+      "Continuer avec Google",
+    ),
     "createAccount": MessageLookupByLibrary.simpleMessage("Créer un compte"),
     "createYourAccount": MessageLookupByLibrary.simpleMessage(
       "Créez votre compte",
     ),
     "email": MessageLookupByLibrary.simpleMessage("Email (optionnel)"),
     "login": MessageLookupByLibrary.simpleMessage("Connexion"),
+    "or": MessageLookupByLibrary.simpleMessage("OU"),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage(
       "ou inscrivez-vous avec",
     ),

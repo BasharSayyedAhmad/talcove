@@ -31,6 +31,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirmPasswordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "الرجاء تأكيد كلمة المرور",
     ),
+    "continueWithGoogle": MessageLookupByLibrary.simpleMessage(
+      "المتابعة باستخدام Google",
+    ),
     "createAccount": MessageLookupByLibrary.simpleMessage("إنشاء حساب"),
     "createYourAccount": MessageLookupByLibrary.simpleMessage("أنشئ حسابك"),
     "email": MessageLookupByLibrary.simpleMessage(
@@ -40,6 +43,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginToYourAccount": MessageLookupByLibrary.simpleMessage(
       "تسجيل الدخول إلى حسابك",
     ),
+    "or": MessageLookupByLibrary.simpleMessage("أو"),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage("أو سجّل باستخدام"),
     "orSigninWith": MessageLookupByLibrary.simpleMessage(
       "او سجل الدخول عن طريق",

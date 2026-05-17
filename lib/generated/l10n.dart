@@ -134,14 +134,9 @@ class S {
     );
   }
 
-  /// `Signup successful!`
+  /// `Welcome!`
   String get signupSuccess {
-    return Intl.message(
-      'Signup successful!',
-      name: 'signupSuccess',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Welcome!', name: 'signupSuccess', desc: '', args: []);
   }
 
   /// `UserName`
@@ -154,14 +149,24 @@ class S {
     return Intl.message('Email(optional)', name: 'email', desc: '', args: []);
   }
 
-  /// ` or sign up with`
-  String get orSignUpWith {
+  /// `OR`
+  String get or {
+    return Intl.message('OR', name: 'or', desc: '', args: []);
+  }
+
+  /// `Continue with google`
+  String get continueWithGoogle {
     return Intl.message(
-      ' or sign up with',
-      name: 'orSignUpWith',
+      'Continue with google',
+      name: 'continueWithGoogle',
       desc: '',
       args: [],
     );
+  }
+
+  /// `OR`
+  String get orSignUpWith {
+    return Intl.message('OR', name: 'orSignUpWith', desc: '', args: []);
   }
 
   /// `Re-Type your password`
@@ -219,6 +224,16 @@ class S {
     return Intl.message(
       'UserName is required',
       name: 'userNameValidatorEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password is too weak. Use at least 8 characters with uppercase, lowercase, numbers, and special characters.`
+  String get passwordWeak {
+    return Intl.message(
+      'Password is too weak. Use at least 8 characters with uppercase, lowercase, numbers, and special characters.',
+      name: 'passwordWeak',
       desc: '',
       args: [],
     );

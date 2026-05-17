@@ -9,14 +9,18 @@
     "welcomeBack": "Welcome back!",
     "orSigninWith":"or sign in with",
     "DontHaveAccount":"don't have account",
-    "signupSuccess":"Signup successful!",
+    "signupSuccess":"Welcome!",
     "UserName":"UserName",
     "email":"Email(optional)",
-    "orSignUpWith":" or sign up with",
+    "or":"OR",
+    "continueWithGoogle":"Continue with google",
+    "orSignUpWith":"OR",
     "confirm":"Re-Type your password",
     "passwordValidatorEmpty":"Password is required",
     "passwordValidatorShort":"Password must be at least 6 characters",
     "confirmPasswordValidatorEmpty": "Please confirm your password",
-"confirmPasswordNotMatch": "Passwords do not match",
-    "userNameValidatorEmpty":"UserName is required"
+    "confirmPasswordNotMatch": "Passwords do not match",
+    "userNameValidatorEmpty":"UserName is required",
+    "passwordWeak": "Password is too weak. Use at least 8 characters with uppercase, lowercase, numbers, and special characters."
+
 }

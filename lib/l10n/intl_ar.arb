@@ -9,6 +9,8 @@
   "alreadyHaveAnAccount": "هل لديك حساب بالفعل؟",
   "loginToYourAccount": "تسجيل الدخول إلى حسابك",
   "welcomeBack": "أهلًا بك",
+  "or": "أو",
+  "continueWithGoogle": "المتابعة باستخدام Google",
   "orSigninWith":"او سجل الدخول عن طريق",
   "DontHaveAccount":"ليس لديك حساب؟",
   "email": "البريد الإلكتروني (اختياري)",

@@ -33,6 +33,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirmPasswordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "Please confirm your password",
     ),
+    "continueWithGoogle": MessageLookupByLibrary.simpleMessage(
+      "Continue with google",
+    ),
     "createAccount": MessageLookupByLibrary.simpleMessage("Create account"),
     "createYourAccount": MessageLookupByLibrary.simpleMessage(
       "Create your account",
@@ -42,7 +45,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginToYourAccount": MessageLookupByLibrary.simpleMessage(
       "Login to your account",
     ),
-    "orSignUpWith": MessageLookupByLibrary.simpleMessage(" or sign up with"),
+    "or": MessageLookupByLibrary.simpleMessage("OR"),
+    "orSignUpWith": MessageLookupByLibrary.simpleMessage("OR"),
     "orSigninWith": MessageLookupByLibrary.simpleMessage("or sign in with"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "passwordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
@@ -51,9 +55,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "passwordValidatorShort": MessageLookupByLibrary.simpleMessage(
       "Password must be at least 6 characters",
     ),
+    "passwordWeak": MessageLookupByLibrary.simpleMessage(
+      "Password is too weak. Use at least 8 characters with uppercase, lowercase, numbers, and special characters.",
+    ),
     "signin": MessageLookupByLibrary.simpleMessage("Sign in"),
     "signup": MessageLookupByLibrary.simpleMessage("Signup"),
-    "signupSuccess": MessageLookupByLibrary.simpleMessage("Signup successful!"),
+    "signupSuccess": MessageLookupByLibrary.simpleMessage("Welcome!"),
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "UserName is required",
     ),
