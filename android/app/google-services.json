@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "957911139118",
+    "project_id": "talcove-df32e",
+    "storage_bucket": "talcove-df32e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957911139118:android:6aa00ad1194683a77ab0bf",
+        "android_client_info": {
+          "package_name": "com.example.talcove"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeGr6XeRoS-g9C6ZTwOZm4wZSiTFYJPh4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
