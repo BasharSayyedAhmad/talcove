@@ -40,7 +40,7 @@ class CustomText extends StatelessWidget {
           borderSide: BorderSide(
             color: Theme.of(
               context,
-            ).colorScheme.onSurfaceVariant.withOpacity(0.2),
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
           ),
         ),
         focusedBorder: OutlineInputBorder(

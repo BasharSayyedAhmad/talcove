@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/themes/theme.dart';
@@ -11,25 +13,87 @@ import 'package:talcove/shared/services/local_storage_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
+// دالة معالجة الإشعارات (للتطبيق في الخلفية)
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+
+  print("📱 رسالة خلفية من النوع: ${message.data}");
+
+  if (message.data.isNotEmpty) {
+    final String title = message.data['title'] ?? 'اشعار جديد';
+    final String body = message.data['body'] ?? '';
+
+    print("Title: $title");
+    print("Body: $body");
+  }
+}
+
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  WidgetsFlutterBinding.ensureInitialized();
-  Future.delayed(const Duration(seconds: 1), () {
+
+  Future.delayed(const Duration(milliseconds: 100), () {
     FlutterNativeSplash.remove();
   });
+
+  await Firebase.initializeApp();
   await LocalStorageService.init();
+
+  //  طلب إذن الإشعارات
+  await _requestPermission();
+
+  //  الحصول على الـ Token
+  final token = await FirebaseMessaging.instance.getToken();
+  print("🔥 FCM token: $token");
+
+  // لما يكون التطبيق مفتوح
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("📱 Foreground notification: ${message.notification?.title}");
+    // عرض الإشعار محلياً
+    _showLocalNotification(message);
+  });
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+//  طلب الإذن لاجهزة اندرويد 13 وما فوق
+Future<void> _requestPermission() async {
+  final settings = await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+  print("📱 Notification permission: ${settings.authorizationStatus}");
+}
+
+//  عرض إشعار محلي عندما يكون التطبيق مفتوحاً
+void _showLocalNotification(RemoteMessage message) {
+  print("Title: ${message.notification?.title}");
+  print("Body: ${message.notification?.body}");
+}
+
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Future.microtask(() {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(authNotifierProvider.notifier).restoreSession();
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeNotifierProvider);
     final language = ref.watch(languageNotifierProvider);
     final authState = ref.watch(authNotifierProvider);

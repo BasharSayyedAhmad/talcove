@@ -8,13 +8,18 @@ class ThemeIcon extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeNotifierProvider);
+    bool isDarkMode;
+    if (themeMode == ThemeMode.system) {
+      final brightness = MediaQuery.of(context).platformBrightness;
+      isDarkMode = brightness == Brightness.dark;
+    } else {
+      isDarkMode = themeMode == ThemeMode.dark;
+    }
     return IconButton(
       onPressed: () {
         ref.read(themeNotifierProvider.notifier).toggleTheme();
       },
-      icon: Icon(
-        themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
-      ),
+      icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
     );
   }
 }
