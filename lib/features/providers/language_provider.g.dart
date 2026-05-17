@@ -6,7 +6,7 @@ part of 'language_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$languageNotifierHash() => r'25d6c75a72b8ce449e1cf257b1b68cde62476596';
+String _$languageNotifierHash() => r'c6278842a4cffd43afa79d391c518caf6db2f70b';
 
 /// See also [LanguageNotifier].
 @ProviderFor(LanguageNotifier)
