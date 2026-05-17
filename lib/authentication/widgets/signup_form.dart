@@ -9,7 +9,7 @@ import 'package:talcove/features/providers/language_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/shared/widgets/custom_text.dart';
 
-class SignupForm extends ConsumerWidget {
+class SignupForm extends ConsumerStatefulWidget {
   const SignupForm({
     super.key,
     required this.usernameController,
@@ -23,13 +23,29 @@ class SignupForm extends ConsumerWidget {
   final TextEditingController passwordController;
   final TextEditingController confirmPasswordController;
   final GlobalKey<FormState> validateKey;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SignupForm> createState() => _SignupFormState();
+}
+
+class _SignupFormState extends ConsumerState<SignupForm> {
+  bool _showText = false;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) setState(() => _showText = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final height = AppDimensions.screenHeight(context);
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
     final authNotifier = ref.read(authNotifierProvider.notifier);
     final languageNotifier = ref.read(languageNotifierProvider.notifier);
+
     return Stack(
       children: [
         Align(
@@ -42,7 +58,7 @@ class SignupForm extends ConsumerWidget {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              icon: const Icon(Icons.close),
+              icon: const Icon(Icons.arrow_back),
               iconSize: 20,
               color: Theme.of(context).colorScheme.onSecondary,
               style: IconButton.styleFrom(
@@ -72,7 +88,7 @@ class SignupForm extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               CustomText(
-                controller: usernameController,
+                controller: widget.usernameController,
                 hintText: S.of(context).UserName,
                 prefixIcon: const Icon(Icons.person),
                 validator: (val) {
@@ -82,29 +98,24 @@ class SignupForm extends ConsumerWidget {
                   return null;
                 },
               ),
+
               const SizedBox(height: 10),
-              CustomText(
-                controller: emailController,
-                hintText: S.of(context).email,
-                prefixIcon: const Icon(Icons.email),
-              ),
-              const SizedBox(height: 10),
-              PasswordFiled(passwordController: passwordController),
+              PasswordFiled(passwordController: widget.passwordController),
               const SizedBox(height: 10),
               ConfirmPassword(
-                passwordController: passwordController,
-                confirmController: confirmPasswordController,
+                passwordController: widget.passwordController,
+                confirmController: widget.confirmPasswordController,
               ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (validateKey.currentState!.validate()) {
+                    if (widget.validateKey.currentState!.validate()) {
                       await authNotifier.signUpWithUserNameAndPassword(
-                        usernameController.text.trim(),
-                        passwordController.text,
-                        emailController.text.trim(),
+                        widget.usernameController.text.trim(),
+                        widget.passwordController.text,
+                        widget.emailController.text.trim(),
                       );
                     }
                   },
@@ -141,18 +152,30 @@ class SignupForm extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         blurRadius: 6,
                         offset: const Offset(0, 3),
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Image.asset(
-                      "assets/images/g_logo.png",
-                      width: 25,
-                      height: 25,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        "assets/images/g_logo.png",
+                        width: 25,
+                        height: 25,
+                      ),
+                      const SizedBox(width: 5),
+                      AnimatedCrossFade(
+                        firstChild: const SizedBox(),
+                        secondChild: Text(S.of(context).continueWithGoogle),
+                        crossFadeState: _showText
+                            ? CrossFadeState.showSecond
+                            : CrossFadeState.showFirst,
+                        duration: const Duration(milliseconds: 700),
+                      ),
+                    ],
                   ),
                 ),
               ),

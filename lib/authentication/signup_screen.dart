@@ -7,7 +7,6 @@ import 'package:talcove/core/constants/app_dimensions.dart';
 import 'package:talcove/features/home/home_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/generated/l10n.dart';
-import 'package:talcove/features/providers/theme_provider.dart';
 import 'package:talcove/models/auth_state.dart';
 import 'package:talcove/shared/widgets/app_snackbar.dart';
 
@@ -38,7 +37,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
-    final theme = ref.watch(themeNotifierProvider);
     final authState = ref.watch(authNotifierProvider);
     final authNotifier = ref.read(authNotifierProvider.notifier);
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
@@ -58,8 +56,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           backgroundColor: Colors.green,
         );
 
-        Navigator.of(context).pushReplacement(
+        Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (Route<dynamic> route) => false,
         );
       }
     });

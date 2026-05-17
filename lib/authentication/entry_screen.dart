@@ -20,7 +20,7 @@ class EntryScreen extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [cs.surface, cs.surface.withOpacity(0.7)],
+            colors: [cs.surface, cs.surface.withValues(alpha: 0.7)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -59,7 +59,7 @@ class EntryScreen extends StatelessWidget {
                       "Connect • Share • Discover",
                       style: TextStyle(
                         fontSize: isMobile ? 16 : 20,
-                        color: cs.onSurface.withOpacity(0.7),
+                        color: cs.onSurface.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -103,7 +103,7 @@ class EntryScreen extends StatelessWidget {
                     Text(
                       "© 2026 Talcove",
                       style: TextStyle(
-                        color: cs.onSurface.withOpacity(0.5),
+                        color: cs.onSurface.withValues(alpha: 0.5),
                         fontSize: 12,
                       ),
                     ),
