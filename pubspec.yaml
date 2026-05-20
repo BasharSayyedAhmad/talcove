@@ -67,25 +67,25 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/talcove_logo.png"
+  image_path: "assets/images/talcove_logo4.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   remove_alpha_ios: true
   adaptive_icon_background: "assets/images/talcove_icon_bg.png" # التدرج الأزرق
   adaptive_icon_foreground: "assets/images/talcove_icon_clean.png" # الشعار الأبيض الشفاف
   web:
     generate: true
-    image_path: "assets/images/talcove_logo.png"
+    image_path: "assets/images/talcove_logo4.png"
     background_color: "#FFFFFF"
     theme_color: "#FFFFFF"
 
 flutter_native_splash:
-  color: "#38B6FF"
-  image: "assets/images/talcove_logo.png"
+  color: "#1E293B"
+  image: "assets/images/talcove_logo1.png"
   fullscreen: false
   android_12:
-    color: "#38B6FF"
-    image: "assets/images/talcove_logo.png"
-    icon_background_color: "#111111"
+    color: "#1E293B"
+    image: "assets/images/talcove_logo1.png"
+    icon_background_color: "#1E293B"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -97,8 +97,7 @@ flutter:
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/g_logo.png
-    - assets/images/talcove_logo.png
+    - assets/images/
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
