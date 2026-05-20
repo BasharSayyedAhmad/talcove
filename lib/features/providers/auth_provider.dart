@@ -296,6 +296,7 @@ class AuthNotifier extends _$AuthNotifier {
           AuthMethod.userNameAndPassword.name,
         );
         final cookies = response.headers['set_cookie'];
+        print("===========Cookies=============== $cookies");
         if (cookies != null) {
           await LocalStorageService.box.put(sessionCookieKey, cookies);
         }
@@ -340,8 +341,9 @@ class AuthNotifier extends _$AuthNotifier {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {'accessToken': accessToken},
       );
-
-      if (response.statusCode == 200) {
+      print("response body: ${response.body}");
+      print("response status: ${response.statusCode}");
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
         final newAccessToken = data['accessToken'];
 
@@ -416,26 +418,19 @@ class AuthNotifier extends _$AuthNotifier {
           "❌ Missing data: token=${token != null}, cookie=${cookie != null}",
         );
         await _restoreUser(
-          Map<String, dynamic>.from(userJson),
+          Map<String, dynamic>.from(userJson), //هون كانت المشكلة
           AuthMethod.google,
         );
       } else {
         state = AuthState(isAuthenticated: false);
       }
     } else if (method == AuthMethod.userNameAndPassword.name) {
-      // Username/Password: يعتمد فقط على token
+      // Username/Password
       final token = box.get(accessTokenKey);
+      final cookie = box.get(sessionCookieKey);
       print("Username/Password - Token: ${token != null}");
-
+      print("===========Cookies: $cookie");
       if (token != null) {
-        //  تحقق من صلاحية التوكن
-        if (await _isTokenExpiringSoon()) {
-          final refreshed = await _refreshTokens();
-          if (!refreshed) {
-            state = AuthState(isAuthenticated: false);
-            return;
-          }
-        }
         await _restoreUser(
           Map<String, dynamic>.from(userJson),
           AuthMethod.userNameAndPassword,
