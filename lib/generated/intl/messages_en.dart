@@ -41,7 +41,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Create your account",
     ),
     "email": MessageLookupByLibrary.simpleMessage("Email(optional)"),
-    "login": MessageLookupByLibrary.simpleMessage("Login"),
+    "login": MessageLookupByLibrary.simpleMessage("Sign in"),
     "loginToYourAccount": MessageLookupByLibrary.simpleMessage(
       "Login to your account",
     ),
@@ -59,7 +59,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Password is too weak. Use at least 8 characters with uppercase, lowercase, numbers, and special characters.",
     ),
     "signin": MessageLookupByLibrary.simpleMessage("Sign in"),
-    "signup": MessageLookupByLibrary.simpleMessage("Signup"),
+    "signup": MessageLookupByLibrary.simpleMessage("Sign up"),
     "signupSuccess": MessageLookupByLibrary.simpleMessage("Welcome!"),
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "UserName is required",

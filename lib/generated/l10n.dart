@@ -54,14 +54,14 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
-  /// `Login`
+  /// `Sign in`
   String get login {
-    return Intl.message('Login', name: 'login', desc: '', args: []);
+    return Intl.message('Sign in', name: 'login', desc: '', args: []);
   }
 
-  /// `Signup`
+  /// `Sign up`
   String get signup {
-    return Intl.message('Signup', name: 'signup', desc: '', args: []);
+    return Intl.message('Sign up', name: 'signup', desc: '', args: []);
   }
 
   /// `Sign in`
