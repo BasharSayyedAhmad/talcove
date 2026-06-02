@@ -10,12 +10,14 @@ class CustomText extends StatelessWidget {
     this.hintText,
     this.prefixIcon,
     this.suffixIcon,
+    this.keyboardType,
     this.show,
   });
   final String? hintText;
   final TextEditingController? controller;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
   final void Function(String)? onSaved;
@@ -26,6 +28,7 @@ class CustomText extends StatelessWidget {
       controller: controller,
       validator: validator,
       onChanged: onChanged,
+      keyboardType: keyboardType,
       obscureText: show ?? false,
       decoration: InputDecoration(
         hintText: hintText,
