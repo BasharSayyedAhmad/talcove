@@ -4,18 +4,24 @@ class User {
   final String id;
   final String userName;
   final String? email;
+  final bool isEmailVisible;
+  final bool isPhoneNumberVisible;
+  final String? phoneNumber;
   final String? photoUrl;
   final AuthMethod? authType;
-  final String? token; // JWT أو Access Token
-  final DateTime? createdAt; // وقت إنشاء الحساب
-  final DateTime? updatedAt; // آخر تحديث
-  final String? status; // Online / Offline
-  final String? bio; // وصف قصير
+  final String? token;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? status;
+  final String? bio;
 
   User({
     required this.id,
     required this.userName,
+    this.isEmailVisible = false,
+    this.isPhoneNumberVisible = false,
     this.email,
+    this.phoneNumber,
     this.photoUrl,
     this.authType,
     this.token,
@@ -27,13 +33,18 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      userName: json['userName'],
+      id: json['id'] ?? '',
+      userName: json['userName'] ?? '',
       email: json['email'],
+      phoneNumber: json['phoneNumber'],
       photoUrl: json['photoUrl'],
+
+      isEmailVisible: json['isEmailVisible'] ?? false,
+      isPhoneNumberVisible: json['isPhoneNumberVisible'] ?? false,
       authType: json['authType'] != null
           ? AuthMethod.values.firstWhere(
               (e) => e.toString() == 'AuthMethod.${json['authType']}',
+              orElse: () => AuthMethod.userNameAndPassword,
             )
           : null,
       token: json['token'],
@@ -53,7 +64,11 @@ class User {
       'id': id,
       'userName': userName,
       'email': email,
+      'phoneNumber': phoneNumber,
       'photoUrl': photoUrl,
+
+      'isEmailVisible': isEmailVisible,
+      'isPhoneNumberVisible': isPhoneNumberVisible,
       'authType': authType?.name,
       'token': token,
       'createdAt': createdAt?.toIso8601String(),
@@ -61,5 +76,37 @@ class User {
       'status': status,
       'bio': bio,
     };
+  }
+
+  User copyWith({
+    String? id,
+    String? userName,
+    String? email,
+    bool? isEmailVisible,
+    bool? isPhoneNumberVisible,
+    String? phoneNumber,
+    String? photoUrl,
+    AuthMethod? authType,
+    String? token,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? status,
+    String? bio,
+  }) {
+    return User(
+      id: id ?? this.id,
+      userName: userName ?? this.userName,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      photoUrl: photoUrl ?? this.photoUrl,
+      isEmailVisible: isEmailVisible ?? this.isEmailVisible,
+      isPhoneNumberVisible: isPhoneNumberVisible ?? this.isPhoneNumberVisible,
+      authType: authType ?? this.authType,
+      token: token ?? this.token,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      status: status ?? this.status,
+      bio: bio ?? this.bio,
+    );
   }
 }
