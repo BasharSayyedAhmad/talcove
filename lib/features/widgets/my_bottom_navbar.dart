@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talcove/generated/l10n.dart';
 
 class MyBottomNavBar extends StatelessWidget {
   const MyBottomNavBar({
@@ -16,11 +17,23 @@ class MyBottomNavBar extends StatelessWidget {
       onTap: onTap,
       currentIndex: selectedIndex,
       type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: "Chats"),
-        BottomNavigationBarItem(icon: Icon(Icons.people), label: "People"),
-        BottomNavigationBarItem(icon: Icon(Icons.group_add), label: "Groups"),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
+      items: [
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.chat_bubble),
+          label: S.of(context).chats,
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.people),
+          label: S.of(context).people,
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.group_add),
+          label: S.of(context).groups,
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.settings),
+          label: S.of(context).settings,
+        ),
       ],
     );
   }
