@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talcove/authentication/email_screen.dart';
+import 'package:talcove/authentication/phone_screen.dart';
 import 'package:talcove/authentication/widgets/signup_form.dart';
 import 'package:talcove/core/constants/app_breakpoints.dart';
 import 'package:talcove/core/constants/app_dimensions.dart';
+import 'package:talcove/core/constants/auth_method.dart';
 import 'package:talcove/features/home/home_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/generated/l10n.dart';
@@ -55,11 +58,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           message: S.of(context).signupSuccess,
           backgroundColor: Colors.green,
         );
-
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-          (Route<dynamic> route) => false,
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Widget nextScreen;
+          if (next.authMethod == AuthMethod.google) {
+            final hasPhoneNumber =
+                next.user?.phoneNumber != null &&
+                next.user!.phoneNumber!.isNotEmpty;
+            if (hasPhoneNumber) {
+              nextScreen = const HomeScreen();
+            } else {
+              nextScreen = const PhoneScreen();
+            }
+          } else {
+            nextScreen = const EmailScreen();
+          }
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => nextScreen),
+            (route) => false,
+          );
+        });
       }
     });
 

@@ -115,7 +115,6 @@ class _SignupFormState extends ConsumerState<SignupForm> {
                       await authNotifier.signUpWithUserNameAndPassword(
                         widget.usernameController.text.trim(),
                         widget.passwordController.text,
-                        widget.emailController.text.trim(),
                       );
                     }
                   },
