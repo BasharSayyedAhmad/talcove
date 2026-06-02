@@ -8,6 +8,7 @@ const String authMethodKey = "authMethod";
 const String userKey = "userKey";
 const String refreshTokenKey = 'refreshToken';
 const String tokenExpiryKey = 'tokenExpiry';
+const String contactsKey = 'saved_contacts';
 
 /// آخر مرة شوهد فيها المستخدم (للـ online status)
 const String lastSeenKey = 'last_seen';
@@ -20,3 +21,5 @@ const String socketSettingsKey = 'socket_settings';
 
 /// ما إذا كان المستخدم يرغب بالكتابة (Typing)
 const String isTypingKey = 'is_typing';
+//حفظ الرسائل
+const String messagesKey = 'messages';
