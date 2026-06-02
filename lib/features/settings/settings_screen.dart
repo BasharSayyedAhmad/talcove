@@ -1,8 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/entry_screen.dart';
+import 'package:talcove/features/profile/profile_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
+import 'package:talcove/features/providers/language_provider.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
+import 'package:talcove/features/settings/language_screen.dart';
+import 'package:talcove/generated/l10n.dart';
+
+String _getCurrentLanguageName(WidgetRef ref) {
+  final currentLocale = ref.watch(languageNotifierProvider);
+  switch (currentLocale.languageCode) {
+    case 'ar':
+      return 'العربية';
+    case 'en':
+      return 'English';
+    case 'fr':
+      return 'Français';
+    default:
+      return 'English';
+  }
+}
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -59,23 +77,56 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Text(" Theme", style: TextStyle(fontSize: 20)),
+          Text(S.of(context).theme, style: TextStyle(fontSize: 20)),
           Card(
             child: SwitchListTile(
               value: theme == ThemeMode.dark,
               onChanged: (val) {
                 ref.read(themeNotifierProvider.notifier).toggleTheme();
               },
-              title: const Text("Dark mode"),
+              title: Text(S.of(context).dark),
             ),
           ),
-          const Text("  Account", style: TextStyle(fontSize: 20)),
+
+          Text(S.of(context).language, style: const TextStyle(fontSize: 20)),
+          Card(
+            child: ListTile(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const LanguageWidget()),
+                );
+              },
+              leading: Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.language,
+                  color: Theme.of(context).colorScheme.onSecondary,
+                ),
+              ),
+              title: Text(S.of(context).language),
+              subtitle: Text(
+                _getCurrentLanguageName(ref),
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios_rounded),
+            ),
+          ),
+          Text(S.of(context).account, style: TextStyle(fontSize: 20)),
 
           Card(
             child: Column(
               children: [
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  },
                   leading: Container(
                     height: 30,
                     width: 30,
@@ -88,14 +139,14 @@ class SettingsScreen extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.onSecondary,
                     ),
                   ),
-                  title: const Text("Profile"),
+                  title: Text(S.of(context).profile),
                   subtitle: const Text("Username, email, bio"),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded),
                 ),
                 const Divider(),
                 ListTile(
                   onTap: () {},
-                  title: const Text("Notifications"),
+                  title: Text(S.of(context).notifications),
                   subtitle: const Text("Sound, Vibratrion, alert"),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded),
                 ),
@@ -112,13 +163,13 @@ class SettingsScreen extends ConsumerWidget {
                   },
 
                   title: Text(
-                    "Log out",
+                    S.of(context).logOut,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
                       fontSize: 20,
                     ),
                   ),
-                  subtitle: const Text("Sign out of your account"),
+                  subtitle: Text(S.of(context).SignOutOfYourAccount),
                 ),
               ],
             ),
