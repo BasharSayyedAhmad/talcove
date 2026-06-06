@@ -111,7 +111,10 @@ class _LoginFormState extends ConsumerState<LoginForm> {
                 },
                 child: Text(
                   S.of(context).signin,
-                  style: const TextStyle(fontSize: 20),
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

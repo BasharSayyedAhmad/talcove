@@ -120,7 +120,10 @@ class _SignupFormState extends ConsumerState<SignupForm> {
                   },
                   child: Text(
                     S.of(context).signup,
-                    style: const TextStyle(fontSize: 20),
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
                   ),
                 ),
               ),
