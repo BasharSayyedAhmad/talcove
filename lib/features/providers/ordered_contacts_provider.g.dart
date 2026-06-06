@@ -7,7 +7,7 @@ part of 'ordered_contacts_provider.dart';
 // **************************************************************************
 
 String _$orderedContactsNotifierHash() =>
-    r'ef7b98c174b3845fbcf1152546df02399fd4ef9b';
+    r'1294e4295029d21943b869d7ea9b42568c677d17';
 
 /// See also [OrderedContactsNotifier].
 @ProviderFor(OrderedContactsNotifier)

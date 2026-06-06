@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class Message {
   final String id;
-  // final String chatId;
+  // final String chatId; // ✅ أضف هذا
   final String text;
   final String senderId;
   final String receiverId;
@@ -15,14 +15,13 @@ class Message {
   final String? voiceUrl;
   final int? voiceDuration;
   final bool isVoice;
-
   final bool isSent;
   final bool isDelivered;
   final bool isRead;
 
   const Message({
     required this.id,
-    // required this.chatId,
+    // required this.chatId, // ✅ أضف هذا
     required this.text,
     required this.senderId,
     required this.receiverId,
@@ -40,27 +39,17 @@ class Message {
     this.isRead = false,
   });
 
-  factory Message.fromSocket(Map<String, dynamic> json, String currentUserId) {
-    final senderId = json['senderUserName'].toString();
-    return Message(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      // chatId: "", // سيتم تعيينه لاحقاً
-      text: json['message'],
-      senderId: senderId,
-      receiverId: json['receiverUserName'].toString(),
-      isMe: senderId == currentUserId,
-      timestamp: DateTime.parse(json['createdAt']),
-    );
-  }
-
-  Map<String, dynamic> toSendJson() {
-    return {'message': text, 'receiverUserName': receiverId};
+  // ✅ دالة مساعدة لتوليد chatId
+  static String generateChatId(String userId1, String userId2) {
+    // رتب الأرقام عشان تكون المحادثة نفسها للطرفين
+    final ids = [userId1, userId2]..sort();
+    return "${ids[0]}_${ids[1]}";
   }
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
       id: json['id'],
-      // chatId: json['chatId'] ?? '',
+      // chatId: json['chatId'] ?? '', // ✅ أضف هذا
       text: json['text'],
       senderId: json['senderId'],
       receiverId: json['receiverId'],
@@ -74,18 +63,17 @@ class Message {
           ? Message.fromJson(Map<String, dynamic>.from(json['replyTo']))
           : null,
       imageUrl: json['imageUrl'],
-      image: null, // الصورة لا تُخزن في Hive، ستُعاد تحميلها لاحقاً
+      image: null,
       voiceUrl: json['voiceUrl'],
       voiceDuration: json['voiceDuration'],
       isVoice: json['isVoice'] ?? false,
     );
   }
 
-  // ✅ toJson لحفظ البيانات في Hive
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      // 'chatId': chatId,
+      // 'chatId': chatId, // ✅ أضف هذا
       'text': text,
       'senderId': senderId,
       'receiverId': receiverId,
@@ -101,6 +89,25 @@ class Message {
       'voiceDuration': voiceDuration,
       'isVoice': isVoice,
     };
+  }
+
+  factory Message.fromSocket(
+    Map<String, dynamic> json,
+    String currentUserId,
+    String chatId,
+  ) {
+    final senderId = json['senderId'] ?? json['senderUserName'].toString();
+    return Message(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      // chatId: chatId, // ✅ أضف chatId من الخارج
+      text: json['message'],
+      senderId: senderId,
+      receiverId: json['receiverId'] ?? json['receiverUserName'].toString(),
+      isMe: senderId == currentUserId,
+      timestamp: DateTime.parse(json['createdAt']),
+      isSent: true,
+      isDelivered: json['delivered'] ?? false,
+    );
   }
 
   Message copyWith({
@@ -124,7 +131,7 @@ class Message {
   }) {
     return Message(
       id: id ?? this.id,
-      // chatId: chatId ?? this.chatId,
+      // chatId: chatId ?? this.chatId, // ✅ أضف هذا
       text: text ?? this.text,
       senderId: senderId ?? this.senderId,
       receiverId: receiverId ?? this.receiverId,

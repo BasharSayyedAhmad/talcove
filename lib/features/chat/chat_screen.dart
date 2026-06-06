@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talcove/features/providers/chat_list_provider.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
 import 'package:talcove/models/message.dart';
 
+//تشات سكرين مع لظلظة وحركات
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
   final String otherUserId;
@@ -23,22 +25,42 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+  //  FIX: مش final — لازم نستبدله بعد تحميل الرسائل
+  // لأن initialItemCount بيُقرأ مرة وحدة عند بناء AnimatedList
+  // ولو كان 0 بالبداية، تغيير _messages وحده ما يكفي لعرضها
+  GlobalKey<AnimatedListState> _listKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
 
+  // القائمة المحلية هي مصدر الحقيقة للـ AnimatedList
   final List<Message> _messages = [];
 
   final ValueNotifier<Message?> _replyNotifier = ValueNotifier(null);
   final ValueNotifier<int?> _editIndexNotifier = ValueNotifier(null);
   final ValueNotifier<String?> _inputEditTextNotifier = ValueNotifier(null);
-
-  //  ValueNotifier لعدد الرسائل — بدل setState لتبديل placeholder/list
   final ValueNotifier<int> _messageCountNotifier = ValueNotifier(0);
+
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+
+  //  FIX: تتبع عدد الرسائل اللي زبطنا الـ AnimatedList عليها
+  // بنستخدمه لنعرف الرسائل الجديدة الواردة من الـ socket
+  int _syncedMessageCount = 0;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    // مراقبة السكرول للـ pagination — لما يوصل للأعلى نجيب صفحة أقدم
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels <= 80 && !_isLoading && _hasMore) {
+        _loadMoreMessages();
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      ref.read(messageNotifierProvider.notifier).clearMessages();
+      await _loadInitialMessages();
       _listenForIncomingMessages();
     });
   }
@@ -53,16 +75,112 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
+  Future<void> _loadInitialMessages() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    final chatNotifier = ref.read(messageNotifierProvider.notifier);
+    await chatNotifier.fetchMessagesWithUser(
+      otherUserId: widget.otherUserId,
+      limit: 20,
+      page: 1,
+    );
+
+    //  FIX: بعد الـ fetch، زامن _messages مع الـ provider state
+    // وحدّث الـ AnimatedList بشكل صحيح
+    if (!mounted) return;
+
+    final fetchedMessages = ref.read(messageNotifierProvider);
+    _messages.clear();
+    _messages.addAll(fetchedMessages);
+    _syncedMessageCount = _messages.length;
+    _messageCountNotifier.value = _messages.length;
+
+    //  FIX: استبدل الـ GlobalKey بواحد جديد داخل setState
+    // هيك Flutter يهدم AnimatedList ويبنيه من صفر
+    // بـ initialItemCount = _messages.length الصح (مش 0)
+    setState(() {
+      _listKey = GlobalKey();
+      _isLoading = false;
+    });
+
+    _scrollToBottom();
+  }
+
+  Future<void> _loadMoreMessages() async {
+    if (_isLoading || !_hasMore || !mounted) return;
+    setState(() => _isLoading = true);
+
+    // احفظ موقع السكرول الحالي قبل إضافة رسائل قديمة
+    final previousExtent = _scrollController.position.maxScrollExtent;
+
+    final nextPage = _currentPage + 1;
+    final chatNotifier = ref.read(messageNotifierProvider.notifier);
+    await chatNotifier.fetchMessagesWithUser(
+      otherUserId: widget.otherUserId,
+      limit: 20,
+      page: nextPage,
+    );
+
+    if (!mounted) return;
+
+    final allMessages = ref.read(messageNotifierProvider);
+
+    if (allMessages.length == _messages.length) {
+      // ما في رسائل جديدة = وصلنا للنهاية
+      _hasMore = false;
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    // الرسائل الجديدة القديمة هي الفرق في البداية
+    final oldMessages = allMessages.sublist(
+      0,
+      allMessages.length - _messages.length,
+    );
+
+    // أضف للأعلى في _messages و AnimatedList
+    for (int i = oldMessages.length - 1; i >= 0; i--) {
+      _messages.insert(0, oldMessages[i]);
+      _listKey.currentState?.insertItem(0);
+      _syncedMessageCount++;
+    }
+
+    _currentPage = nextPage;
+    _messageCountNotifier.value = _messages.length;
+
+    setState(() => _isLoading = false);
+
+    // ابقَ في نفس موقع السكرول بعد إضافة الرسائل القديمة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        final newExtent = _scrollController.position.maxScrollExtent;
+        _scrollController.jumpTo(newExtent - previousExtent);
+      }
+    });
+  }
+
   void _listenForIncomingMessages() {
+    //  FIX: بس نراقب الرسائل الجديدة الواردة من الـ socket
+    // الرسائل المحملة من الـ API تمت مزامنتها في _loadInitialMessages
     ref.listenManual(messageNotifierProvider, (previous, next) {
       if (!mounted) return;
-      final prevLen = previous?.length ?? 0;
-      final nextLen = next.length;
-      if (nextLen > prevLen) {
-        final newMsg = next[nextLen - 1];
-        final index = _messages.length;
-        _messages.add(newMsg);
-        _listKey.currentState?.insertItem(index);
+
+      // عدد الرسائل في الـ provider بعد آخر مزامنة
+      if (next.length > _syncedMessageCount) {
+        final newMessages = next.sublist(_syncedMessageCount);
+
+        for (final msg in newMessages) {
+          // تحقق إنو الرسالة ما موجودة أصلاً (تجنب التكرار)
+          final alreadyExists = _messages.any((m) => m.id == msg.id);
+          if (alreadyExists) continue;
+
+          final insertIndex = _messages.length;
+          _messages.add(msg);
+          _listKey.currentState?.insertItem(insertIndex);
+        }
+
+        _syncedMessageCount = next.length;
         _messageCountNotifier.value = _messages.length;
         _scrollToBottom();
       }
@@ -75,12 +193,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final editIdx = _editIndexNotifier.value;
     if (editIdx != null) {
-      _messages[editIdx] = _messages[editIdx].copyWith(
-        text: text.trim(),
-        isEdited: true,
-      );
+      setState(() {
+        _messages[editIdx] = _messages[editIdx].copyWith(
+          text: text.trim(),
+          isEdited: true,
+        );
+      });
       _editIndexNotifier.value = null;
-      // نحدث الـ count لإجبار الـ AnimatedList على إعادة رسم العنصر المعدّل
+      _inputEditTextNotifier.value = null;
       _messageCountNotifier.value = _messages.length;
       return;
     }
@@ -96,25 +216,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       isSent: true,
     );
 
-    final messageIndex = _messages.length;
+    //  FIX: insertItem لازم يصير بنفس اللحظة اللي نضيف فيها للـ _messages
+    // addPostFrameCallback كان يسبب race condition لأن الـ frame التالي
+    // ممكن يكون فيه تغيير ثاني على القائمة قبل ما insertItem يتنفذ
+    final insertIndex = _messages.length;
     _messages.add(newMessage);
-
-    //  نحدث الـ count أولاً حتى يختفي الـ placeholder ويظهر الـ AnimatedList
+    _syncedMessageCount++;
     _messageCountNotifier.value = _messages.length;
-
-    //  ننتظر frame واحد حتى يتبنى الـ AnimatedList في الـ tree
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _listKey.currentState?.insertItem(messageIndex);
-      _scrollToBottom();
-    });
+    _listKey.currentState?.insertItem(insertIndex);
+    _scrollToBottom();
 
     chatNotifier.sendMessageToSocket(text.trim(), widget.otherUserId);
     _replyNotifier.value = null;
+
+    //  حدّث قائمة المحادثات فوراً بالرسالة المبعوتة
+    ref
+        .read(chatListNotifierProvider.notifier)
+        .updateLastMessage(contactId: widget.otherUserId, message: newMessage);
   }
 
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (_scrollController.hasClients) {
+      if (mounted && _scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
@@ -125,7 +248,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _deleteMessage(int index) {
+    if (index < 0 || index >= _messages.length) return;
     final removedMsg = _messages[index];
+
     _listKey.currentState?.removeItem(
       index,
       (context, animation) => FadeTransition(
@@ -134,9 +259,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       duration: const Duration(milliseconds: 250),
     );
+
     Future.delayed(const Duration(milliseconds: 250), () {
       if (mounted) {
         _messages.removeAt(index);
+        _syncedMessageCount = _messages.length;
         _messageCountNotifier.value = _messages.length;
       }
     });
@@ -144,6 +271,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _buildBubble(Message msg, int index, {bool isRemoving = false}) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    final bubbleColor = msg.isMe
+        ? colorScheme.primary
+        : colorScheme.surfaceContainerHighest;
+    final bubbleTextColor = msg.isMe
+        ? colorScheme.onPrimary
+        : colorScheme.onSurface;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       child: GestureDetector(
@@ -166,14 +301,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     padding: const EdgeInsets.all(8),
                     margin: const EdgeInsets.only(bottom: 4),
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color:
+                          colorScheme.tertiaryContainer ??
+                          colorScheme.tertiary.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border(
+                        left: BorderSide(color: colorScheme.tertiary, width: 3),
+                      ),
                     ),
                     child: Text(
                       msg.replyTo!.text,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Colors.black54,
+                        color: colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ),
@@ -184,26 +324,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   maxWidth: MediaQuery.of(context).size.width * 0.7,
                 ),
                 decoration: BoxDecoration(
-                  color: msg.isMe ? colorScheme.onPrimary : colorScheme.primary,
+                  color: bubbleColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      msg.text,
-                      style: TextStyle(
-                        color: msg.isMe
-                            ? colorScheme.onSurface
-                            : colorScheme.onPrimary,
-                      ),
-                    ),
+                    Text(msg.text, style: TextStyle(color: bubbleTextColor)),
                     if (msg.isEdited == true)
-                      const Text(
+                      Text(
                         'edited',
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.grey,
+                          color: bubbleTextColor.withOpacity(0.6),
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -218,49 +351,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _showMessageMenu(Message msg, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
     showMenu<String>(
       context: context,
       position: const RelativeRect.fromLTRB(30, 100, 30, 30),
       items: [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'reply',
           child: Row(
             children: [
-              Icon(Icons.reply, color: Colors.blue),
-              SizedBox(width: 10),
-              Text('الرد'),
+              Icon(Icons.reply, color: colorScheme.primary),
+              const SizedBox(width: 10),
+              const Text('الرد'),
             ],
           ),
         ),
         if (msg.isMe)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'edit',
             child: Row(
               children: [
-                Icon(Icons.edit, color: Colors.orange),
-                SizedBox(width: 10),
-                Text('تعديل'),
+                Icon(Icons.edit, color: colorScheme.secondary),
+                const SizedBox(width: 10),
+                const Text('تعديل'),
               ],
             ),
           ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'copy',
           child: Row(
             children: [
-              Icon(Icons.copy, color: Colors.green),
-              SizedBox(width: 10),
-              Text('نسخ'),
+              Icon(Icons.copy, color: colorScheme.tertiary),
+              const SizedBox(width: 10),
+              const Text('نسخ'),
             ],
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'delete',
           child: Row(
             children: [
-              Icon(Icons.delete, color: Colors.red),
-              SizedBox(width: 10),
-              Text('حذف'),
+              Icon(Icons.delete, color: colorScheme.error),
+              const SizedBox(width: 10),
+              const Text('حذف'),
             ],
           ),
         ),
@@ -277,9 +411,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           break;
         case 'copy':
           Clipboard.setData(ClipboardData(text: msg.text));
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('تم نسخ الرسالة')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('تم نسخ الرسالة'),
+              backgroundColor: colorScheme.inverseSurface,
+            ),
+          );
           break;
         case 'delete':
           _deleteMessage(index);
@@ -293,11 +430,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      // FIX keyboard: يخلي الـ scaffold يتقلص لما الكيبورد يطلع
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: colorScheme.onPrimary,
-        iconTheme: const IconThemeData(color: Colors.black),
-        titleTextStyle: const TextStyle(fontSize: 18, color: Colors.black),
         centerTitle: false,
         title: Row(
           children: [
@@ -318,9 +453,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const Text(
+                Text(
                   'Online',
-                  style: TextStyle(fontSize: 11, color: Colors.green),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colorScheme.tertiary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -329,6 +468,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: Column(
         children: [
+          // Loading indicator
+          if (_isLoading)
+            LinearProgressIndicator(
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              color: colorScheme.primary,
+            ),
+
           // Reply preview
           ValueListenableBuilder<Message?>(
             valueListenable: _replyNotifier,
@@ -341,21 +487,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color:
+                      colorScheme.surfaceContainerHighest ??
+                      colorScheme.surface,
                   borderRadius: BorderRadius.circular(8),
+                  border: Border(
+                    left: BorderSide(color: colorScheme.primary, width: 3),
+                  ),
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         replyMsg.text,
-                        style: const TextStyle(color: Colors.black87),
+                        style: TextStyle(color: colorScheme.onSurface),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(
+                        Icons.close,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       onPressed: () => _replyNotifier.value = null,
                     ),
                   ],
@@ -376,26 +530,33 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.orange[50],
+                  color:
+                      colorScheme.secondaryContainer ??
+                      colorScheme.secondary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
+                  border: Border.all(
+                    color: colorScheme.secondary.withOpacity(0.4),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.edit, color: Colors.orange, size: 16),
+                    Icon(Icons.edit, color: colorScheme.secondary, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         editIdx < _messages.length
                             ? _messages[editIdx].text
                             : '',
-                        style: const TextStyle(color: Colors.black87),
+                        style: TextStyle(color: colorScheme.onSurface),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(
+                        Icons.close,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       onPressed: () {
                         _editIndexNotifier.value = null;
                         _inputEditTextNotifier.value = null;
@@ -407,8 +568,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             },
           ),
 
-          //  الـ Stack: placeholder فوق الـ AnimatedList
-          // الـ AnimatedList موجود دايماً في الـ tree حتى يكون الـ listKey صالح
+          // Message list
           Expanded(
             child: ValueListenableBuilder<int>(
               valueListenable: _messageCountNotifier,
@@ -418,6 +578,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     AnimatedList(
                       key: _listKey,
                       controller: _scrollController,
+                      //  FIX: initialItemCount = _messages.length
+                      // بعد _loadInitialMessages يخزّن الرسائل قبل ما الـ widget يُبنى
                       initialItemCount: _messages.length,
                       itemBuilder: (context, index, animation) {
                         if (index >= _messages.length) {
@@ -427,7 +589,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         return SlideTransition(
                           position: animation.drive(
                             Tween<Offset>(
-                              begin: const Offset(0, 1),
+                              begin: const Offset(0, 0.3),
                               end: Offset.zero,
                             ).chain(CurveTween(curve: Curves.easeOut)),
                           ),
@@ -435,9 +597,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         );
                       },
                     ),
-
-                    //  Placeholder يظهر فقط لما ما في رسائل
-                    if (count == 0)
+                    if (count == 0 && !_isLoading)
                       Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -538,24 +698,41 @@ class _ChatInputFieldState extends State<_ChatInputField> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      color: colorScheme.primary,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color:
+                colorScheme.outlineVariant ??
+                colorScheme.onSurface.withOpacity(0.12),
+            width: 1,
+          ),
+        ),
+      ),
       child: Row(
         children: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.attach_file, color: Colors.green),
-            style: IconButton.styleFrom(backgroundColor: Colors.black),
+            icon: Icon(Icons.attach_file, color: colorScheme.onSurfaceVariant),
+            style: IconButton.styleFrom(
+              backgroundColor:
+                  colorScheme.surfaceContainerHighest ??
+                  colorScheme.onSurface.withOpacity(0.08),
+            ),
           ),
           Expanded(
             child: TextField(
               controller: _controller,
-              cursorColor: Colors.blue,
-              decoration: const InputDecoration(
+              cursorColor: colorScheme.primary,
+              decoration: InputDecoration(
                 hintText: 'اكتب رسالة...',
                 border: InputBorder.none,
+                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
+              style: TextStyle(color: colorScheme.onSurface),
               minLines: 1,
               maxLines: 5,
             ),
@@ -563,12 +740,16 @@ class _ChatInputFieldState extends State<_ChatInputField> {
           !_hasText
               ? IconButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.mic, color: Colors.green),
-                  style: IconButton.styleFrom(backgroundColor: Colors.black),
+                  icon: Icon(Icons.mic, color: colorScheme.onPrimary),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                  ),
                 )
               : IconButton(
-                  icon: const Icon(Icons.send, color: Colors.green),
-                  style: IconButton.styleFrom(backgroundColor: Colors.black),
+                  icon: Icon(Icons.send, color: colorScheme.onPrimary),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                  ),
                   onPressed: _handleSend,
                 ),
         ],

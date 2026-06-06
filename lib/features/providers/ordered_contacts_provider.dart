@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
 import 'package:talcove/models/chat_contact.dart';
@@ -13,30 +14,35 @@ class OrderedContactsNotifier extends _$OrderedContactsNotifier {
   List<ChatContact> build() {
     final contacts = ref.watch(contactsNotifierProvider);
     final messages = ref.watch(messageNotifierProvider);
-    return _computeOrderedContacts(contacts, messages);
+    final currentUserId = ref.watch(authNotifierProvider).user?.id ?? '';
+
+    return _computeOrderedContacts(contacts, messages, currentUserId);
   }
 
   List<ChatContact> _computeOrderedContacts(
     List<User> contacts,
     List<Message> messages,
+    String currentUserId,
   ) {
     final Map<String, ChatContact> contactMap = {};
 
     for (final user in contacts) {
-      contactMap[user.userName] = ChatContact(
+      contactMap[user.id] = ChatContact(
         user: user,
         lastMessage: null,
         lastMessageTime: DateTime(2000),
       );
     }
 
-    // تحديث آخر رسالة لكل مستخدم من قائمة الرسائل
     for (final message in messages) {
-      final otherName = message.isMe ? message.receiverId : message.senderId;
-      final existing = contactMap[otherName];
+      final otherId = message.senderId == currentUserId
+          ? message.receiverId
+          : message.senderId;
+
+      final existing = contactMap[otherId];
       if (existing != null) {
         if (existing.lastMessageTime.isBefore(message.timestamp)) {
-          contactMap[otherName] = ChatContact(
+          contactMap[otherId] = ChatContact(
             user: existing.user,
             lastMessage: message,
             lastMessageTime: message.timestamp,

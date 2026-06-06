@@ -15,13 +15,18 @@ class ContactsNotifier extends _$ContactsNotifier {
     try {
       final contactsData = LocalStorageService.box.get(contactsKey);
       if (contactsData != null && contactsData is List) {
-        return contactsData.map((json) {
+        final contacts = contactsData.map((json) {
           return User.fromJson(Map<String, dynamic>.from(json));
         }).toList();
+
+        for (var c in contacts) {
+          print(" Loaded: ${c.userName} -> ID: '${c.id}'");
+        }
+        return contacts;
       }
       return [];
     } catch (e) {
-      print("❌ Failed to load contacts: $e");
+      print(" Failed to load contacts: $e");
       return [];
     }
   }
@@ -37,26 +42,69 @@ class ContactsNotifier extends _$ContactsNotifier {
   }
 
   void addContact(User user) {
-    //ما بصير ينضاف المستخدم نفسو مرتين
-    if (!state.any((contact) => contact.userName == user.userName)) {
-      state = [...state, user];
-      _saveContactsToHive(); // حفظ بعد الإضافة
-      print(" Contact added: ${user.userName}");
-    } else {
-      print(" Contact already exists: ${user.userName}");
+    print(" Adding contact: ${user.userName} with ID: '${user.id}'");
+
+    final existingIndex = state.indexWhere(
+      (contact) => contact.userName == user.userName,
+    );
+
+    if (existingIndex != -1) {
+      final existing = state[existingIndex];
+
+      if (existing.id.isEmpty && user.id.isNotEmpty) {
+        print(" Updating existing contact with ID: ${user.id}");
+        final updatedUser = existing.copyWith(id: user.id);
+        state = [
+          ...state.sublist(0, existingIndex),
+          updatedUser,
+          ...state.sublist(existingIndex + 1),
+        ];
+        _saveContactsToHive();
+      } else {
+        print(" Contact already exists: ${user.userName}");
+      }
+      return;
+    }
+
+    // إضافة contact جديد
+    state = [...state, user];
+    _saveContactsToHive();
+    print(" Contact added: ${user.userName} (ID: ${user.id})");
+  }
+
+  void updateContactId(String userName, String newId) {
+    final index = state.indexWhere((contact) => contact.userName == userName);
+
+    if (index != -1 && state[index].id.isEmpty && newId.isNotEmpty) {
+      final updatedUser = state[index].copyWith(id: newId);
+      state = [
+        ...state.sublist(0, index),
+        updatedUser,
+        ...state.sublist(index + 1),
+      ];
+      _saveContactsToHive();
+      print(" Updated contact $userName with ID: $newId");
     }
   }
 
   void removeContact(String userId) {
     final removedUser = state.firstWhere((contact) => contact.id == userId);
     state = state.where((contact) => contact.id != userId).toList();
-    _saveContactsToHive(); // حفظ بعد الحذف
+    _saveContactsToHive();
     print(" Contact removed: ${removedUser.userName}");
   }
 
   void clearContacts() {
     state = [];
-    _saveContactsToHive(); // حفظ بعد المسح
+    _saveContactsToHive();
     print(" All contacts cleared");
+  }
+
+  User? getContactById(String userId) {
+    try {
+      return state.firstWhere((contact) => contact.id == userId);
+    } catch (_) {
+      return null;
+    }
   }
 }

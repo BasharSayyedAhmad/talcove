@@ -1,11 +1,16 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/features/chat/chat_screen.dart';
 import 'package:talcove/features/people/search_screen.dart';
+import 'package:talcove/features/providers/auth_provider.dart';
+import 'package:talcove/features/providers/chat_provider.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
 import 'package:talcove/features/providers/ordered_contacts_provider.dart';
 import 'package:talcove/generated/l10n.dart';
-import 'package:talcove/shared/widgets/custom_text.dart';
+import 'package:talcove/shared/services/socket_service.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
@@ -16,46 +21,128 @@ class ChatListScreen extends ConsumerStatefulWidget {
 
 class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   final TextEditingController searchController = TextEditingController();
+  late final SocketService _socketService;
+  Timer? _pollingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _socketService = SocketService();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _connectSocketIfNeeded();
+      _startPolling();
+    });
+
+    //  FIX: حذف _listenToNewMessages() بالكامل
+    // MessageNotifier._setupSocketListeners() هو الوحيد اللي يستمع للـ socket
+    // orderedContactsNotifierProvider يراقب messageNotifierProvider تلقائياً
+    // وبالتالي ChatListScreen بيتحدث عبر ref.watch بدون أي listener إضافي
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void _connectSocketIfNeeded() {
+    final authState = ref.read(authNotifierProvider);
+    final user = authState.user;
+    final token = user?.token;
+    final userId = user?.id;
+
+    if (token != null && userId != null) {
+      if (!_socketService.isConnected) {
+        print("🔄 Reconnecting socket...");
+        ref.read(messageNotifierProvider.notifier).connectSocket(userId, token);
+      }
+
+      // عند كل فتح للشاشة، جيب آخر رسالة لكل contact
+      // هيك القائمة تتعبى حتى بدون ما تفتح أي محادثة
+      _fetchLastMessages();
+    }
+  }
+
+  Future<void> _fetchLastMessages() async {
+    // انتظر شوية مشان الـ contacts يتحملوا أول
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+
+    final contacts = ref.read(contactsNotifierProvider);
+    if (contacts.isEmpty) return;
+
+    final contactIds = contacts.map((c) => c.id).toList();
+    await ref
+        .read(messageNotifierProvider.notifier)
+        .fetchLastMessageForContacts(contactIds);
+  }
+
+  void _startPolling() {
+    //  FIX: استخدام _pollingTimer المعرّف في الـ state بدل Timer.periodic المفقود
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted) {
+        ref.read(messageNotifierProvider.notifier).fetchNewMessages();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ القائمة الأفقية (تبقى كما هي - من ContactsProvider)
     final contacts = ref.watch(contactsNotifierProvider);
     final displayedContacts = contacts.take(20).toList();
-    print("🔄 ChatListScreen rebuilt - Total contacts: ${contacts.length}");
-    for (var c in contacts) {
-      print("   - ${c.userName} (${c.id})");
-    }
-    // ✅ القائمة العمودية (مرتبة حسب آخر رسالة)
+    final authState = ref.watch(authNotifierProvider);
+
+    //  لما الـ contacts يتحملوا لأول مرة، جيب اخر رسالة لكلهم
+    ref.listen(contactsNotifierProvider, (previous, next) {
+      if ((previous == null || previous.isEmpty) && next.isNotEmpty) {
+        _fetchLastMessages();
+      }
+    });
+
     final orderedContacts = ref.watch(orderedContactsNotifierProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Talcove"),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        actions: [
+          if (authState.isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CupertinoActivityIndicator(),
+                ),
+              ),
+            ),
+          if (!authState.hasInternet)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Icon(
+                Icons.wifi_off,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.only(
-          top: 50,
+          top: 20,
           left: 10,
           right: 10,
           bottom: 10,
         ),
         children: [
-          // حقل البحث
-          CustomText(
-            controller: searchController,
-            hintText: S.of(context).searchConversations,
-            prefixIcon: const Icon(Icons.search),
-          ),
-
           const SizedBox(height: 10),
-
-          // عنوان الأشخاص
           Text(
             S.of(context).people,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-
-          const SizedBox(height: 10),
-
-          // ✅ القائمة الأفقية (تبقى كما هي - لا تتغير)
           SizedBox(
             height: 100,
             child: ListView.builder(
@@ -75,6 +162,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         );
                       },
                       child: const CircleAvatar(
+                        maxRadius: 25,
                         backgroundColor: Colors.blue,
                         child: Icon(Icons.add, color: Colors.white),
                       ),
@@ -92,7 +180,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         MaterialPageRoute(
                           builder: (_) => ChatScreen(
                             chatId: "",
-                            otherUserId: user.userName,
+                            otherUserId: user.id,
                             otherUserName: user.userName,
                             otherUserPhoto: user.photoUrl,
                           ),
@@ -129,18 +217,6 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               },
             ),
           ),
-
-          const SizedBox(height: 20),
-
-          // ✅ عنوان المحادثات
-          const Text(
-            "Chats",
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 10),
-
-          // ✅ القائمة العمودية (جديدة - المحادثات مرتبة حسب آخر رسالة)
           if (orderedContacts.isEmpty)
             const Center(
               child: Padding(
@@ -150,9 +226,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             )
           else
             ListView.builder(
-              shrinkWrap: true, // ✅ مهم لتجنب مشاكل الـ Infinite height
-              physics:
-                  const NeverScrollableScrollPhysics(), // ✅ لأنها داخل ListView
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: orderedContacts.length,
               itemBuilder: (context, index) {
                 final contact = orderedContacts[index];
@@ -180,7 +255,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       MaterialPageRoute(
                         builder: (_) => ChatScreen(
                           chatId: "",
-                          otherUserId: user.userName,
+                          otherUserId: user.id,
                           otherUserName: user.userName,
                           otherUserPhoto: user.photoUrl,
                         ),
