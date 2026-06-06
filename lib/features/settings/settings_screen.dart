@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/entry_screen.dart';
+import 'package:talcove/features/profile/privacy_settings_screen.dart';
 import 'package:talcove/features/profile/profile_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/features/providers/language_provider.dart';
@@ -133,7 +134,13 @@ class SettingsScreen extends ConsumerWidget {
                       iconColor: const Color(0xFF10B981),
                       title: S.of(context).privacySettings,
                       subtitle: 'Email, phone, visibility',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PrivacySettingsScreen(),
+                          ),
+                        );
+                      },
                       colorScheme: colorScheme,
                     ),
                   ],

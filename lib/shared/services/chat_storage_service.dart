@@ -48,7 +48,7 @@ class ChatStorageService {
   Future<void> clearMessages(String chatId) async {
     final key = _getKey(chatId);
     await _box.delete(key);
-    print("🗑️ Cleared messages for chat: $chatId");
+    print(" Cleared messages for chat: $chatId");
   }
 
   String _getKey(String chatId) => 'chat_$chatId';
