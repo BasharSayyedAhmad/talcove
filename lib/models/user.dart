@@ -32,13 +32,14 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    final id = json['userId'] ?? json['id'] ?? '';
+    print("Loading user: ${json['userName']} -> ID: '$id'");
     return User(
-      id: json['id'] ?? '',
+      id: id,
       userName: json['userName'] ?? '',
       email: json['email'],
       phoneNumber: json['phoneNumber'],
       photoUrl: json['photoUrl'],
-
       isEmailVisible: json['isEmailVisible'] ?? false,
       isPhoneNumberVisible: json['isPhoneNumberVisible'] ?? false,
       authType: json['authType'] != null
@@ -61,7 +62,7 @@ class User {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'userId': id,
       'userName': userName,
       'email': email,
       'phoneNumber': phoneNumber,
