@@ -16,7 +16,7 @@ class ChatStorageService {
     final key = _getKey(chatId);
     final messagesJson = messages.map((m) => m.toJson()).toList();
     await _box.put(key, messagesJson);
-    print("💾 Saved ${messages.length} messages for chat: $chatId");
+    print(" Saved ${messages.length} messages for chat: $chatId");
   }
 
   // جلب الرسائل لمحادثة معينة
