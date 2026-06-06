@@ -12,7 +12,9 @@ class AuthService {
         data: {'idToken': idToken},
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
+      // ignore: avoid_print
       print("Response data : ${response.data}");
+      // ignore: avoid_print
       print("Statue code ${response.statusCode}");
       if (response.statusCode.isSuccess()) {
         final userData = response.data['data'];
@@ -77,16 +79,15 @@ class AuthService {
     }
   }
 
-  //login معطوب
+  //login
   Future<Map<String, dynamic>> loginWithUsernamePassword({
     required String userName,
     required String password,
   }) async {
     try {
-      final encodedUserName = Uri.encodeComponent(userName);
-      final encodedPassowrd = Uri.encodeComponent(password);
-      final response = await _apiService.dio.get(
-        "/api/v1/users/login/$encodedUserName/$encodedPassowrd",
+      final response = await _apiService.dio.post(
+        '/api/v1/users/login',
+        data: FormData.fromMap({'userName': userName, 'password': password}),
       );
       print("Full response = ${response.data}");
       print("Status code = ${response.statusCode}");
@@ -100,6 +101,26 @@ class AuthService {
     } on DioException catch (e) {
       String error = e.response?.data['message'] ?? e.message ?? 'Login failed';
       return {'success': false, 'error': error};
+    }
+  }
+
+  Future<Map<String, dynamic>> updateFirstLastName(
+    String? fName,
+    String? lName,
+  ) async {
+    try {
+      final response = await _apiService.dio.patch(
+        "/api/v1/users",
+        data: {"firstName": fName, "lastName": lName},
+      );
+      print("Updated flname response");
+      print("Response data ${response.data}");
+      if (response.statusCode.isSuccess()) {
+        return {'success': true, 'data': response.data};
+      }
+      return {'success': false, 'error': 'Failed to update'};
+    } catch (e) {
+      return {'success': false, 'error': "an unknown error happened"};
     }
   }
 
@@ -168,8 +189,9 @@ class AuthService {
   //search
   Future<Map<String, dynamic>> searchUsers(String query) async {
     try {
+      String encodedQuery = Uri.encodeComponent(query);
       final response = await _apiService.dio.get(
-        '/api/v1/users/?userName=$query',
+        '/api/v1/users/?userName=$encodedQuery',
         options: Options(
           headers: {'Authorization': 'Bearer ${_apiService.accessToken}'},
         ),
@@ -228,16 +250,45 @@ class AuthService {
     }
   }
 
-  //  Logout من سوق الجمعة
-  Future<void> logout() async {
+  Future<Map<String, dynamic>> logout() async {
     try {
+      final response = await _apiService.dio.delete(
+        "/api/v1/users",
+        // options: Options(
+        //   headers: {'Authorization': 'Bearer ${_apiService.accessToken}'},
+        // ),
+      );
+      print("Logout data : ${response.data}");
+      print("Logout status code : ${response.statusCode}");
+      if (response.statusCode.isSuccess()) {
+        _apiService.clearAccessToken();
+        await _apiService.clearAllCookies();
+        return {'success': true};
+      } else {
+        return {'success': false, 'error': "Log out failed"};
+      }
+    } on DioException catch (e) {
+      print(e);
       _apiService.clearAccessToken();
       await _apiService.clearAllCookies();
-      print('✅ Local session cleared successfully');
+      return {'success': false, 'error': 'Logout failed'};
     } catch (e) {
-      print('⚠️ Error during local logout: $e');
       _apiService.clearAccessToken();
       await _apiService.clearAllCookies();
+      return {'success': false, 'error': 'Logout failed'};
     }
   }
+
+  //  Logout من سوق الجمعة
+  // Future<void> logout() async {
+  //   try {
+  //     _apiService.clearAccessToken();
+  //     await _apiService.clearAllCookies();
+  //     print('✅ Local session cleared successfully');
+  //   } catch (e) {
+  //     print('⚠️ Error during local logout: $e');
+  //     _apiService.clearAccessToken();
+  //     await _apiService.clearAllCookies();
+  //   }
+  // }
 }

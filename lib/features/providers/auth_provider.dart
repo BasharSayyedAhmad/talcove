@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/constants/api_constants.dart';
 import 'package:talcove/core/constants/app_settings_keys.dart';
 import 'package:talcove/core/constants/auth_method.dart';
@@ -9,10 +11,13 @@ import 'package:talcove/core/extensions/http_extensions.dart';
 import 'package:talcove/core/services/api_service.dart';
 import 'package:talcove/core/services/auth_service.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
+import 'package:talcove/features/providers/contacts_provider.dart';
+import 'package:talcove/features/providers/ordered_contacts_provider.dart';
 import 'package:talcove/models/auth_state.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:talcove/models/user.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
+import 'package:talcove/shared/services/socket_service.dart';
 
 part 'auth_provider.g.dart';
 
@@ -62,8 +67,9 @@ class AuthNotifier extends _$AuthNotifier {
             "Email from Google: ${userObject['email'] ?? googleUser.email}",
           );
           print("UserName from server: ${userObject['userName']}");
+          print("ID from the server : ${userObject['userId']}");
           final user = User(
-            id: userObject['id'] ?? userObject['userId'] ?? '',
+            id: userObject['userId'] ?? '',
 
             userName: userObject['userName'] ?? '',
             email: googleUser.email,
@@ -80,7 +86,7 @@ class AuthNotifier extends _$AuthNotifier {
           );
           ref
               .read(messageNotifierProvider.notifier)
-              .connectSocket(userObject["userName"], accessToken);
+              .connectSocket(user.id, accessToken);
 
           state = state.copyWith(
             isLoading: false,
@@ -131,21 +137,6 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  // جلب الرسائل لاحقا من الباك
-  Future<void> fetchMessages() async {
-    try {
-      final response = await _apiService.dio.get('/api/v1/messages');
-
-      if (response.statusCode.isSuccess()) {
-        print("Messages: ${response.data}");
-      } else {
-        print("Failed to fetch messages: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error fetching messages: $e");
-    }
-  }
-
   Future<void> signUpWithUserNameAndPassword(
     String userName,
     String password,
@@ -164,9 +155,9 @@ class AuthNotifier extends _$AuthNotifier {
         print("User object: $userObject");
         print("Email from user object: ${userObject['email']}");
         print("Phone from user object: ${userObject['phoneNumber']}");
-
+        print("ID : ${userObject["userId"]}");
         final user = User(
-          id: userObject['id'] ?? userObject['userId'] ?? userName,
+          id: userObject['userId'],
           userName: userName,
           email: userObject['email'] ?? '',
           phoneNumber: userObject['phoneNumber'] ?? '',
@@ -183,7 +174,7 @@ class AuthNotifier extends _$AuthNotifier {
         if (token != null) {
           ref
               .read(messageNotifierProvider.notifier)
-              .connectSocket(userName, token);
+              .connectSocket(user.id, token);
         }
         state = state.copyWith(
           isLoading: false,
@@ -296,7 +287,7 @@ class AuthNotifier extends _$AuthNotifier {
         print("Phone from user object: ${userObject['phoneNumber']}");
 
         final user = User(
-          id: userObject['id'] ?? userObject['userId'] ?? userName,
+          id: userObject['userId'] ?? userName,
           userName: userName,
           email: userObject['email'] ?? '',
           phoneNumber: userObject['phoneNumber'] ?? '',
@@ -310,7 +301,7 @@ class AuthNotifier extends _$AuthNotifier {
         );
         ref
             .read(messageNotifierProvider.notifier)
-            .connectSocket(userName, accessToken);
+            .connectSocket(user.id, accessToken);
         state = state.copyWith(
           isAuthenticated: true,
           isLoading: false,
@@ -441,11 +432,13 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> _refreshTokenInBackground() async {
-    final hasInternet = await _checkInternetConnection();
-    if (!hasInternet) {
+    // state = state.copyWith(isLoading: true);
+    if (!state.hasInternet) {
+      state = state.copyWith(isLoading: false);
       print(" No internet - using cached session");
       return;
     }
+    state = state.copyWith(isLoading: true, hasInternet: true);
 
     try {
       final tokenRefreshed = await _authService.refreshToken();
@@ -460,36 +453,126 @@ class AuthNotifier extends _$AuthNotifier {
             print("error happened white disconnecting $e");
           }
           print(
-            "🔌 Calling connectSocket with token: ${newToken.substring(0, 20)}...",
+            " Calling connectSocket with token: ${newToken.substring(0, 20)}...",
           );
           ref
               .read(messageNotifierProvider.notifier)
-              .connectSocket(state.user!.userName, newToken);
+              .connectSocket(state.user!.id, newToken);
         }
+        state = state.copyWith(isLoading: false);
       } else {
-        print("⚠️ Background refresh failed");
-
+        print(" Background refresh failed");
+        state = state.copyWith(isLoading: false);
         //  إذا فشل التحديث ممكن بعدين نسجل خروج
         // ولكن نترك المستخدم في HomeScreen حالياً
         // يمكن عرض Snackbar لاحقاً او اي خرية
       }
     } catch (e) {
+      state = state.copyWith(isLoading: false);
       print("Background refresh error: $e");
     }
   }
 
-  // log out من سوق الجمعة لانو ليث ما عمل لسا
-  Future<void> logout() async {
-    if (state.authMethod == AuthMethod.google) {
-      await _googleSignIn.signOut();
+  void updateInternetStatus(bool hasInternet) {
+    state = state.copyWith(hasInternet: hasInternet);
+    if (hasInternet && state.isAuthenticated) {
+      _refreshTokenInBackground();
     }
+  }
+  // Future<void> checkInternetManually() async {
+  //   final hasInternet = await _checkInternetConnection();
+  //   state = state.copyWith(hasInternet: hasInternet);
 
-    await _authService.logout();
+  //   if (hasInternet && state.isAuthenticated) {
+  //     await _refreshTokenInBackground();
+  //   }
+  // }
 
-    await LocalStorageService.box.delete(userKey);
-    await LocalStorageService.box.delete(authMethodKey);
+  // log out من سوق الجمعة لانو ليث ما عمل لسا
+  // Future<void> logout() async {
+  //   if (state.authMethod == AuthMethod.google) {
+  //     await _googleSignIn.signOut();
+  //   }
 
-    state = AuthState(isAuthenticated: false);
+  //   await _authService.logout();
+
+  //   await LocalStorageService.box.delete(userKey);
+  //   await LocalStorageService.box.delete(authMethodKey);
+
+  //   state = AuthState(isAuthenticated: false);
+  // }
+  Future<void> logout(BuildContext context) async {
+    try {
+      state = state.copyWith(isLoading: true);
+
+      try {
+        ref.read(messageNotifierProvider.notifier).disconnectSocket();
+      } catch (e) {
+        print("Error disconnecting socket: $e");
+      }
+
+      if (state.authMethod == AuthMethod.google) {
+        try {
+          await _googleSignIn.signOut();
+          print("✅ Google sign out successful");
+        } catch (e) {
+          print("⚠️ Google sign out error: $e");
+        }
+      }
+
+      try {
+        final result = await _authService.logout();
+        if (result['success']) {
+          print("✅ Server logout successful");
+        } else {
+          print("⚠️ Server logout failed: ${result['error']}");
+        }
+      } catch (e) {
+        print("⚠️ Server logout exception: $e");
+      }
+
+      _apiService.clearAccessToken();
+
+      try {
+        await _apiService.clearAllCookies();
+      } catch (e) {
+        print(" Error clearing cookies: $e");
+      }
+
+      try {
+        await LocalStorageService.box.delete(userKey);
+        await LocalStorageService.box.delete(authMethodKey);
+        print(" Local storage cleared");
+      } catch (e) {
+        print(" Error clearing local storage: $e");
+      }
+
+      ref.invalidate(contactsNotifierProvider);
+      ref.invalidate(orderedContactsNotifierProvider);
+      ref.invalidate(messageNotifierProvider);
+
+      state = AuthState(isAuthenticated: false, isLoading: false);
+
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const EntryScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      print("❌ Logout error: $e");
+
+      state = AuthState(isAuthenticated: false, isLoading: false);
+
+      WidgetsBinding.instance.addPersistentFrameCallback((_) {
+        if (context.mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const EntryScreen()),
+            (route) => false,
+          );
+        }
+      });
+    }
   }
 
   void clearError() {

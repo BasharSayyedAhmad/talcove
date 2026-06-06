@@ -82,7 +82,11 @@ class ApiService {
   }
 
   Future<void> clearAllCookies() async {
-    final cookieJar = PersistCookieJar();
-    await cookieJar.deleteAll();
+    try {
+      await _cookieJar.deleteAll();
+      print(" All cookies cleared successfully");
+    } catch (e) {
+      print(" Error clearing cookies: $e");
+    }
   }
 }
