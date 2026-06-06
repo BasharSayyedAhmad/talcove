@@ -26,7 +26,7 @@ class SearchNotifier extends _$SearchNotifier {
     try {
       final result = await _authService.searchUsers(query);
 
-      print("🔍 Search result from AuthService: $result");
+      print(" Search result from AuthService: $result");
 
       if (result['success'] == true) {
         final userData = result['user'];
@@ -34,7 +34,7 @@ class SearchNotifier extends _$SearchNotifier {
 
         if (userData != null) {
           final user = User(
-            id: userData['id']?.toString() ?? '',
+            id: userData['userId'].toString(),
             userName: userData['userName']?.toString() ?? '',
             email: userData['email']?.toString() ?? '',
             phoneNumber: userData['phoneNumber']?.toString() ?? '',
@@ -51,11 +51,11 @@ class SearchNotifier extends _$SearchNotifier {
         state = state.copyWith(
           results: [],
           isLoading: false,
-          errorMessage: result['error'] ?? 'Search failed',
+          errorMessage: 'Search failed',
         );
       }
     } catch (e) {
-      print("❌ Search error: $e");
+      print("Search error: $e");
       state = state.copyWith(
         results: [],
         isLoading: false,

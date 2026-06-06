@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talcove/features/chat/chat_screen.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
 import 'package:talcove/features/providers/search_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/models/search_state.dart';
+import 'package:talcove/shared/widgets/app_snackbar.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -187,7 +189,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             print(
               "Contacts list: ${ref.read(contactsNotifierProvider).map((u) => u.userName).toList()}",
             );
-            Navigator.pop(context);
+            AppSnackBar.show(
+              context,
+              message: "${user.userName} added to your contacts",
+            );
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ChatScreen(
+                  chatId: "",
+                  otherUserId: user.id,
+                  otherUserName: user.userName,
+                ),
+              ),
+            );
           },
         );
       },
