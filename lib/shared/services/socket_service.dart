@@ -9,15 +9,19 @@ class SocketService {
   late IO.Socket _socket;
   bool _isConnected = false;
   String? _currentUserId;
+  String? _lastToken;
+  String? _lastUserId;
   final List<void Function(Map<String, dynamic>)> _messageSentCallbacks = [];
   final List<void Function(Map<String, dynamic>)> _newMessageCallbacks = [];
-  void connect(String token) {
+  void connect(String token, String userId) {
+    _lastToken = token;
+    _lastUserId = userId;
     print(" Connecting to socket with token: ${token.substring(0, 20)}...");
     if (_isConnected) {
       print(" Already connected, skipping...");
       return;
     }
-    // _currentUserId = userId;
+    _currentUserId = userId;
     _socket = IO.io(
       ApiConstants.baseUrl,
       IO.OptionBuilder()
@@ -30,6 +34,11 @@ class SocketService {
     _socket.on(SocketEvents.connect, (_) {
       print("Socket connected");
       _isConnected = true;
+
+      if (_currentUserId != null) {
+        _socket.emit('join', {'userId': _currentUserId});
+        print(" Joined with userId: $_currentUserId");
+      }
     });
     _socket.on(SocketEvents.disconnect, (_) {
       print("Socket disconnected");
@@ -56,16 +65,26 @@ class SocketService {
     });
   }
 
+  void reconnect() {
+    if (_lastToken != null && _lastUserId != null) {
+      connect(_lastToken!, _lastUserId!);
+    }
+  }
+
   void sendMessage(String message, String receiverId) {
-    print("📤 Sending message: '$message' to $receiverId");
-    print("🔌 Socket connected: $_isConnected");
+    print(" Sending message: '$message' to '$receiverId'");
+    print("receiverId length: ${receiverId.length}");
+    print("receiverId is empty: ${receiverId.isEmpty}");
+    print("Sending message: '$message' to $receiverId");
+    print(" Socket connected: $_isConnected");
+
     if (!_isConnected) {
       print("Failed to send message");
       return;
     }
     _socket.emit(SocketEvents.sendMessage, {
       'message': message,
-      'receiverUserName': receiverId,
+      'receiverId': receiverId,
     });
   }
 
