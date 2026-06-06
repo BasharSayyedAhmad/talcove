@@ -7,8 +7,10 @@ class AuthState {
   final String? errorMessage;
   final User? user;
   final AuthMethod? authMethod;
+  final bool hasInternet;
   AuthState({
     this.isLoading = false,
+    this.hasInternet = true,
     this.isAuthenticated = false,
     this.errorMessage,
     this.user,
@@ -16,6 +18,7 @@ class AuthState {
   });
   AuthState copyWith({
     bool? isLoading,
+    bool? hasInternet,
     String? errorMessage,
     bool? isAuthenticated,
     User? user,
@@ -24,7 +27,8 @@ class AuthState {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
+      hasInternet: hasInternet ?? this.hasInternet,
+      errorMessage: errorMessage ?? this.errorMessage,
       user: user ?? this.user,
       authMethod: authMethod ?? this.authMethod,
     );

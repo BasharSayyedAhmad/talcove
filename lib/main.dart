@@ -49,11 +49,11 @@ void main() async {
 
   //  الحصول على الـ Token
   // final token = await FirebaseMessaging.instance.getToken();
-  // print("🔥 FCM token: $token");
+  // print(" FCM token: $token");
 
   // لما يكون التطبيق مفتوح
   // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //   print("📱 Foreground notification: ${message.notification?.title}");
+  //   print(" Foreground notification: ${message.notification?.title}");
   //   // عرض الإشعار محلياً
   //   _showLocalNotification(message);
   // });
@@ -100,11 +100,9 @@ class _MyAppState extends ConsumerState<MyApp> {
     final authState = ref.watch(authNotifierProvider);
 
     return MaterialApp(
-      // home: const HomeScreen(),
       home: authState.isAuthenticated
           ? const HomeScreen()
           : const EntryScreen(),
-      // home: PhoneScreen(phoneController: TextEditingController()),
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       theme: lightMode,
