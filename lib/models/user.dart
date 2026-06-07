@@ -3,6 +3,7 @@ import 'package:talcove/core/constants/auth_method.dart';
 class User {
   final String id;
   final String userName;
+  final String? deviceToken;
   final String? email;
   final bool isEmailVisible;
   final bool isPhoneNumberVisible;
@@ -18,6 +19,7 @@ class User {
   User({
     required this.id,
     required this.userName,
+    this.deviceToken,
     this.isEmailVisible = false,
     this.isPhoneNumberVisible = false,
     this.email,
@@ -38,6 +40,7 @@ class User {
       id: id,
       userName: json['userName'] ?? '',
       email: json['email'],
+      deviceToken: json['deviceToken'],
       phoneNumber: json['phoneNumber'],
       photoUrl: json['photoUrl'],
       isEmailVisible: json['isEmailVisible'] ?? false,
@@ -64,6 +67,7 @@ class User {
     return {
       'userId': id,
       'userName': userName,
+      'deviceToken': deviceToken,
       'email': email,
       'phoneNumber': phoneNumber,
       'photoUrl': photoUrl,
@@ -82,6 +86,7 @@ class User {
   User copyWith({
     String? id,
     String? userName,
+    String? deviceToken,
     String? email,
     bool? isEmailVisible,
     bool? isPhoneNumberVisible,
@@ -97,6 +102,7 @@ class User {
     return User(
       id: id ?? this.id,
       userName: userName ?? this.userName,
+      deviceToken: deviceToken ?? this.deviceToken,
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       photoUrl: photoUrl ?? this.photoUrl,

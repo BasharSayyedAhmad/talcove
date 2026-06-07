@@ -5,11 +5,14 @@ import 'api_service.dart';
 class AuthService {
   final ApiService _apiService = ApiService();
 
-  Future<Map<String, dynamic>> loginWithGoogle(String idToken) async {
+  Future<Map<String, dynamic>> loginWithGoogle({
+    required String idToken,
+    String? deviceToken,
+  }) async {
     try {
       final response = await _apiService.dio.post(
         '/api/v1/auth/google',
-        data: {'idToken': idToken},
+        data: {'idToken': idToken, 'deviceToken': deviceToken},
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
       // ignore: avoid_print
@@ -51,12 +54,13 @@ class AuthService {
   Future<Map<String, dynamic>> registerWithUsernamePassword({
     required String userName,
     required String password,
-    String? email,
+    String? deviceToken,
   }) async {
     try {
       final formData = FormData.fromMap({
         'userName': userName,
         'password': password,
+        'deviceToken': deviceToken,
       });
 
       final response = await _apiService.dio.post(
@@ -83,11 +87,16 @@ class AuthService {
   Future<Map<String, dynamic>> loginWithUsernamePassword({
     required String userName,
     required String password,
+    String? deviceToken,
   }) async {
     try {
       final response = await _apiService.dio.post(
         '/api/v1/users/login',
-        data: FormData.fromMap({'userName': userName, 'password': password}),
+        data: FormData.fromMap({
+          'userName': userName,
+          'password': password,
+          'deviceToken': deviceToken,
+        }),
       );
       print("Full response = ${response.data}");
       print("Status code = ${response.statusCode}");
@@ -218,8 +227,9 @@ class AuthService {
   Future<Map<String, dynamic>> searchUsers(String query) async {
     try {
       String encodedQuery = Uri.encodeComponent(query);
+
       final response = await _apiService.dio.get(
-        '/api/v1/users/?userName=$encodedQuery',
+        '/api/v1/users/$encodedQuery?fields=userName,userId,deviceToken,profileImage,email,firstName,lastName,phoneNumber,lastSeen',
         options: Options(
           headers: {'Authorization': 'Bearer ${_apiService.accessToken}'},
         ),

@@ -35,6 +35,17 @@ class AuthNotifier extends _$AuthNotifier {
     return AuthState();
   }
 
+  Future<String?> _getDeviceToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      print(" Device Token: $token");
+      return token;
+    } catch (e) {
+      print(" Error getting device token: $e");
+      return null;
+    }
+  }
+
   // 🔥 دالة سرية داخلية لتوليد الـ OAuth Token الخاص بالـ FCM v1 ديناميكياً
   Future<String?> _getFirebaseServerToken() async {
     try {
@@ -100,10 +111,7 @@ class AuthNotifier extends _$AuthNotifier {
     var body = {
       "message": {
         "token": deviceToken,
-        "notification": {
-          "title": "Talcove Notification",
-          "body": "كسم الاشعارات",
-        },
+        "notification": {"title": "Talcove Notification", "body": "يا مرحبا"},
         "android": {
           "priority": "HIGH",
           "notification": {
@@ -162,7 +170,11 @@ class AuthNotifier extends _$AuthNotifier {
       }
 
       if (idToken != null) {
-        final result = await _authService.loginWithGoogle(idToken);
+        final deviceToken = await _getDeviceToken();
+        final result = await _authService.loginWithGoogle(
+          idToken: idToken,
+          deviceToken: deviceToken,
+        );
 
         if (result['success']) {
           final responseData = result['user'];
@@ -241,9 +253,11 @@ class AuthNotifier extends _$AuthNotifier {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
+      final deviceToken = await _getDeviceToken();
       final result = await _authService.registerWithUsernamePassword(
         userName: userName,
         password: password,
+        deviceToken: deviceToken,
       );
 
       if (result['success']) {
@@ -300,9 +314,11 @@ class AuthNotifier extends _$AuthNotifier {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
+      final deviceToken = await _getDeviceToken();
       final result = await _authService.loginWithUsernamePassword(
         userName: userName,
         password: password,
+        deviceToken: deviceToken,
       );
 
       if (result['success']) {
@@ -479,6 +495,7 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   void updateInternetStatus(bool hasInternet) {
+    print(" updateInternetStatus FIRED with: $hasInternet ");
     state = state.copyWith(hasInternet: hasInternet);
     if (hasInternet && state.isAuthenticated) {
       _refreshTokenInBackground();
@@ -499,14 +516,14 @@ class AuthNotifier extends _$AuthNotifier {
         try {
           await _googleSignIn.signOut();
         } catch (e) {
-          print("⚠️ Google sign out error: $e");
+          print(" Google sign out error: $e");
         }
       }
 
       try {
         await _authService.logout();
       } catch (e) {
-        print("⚠️ Server logout exception: $e");
+        print("Server logout exception: $e");
       }
 
       _apiService.clearAccessToken();

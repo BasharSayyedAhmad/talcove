@@ -38,6 +38,7 @@ class SearchNotifier extends _$SearchNotifier {
             userName: userData['userName']?.toString() ?? '',
             email: userData['email']?.toString() ?? '',
             phoneNumber: userData['phoneNumber']?.toString() ?? '',
+            deviceToken: userData['deviceToken']?.toString(),
           );
           users = [user];
         }
