@@ -59,7 +59,7 @@ class _EmailScreenState extends ConsumerState<EmailScreen> {
       }
     });
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

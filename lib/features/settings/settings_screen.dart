@@ -231,17 +231,6 @@ class SettingsScreen extends ConsumerWidget {
                           Switch.adaptive(
                             value: theme == ThemeMode.dark,
                             activeTrackColor: colorScheme.primary,
-                            // inactiveTrackColor: Colors.grey.shade300,
-                            inactiveThumbColor: Colors.grey.shade700,
-                            trackOutlineColor: WidgetStateProperty.resolveWith((
-                              states,
-                            ) {
-                              if (states.contains(WidgetState.selected)) {
-                                return Colors.transparent;
-                              }
-                              //
-                              return Colors.grey.shade600;
-                            }),
                             onChanged: (_) => ref
                                 .read(themeNotifierProvider.notifier)
                                 .toggleTheme(),
@@ -261,8 +250,10 @@ class SettingsScreen extends ConsumerWidget {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text("log out"),
-                          content: Text("Are you sure you want to log out"),
+                          title: const Text("log out"),
+                          content: const Text(
+                            "Are you sure you want to log out",
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () {

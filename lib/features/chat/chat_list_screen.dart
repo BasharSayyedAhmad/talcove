@@ -217,7 +217,6 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               },
             ),
           ),
-          const Divider(),
           if (orderedContacts.isEmpty)
             const Center(
               child: Padding(

@@ -5,14 +5,11 @@ import 'api_service.dart';
 class AuthService {
   final ApiService _apiService = ApiService();
 
-  Future<Map<String, dynamic>> loginWithGoogle({
-    required String idToken,
-    String? deviceToken,
-  }) async {
+  Future<Map<String, dynamic>> loginWithGoogle(String idToken) async {
     try {
       final response = await _apiService.dio.post(
         '/api/v1/auth/google',
-        data: {'idToken': idToken, 'deviceToken': deviceToken},
+        data: {'idToken': idToken},
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
       // ignore: avoid_print
@@ -54,13 +51,12 @@ class AuthService {
   Future<Map<String, dynamic>> registerWithUsernamePassword({
     required String userName,
     required String password,
-    String? deviceToken,
+    String? email,
   }) async {
     try {
       final formData = FormData.fromMap({
         'userName': userName,
         'password': password,
-        'deviceToken': deviceToken,
       });
 
       final response = await _apiService.dio.post(
@@ -87,16 +83,11 @@ class AuthService {
   Future<Map<String, dynamic>> loginWithUsernamePassword({
     required String userName,
     required String password,
-    String? deviceToken,
   }) async {
     try {
       final response = await _apiService.dio.post(
         '/api/v1/users/login',
-        data: FormData.fromMap({
-          'userName': userName,
-          'password': password,
-          'deviceToken': deviceToken,
-        }),
+        data: FormData.fromMap({'userName': userName, 'password': password}),
       );
       print("Full response = ${response.data}");
       print("Status code = ${response.statusCode}");
@@ -110,6 +101,34 @@ class AuthService {
     } on DioException catch (e) {
       String error = e.response?.data['message'] ?? e.message ?? 'Login failed';
       return {'success': false, 'error': error};
+    }
+  }
+
+  Future<Map<String, dynamic>> updateAvatar(String imagePath) async {
+    try {
+      FormData formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(imagePath),
+      });
+
+      final response = await _apiService.dio.post(
+        '/api/v1/users/avatar',
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+      );
+      print("-------------------------------------------------");
+      print(" Update avatar response: ${response.data}");
+
+      if (response.statusCode.isSuccess()) {
+        final imageUrl = response.data['data']['imageURL'];
+        return {'success': true, 'photoUrl': imageUrl};
+      }
+      return {'success': false, 'error': 'Failed to update avatar'};
+    } on DioException catch (e) {
+      print(e);
+      return {'success': false, 'error': 'Avatar update failed'};
+    } catch (e) {
+      print(e);
+      return {'success': false, 'error': 'Avatar update failed'};
     }
   }
 

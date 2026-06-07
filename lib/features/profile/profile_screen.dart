@@ -1,6 +1,7 @@
 // lib/features/profile/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 // import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:talcove/core/constants/auth_method.dart';
@@ -42,31 +43,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     super.dispose();
   }
 
-  // Future<void> _pickImage() async {
-  //   final colorScheme = Theme.of(context).colorScheme;
-  //   final source = await showModalBottomSheet<ImageSource>(
-  //     context: context,
-  //     backgroundColor: colorScheme.surface,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-  //     ),
-  //     builder: (_) => _ImageSourceSheet(),
-  //   );
-  //   if (source == null) return;
+  Future<void> _pickImage() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _ImageSourceSheet(),
+    );
+    if (source == null) return;
 
-  //   final picker = ImagePicker();
-  //   final picked = await picker.pickImage(
-  //     source: source,
-  //     imageQuality: 85,
-  //     maxWidth: 800,
-  //   );
-  //   if (picked == null) return;
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 800,
+    );
+    if (picked == null) return;
 
-  //   setState(() => _pickedImage = File(picked.path));
+    setState(() => _pickedImage = File(picked.path));
 
-  //   // هنا ترسل الصورة للـ provider/server
-  //   // ref.read(authNotifierProvider.notifier).updatePhoto(picked.path);
-  // }
+    // هنا ترسل الصورة للـ provider/server
+    ref.read(authNotifierProvider.notifier).updatePhoto(picked.path);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +93,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 photoUrl: user?.photoUrl,
                 userName: user?.userName ?? '',
                 avatarScale: _avatarScale,
-                // onPickImage: _pickImage,
+                onPickImage: _pickImage,
               ),
             ),
           ),
@@ -301,7 +302,7 @@ class _ProfileHeader extends StatelessWidget {
   final String? photoUrl;
   final String userName;
   final Animation<double> avatarScale;
-  // final VoidCallback onPickImage;
+  final VoidCallback onPickImage;
 
   const _ProfileHeader({
     required this.colorScheme,
@@ -310,7 +311,7 @@ class _ProfileHeader extends StatelessWidget {
     required this.photoUrl,
     required this.userName,
     required this.avatarScale,
-    // required this.onPickImage,
+    required this.onPickImage,
   });
 
   @override
@@ -361,7 +362,7 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
-                    // onTap: onPickImage,
+                    onTap: onPickImage,
                     child: Container(
                       width: 30,
                       height: 30,
@@ -438,15 +439,15 @@ class _ImageSourceSheet extends StatelessWidget {
                 icon: Icons.camera_alt_rounded,
                 label: 'Camera',
                 color: colorScheme.primary,
-                onTap: () {},
-                // onTap: () => Navigator.pop(context, ImageSource.camera),
+                // onTap: () {},
+                onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
               _SourceOption(
                 icon: Icons.photo_library_rounded,
                 label: 'Gallery',
                 color: colorScheme.secondary,
-                onTap: () {},
-                // onTap: () => Navigator.pop(context, ImageSource.gallery),
+                // onTap: () {},
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
               ),
             ],
           ),

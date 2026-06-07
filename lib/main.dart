@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/services/api_service.dart';
+import 'package:talcove/core/services/notification_services.dart';
 import 'package:talcove/core/themes/theme.dart';
 import 'package:talcove/features/home/home_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
@@ -29,25 +31,46 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 //     print("Body: $body");
 //   }
 // }
-
 void main() async {
+  // تفعيل الربط الأساسي مع المحرك
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+  // الحفاظ على الشاشة الترحيبية مؤقتاً
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  Future.delayed(const Duration(milliseconds: 100), () {
-    FlutterNativeSplash.remove();
-  });
+  await Firebase.initializeApp();
 
-  // await Firebase.initializeApp();
-  await LocalStorageService.init();
-  await ApiService().init();
-  //  طلب إذن الإشعارات
+  // الحل لمنع الـ ANR: تشغيل العمليات الثقيلة بالتوازي ومراقبتها دون حظر الخيط الرئيسي
+  try {
+    await Future.wait([
+      LocalStorageService.init(),
+      ApiService().init(),
+    ]).timeout(
+      const Duration(seconds: 2),
+      onTimeout: () {
+        print(
+          "⚠️ استغرق تحميل الخدمات وقتاً أطول من المتوقع، سيتم المتابعة لتجنب تجميد التطبيق",
+        );
+        return [];
+      },
+    );
+
+    // تشغيل خدمة الإشعارات بشكل منفصل ومحمي تماماً
+    try {
+      await NotificationService().initialize();
+    } catch (e) {
+      print("⚠️ خطأ غير مؤثر في تهيئة الإشعارات: $e");
+    }
+  } catch (e) {
+    print("Error during parallel initialization: $e");
+  }
+
+  //   طلب إذن الإشعارات
   // await _requestPermission();
 
-  //  الحصول على الـ Token
+  //   الحصول على الـ Token
   // final token = await FirebaseMessaging.instance.getToken();
   // print(" FCM token: $token");
 
@@ -58,10 +81,13 @@ void main() async {
   //   _showLocalNotification(message);
   // });
 
+  // إزالة الشاشة الترحيبية فوراً لمنع الأندرويد من الشك في وجود تجميد
+  FlutterNativeSplash.remove();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
-//  طلب الإذن لاجهزة اندرويد 13 وما فوق
+//   طلب الإذن لاجهزة اندرويد 13 وما فوق
 // Future<void> _requestPermission() async {
 //   final settings = await FirebaseMessaging.instance.requestPermission(
 //     alert: true,
@@ -71,7 +97,7 @@ void main() async {
 //   print("📱 Notification permission: ${settings.authorizationStatus}");
 // }
 
-//  عرض إشعار محلي عندما يكون التطبيق مفتوحاً
+//   عرض إشعار محلي عندما يكون التطبيق مفتوحاً
 // void _showLocalNotification(RemoteMessage message) {
 //   print("Title: ${message.notification?.title}");
 //   print("Body: ${message.notification?.body}");

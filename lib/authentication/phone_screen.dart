@@ -52,7 +52,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
       }
     });
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

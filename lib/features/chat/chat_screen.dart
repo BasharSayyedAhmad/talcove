@@ -699,66 +699,60 @@ class _ChatInputFieldState extends State<_ChatInputField> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color:
-                  colorScheme.outlineVariant ??
-                  colorScheme.onSurface.withOpacity(0.12),
-              width: 1,
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color:
+                colorScheme.outlineVariant ??
+                colorScheme.onSurface.withOpacity(0.12),
+            width: 1,
           ),
         ),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () {},
-              icon: Icon(
-                Icons.attach_file,
-                color: colorScheme.onSurfaceVariant,
-              ),
-              style: IconButton.styleFrom(
-                backgroundColor:
-                    colorScheme.surfaceContainerHighest ??
-                    colorScheme.onSurface.withOpacity(0.08),
-              ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.attach_file, color: colorScheme.onSurfaceVariant),
+            style: IconButton.styleFrom(
+              backgroundColor:
+                  colorScheme.surfaceContainerHighest ??
+                  colorScheme.onSurface.withOpacity(0.08),
             ),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                cursorColor: colorScheme.primary,
-                decoration: InputDecoration(
-                  hintText: 'اكتب رسالة...',
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-                ),
-                style: TextStyle(color: colorScheme.onSurface),
-                minLines: 1,
-                maxLines: 5,
+          ),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              cursorColor: colorScheme.primary,
+              decoration: InputDecoration(
+                hintText: 'اكتب رسالة...',
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
+              style: TextStyle(color: colorScheme.onSurface),
+              minLines: 1,
+              maxLines: 5,
             ),
-            !_hasText
-                ? IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.mic, color: colorScheme.onPrimary),
-                    style: IconButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                    ),
-                  )
-                : IconButton(
-                    icon: Icon(Icons.send, color: colorScheme.onPrimary),
-                    style: IconButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                    ),
-                    onPressed: _handleSend,
+          ),
+          !_hasText
+              ? IconButton(
+                  onPressed: () {},
+                  icon: Icon(Icons.mic, color: colorScheme.onPrimary),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
                   ),
-          ],
-        ),
+                )
+              : IconButton(
+                  icon: Icon(Icons.send, color: colorScheme.onPrimary),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                  ),
+                  onPressed: _handleSend,
+                ),
+        ],
       ),
     );
   }

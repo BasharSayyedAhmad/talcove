@@ -1,4 +1,8 @@
+import 'dart:convert'; // 🔥 إضافة مكتبة الـ convert لتحويل الـ JSON
 import 'dart:io';
+import 'package:http/http.dart' as http; // 🔥 إضافة مكتبة الـ http لإرسال الطلب
+import 'package:firebase_messaging/firebase_messaging.dart'; // 🔥 إضافة الفايربيز ميساجينج لتوليد توكن الجهاز
+import 'package:googleapis_auth/auth_io.dart' as auth; // 🔥 مكتبة جوجل للتوثيق
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +11,6 @@ import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/constants/api_constants.dart';
 import 'package:talcove/core/constants/app_settings_keys.dart';
 import 'package:talcove/core/constants/auth_method.dart';
-// import 'package:talcove/core/extensions/http_extensions.dart';
 import 'package:talcove/core/services/api_service.dart';
 import 'package:talcove/core/services/auth_service.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
@@ -17,7 +20,6 @@ import 'package:talcove/models/auth_state.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:talcove/models/user.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
-// import 'package:talcove/shared/services/socket_service.dart';
 
 part 'auth_provider.g.dart';
 
@@ -31,6 +33,111 @@ class AuthNotifier extends _$AuthNotifier {
     _authService = AuthService();
     _apiService = ApiService();
     return AuthState();
+  }
+
+  // 🔥 دالة سرية داخلية لتوليد الـ OAuth Token الخاص بالـ FCM v1 ديناميكياً
+  Future<String?> _getFirebaseServerToken() async {
+    try {
+      final serviceAccountJson = {
+        "type": "service_account",
+        "project_id": "talcove-df32e",
+        "private_key_id": "b4b612d08fbd48d646fee7873daae89696b1e405",
+        "private_key":
+            "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDOfbEoMu5u0Hqt\n0n5RcTHq1/zWF0Gy0q8S9LAncA4Y55jTrjMuM8VUFvfBXnfJCp4MCNEjUnpdfsVv\nSj0GfWUGmSQXuAkY8rGWIZicw2ol7ZCC0ptacG14ZvGvtQxgyKN9LuFNT7sdRyXs\nUYHf3h6itq6TCV1c4BSJlgmrpaJ18iq4py0MNgGOxHEgCb5rmsG03pJcIvuQc+Gs\nNaeITbbdwHLnydBqkLv05QnSVrjW1JmQ/IxDNmND+LWkgED+pQCrIJ6A0PqQWHXV\nvT40JTXlLaKiXNLDxLGAUWnkYUfWgOB++1lhaUeRzoEtBoIg/bUn/mBRqRqyQF/E\nNIrYYEMrAgMBAAECggEAI2GjIOW1ODStyKn4LgFM0dYngxGiFr+F8yQNKPzI1Zid\ndav0JhcF2VZEJpSGxuJ0WVCLcVd5ExsdPmgEk9+Zl2tXJV9J48X2Cuj/yuCrCAuw\nRtJKf1EjWM2e3QITOGQ4q0MEpOgkAizGQTtoGxFmw2+08wnYPwlAS6DzUD+F2lqQ\n+QjbNAHLYU4xMn2cc1EV93DjE2+INLinK5FCVLB+QW0H6SzVReUbuj3n+mCEiGbj\niI8A6k7v/SgeO90oTklTArrhmmKIyz3EuaE9PtB+dCVcsk2muKwdwcl89aJMc7gC\n5a4g9UB1VZkeRgPjEba/DucLkTprTw6MYL/dqpLFYQKBgQDxFLgQu3WaczGvKP+S\njq9TslmjhWfZx84H4Xt/EGCfK2eFSJxp3AVNkoSGeMhu3rEOq9KpWhl3pirAMeFy\nnsNz1TaM5nrxSre6qzLD47XuBhVosCArhs+yd6kPGCueZQ1kSmEacLzrPtC+YdfH\nZZENfF4psBDLe6f96+ckLcHHoQKBgQDbRPzufxNIwEfYqq9q3UiYUhWgMV6p6S66\nHD1kUssu4hbgmZYkn1ZhKla0j/MlNfdi1JnGbg6+xbswF/tHWT5/n5pLS9ewzTNl\noj/R9NeGmDA/Js99Isomk9zOIBvDLkHr8OrXgy5El1OeIgZAUiD8NcYdQHfeSdPu\nAY89sKlnSwKBgAVznH30X0Jw3GzDlpPv2hMgc1p5R9Hq7MPM24gSDL1Ms/iVncPf\nD9ejOo/350BqlMJqLEdcHDtSbKEP/7Mh1/WkmqkxBRKzx9fWyz0WxyRsysslQHT7\nhXLZtd77gvEAA/+ClxOL/Rmsv/euKrz9lPwjFdYHfzm6wB/D1+Q/jKRBAoGBAMz3\najBPHWmuQ/rnYt7UR14LrSd3vvO5g/J5H3I+aqxCr/v31gAZ6hceCrryrOklz0DV\nV4HDs4jlMRu97yg85k1KlmK4XMFqsBbbWikbZLTuYntF/kMNWEZDhe4w2YLUJM82\n/2/BsmhvxLxXNdy+aRMZ+T2y29owzSj40Dtsfo6NAoGBAJUwqxIn6IqdDXnhraJ8\nxIFsrejEO6xf1Iw66Y+01OLnW2GS2+WI67g9/3nnY796SXKvIsWuxZOmLaQovyek\nIo0j+v+KsOvVIrLzAChoravMKIRqxU8dRaIWCls3GsGawe5yvsTQGNxXSdpyVj+k\niJIFEItK8nKFN9g9m+UIHA60\n-----END PRIVATE KEY-----\n",
+        "client_email":
+            "firebase-adminsdk-fbsvc@talcove-df32e.iam.gserviceaccount.com",
+        "client_id": "102923172473316018447",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url":
+            "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url":
+            "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40talcove-df32e.iam.gserviceaccount.com",
+        "universe_domain": "googleapis.com",
+      };
+
+      final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+      final credentials = auth.ServiceAccountCredentials.fromJson(
+        serviceAccountJson,
+      );
+      final client = await auth.clientViaServiceAccount(credentials, scopes);
+
+      final String token = client.credentials.accessToken.data;
+      client.close();
+      return token;
+    } catch (e) {
+      print("❌ Error generating FCM Server Token: $e");
+      return null;
+    }
+  }
+
+  // 🔥 دالة إرسال الإشعار التجريبي بعد تحديث التوكن الموثق
+  Future<void> sendTestNotification() async {
+    print("⏳ Starting FCM Test Notification process...");
+    final String? firebaseServerToken = await _getFirebaseServerToken();
+
+    if (firebaseServerToken == null) {
+      print("❌ Cannot send notification: Server Token is NULL");
+      return;
+    }
+
+    final String? deviceToken = await FirebaseMessaging.instance.getToken();
+    if (deviceToken == null) {
+      print("❌ Cannot send notification: Device Token is NULL");
+      return;
+    }
+
+    var headersList = {
+      'Accept': '*/*',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $firebaseServerToken',
+    };
+
+    var url = Uri.parse(
+      'https://fcm.googleapis.com/v1/projects/talcove-df32e/messages:send',
+    );
+
+    var body = {
+      "message": {
+        "token": deviceToken,
+        "notification": {
+          "title": "Talcove Notification",
+          "body": "كسم الاشعارات",
+        },
+        "android": {
+          "priority": "HIGH",
+          "notification": {
+            "channel_id": "chat_notifications_channel",
+            "sound": "default",
+            "notification_priority": "PRIORITY_HIGH",
+            "visibility": "PUBLIC",
+          },
+        },
+        "apns": {
+          "payload": {
+            "aps": {"mutable-content": 1, "sound": "default", "badge": 1},
+          },
+        },
+      },
+    };
+
+    try {
+      var response = await http.post(
+        url,
+        headers: headersList,
+        body: json.encode(body),
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print(
+          "✅ FCM Notification Sent Successfully! Response: ${response.body}",
+        );
+      } else {
+        print("❌ FCM Notification Failed Status: ${response.statusCode}");
+        print("⚠️ Firebase Error Details: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ HTTP Request Error sending FCM: $e");
+    }
   }
 
   Future<void> loginWithGoogle() async {
@@ -55,22 +162,15 @@ class AuthNotifier extends _$AuthNotifier {
       }
 
       if (idToken != null) {
-        final result = await _authService.loginWithGoogle(idToken: idToken);
+        final result = await _authService.loginWithGoogle(idToken);
 
         if (result['success']) {
           final responseData = result['user'];
-
           final userObject = responseData['user'] ?? responseData;
           final accessToken = responseData['accessToken'] ?? '';
-          print("User object from Google: $userObject");
-          print(
-            "Email from Google: ${userObject['email'] ?? googleUser.email}",
-          );
-          print("UserName from server: ${userObject['userName']}");
-          print("ID from the server : ${userObject['userId']}");
+
           final user = User(
             id: userObject['userId'] ?? '',
-
             userName: userObject['userName'] ?? '',
             email: googleUser.email,
             phoneNumber: userObject['phoneNumber'] ?? '',
@@ -78,7 +178,6 @@ class AuthNotifier extends _$AuthNotifier {
             authType: AuthMethod.google,
           );
 
-          //  تخزين بيانات المستخدم
           await LocalStorageService.box.put(userKey, user.toJson());
           await LocalStorageService.box.put(
             authMethodKey,
@@ -94,6 +193,9 @@ class AuthNotifier extends _$AuthNotifier {
             user: user,
             authMethod: AuthMethod.google,
           );
+
+          // 🔥 تشغيل الإشعار التجريبي فور نجاح دخول جوجل
+          await sendTestNotification();
         } else {
           state = state.copyWith(
             isLoading: false,
@@ -107,9 +209,6 @@ class AuthNotifier extends _$AuthNotifier {
         );
       }
     } on PlatformException catch (e) {
-      print("GOOGLE ERROR CODE: ${e.code}");
-      print("GOOGLE ERROR MESSAGE: ${e.message}");
-
       if (e.code == "network_error" || e.message?.contains("7") == true) {
         state = state.copyWith(
           isLoading: false,
@@ -117,7 +216,6 @@ class AuthNotifier extends _$AuthNotifier {
         );
         return;
       }
-
       if (e.code == "12501") {
         state = state.copyWith(
           isLoading: false,
@@ -125,7 +223,6 @@ class AuthNotifier extends _$AuthNotifier {
         );
         return;
       }
-
       state = state.copyWith(
         isLoading: false,
         errorMessage: "Google Sign-In failed",
@@ -152,16 +249,13 @@ class AuthNotifier extends _$AuthNotifier {
       if (result['success']) {
         final responseData = result['user'];
         final userObject = responseData['user'] ?? responseData;
-        print("User object: $userObject");
-        print("Email from user object: ${userObject['email']}");
-        print("Phone from user object: ${userObject['phoneNumber']}");
-        print("ID : ${userObject["userId"]}");
+
         final user = User(
           id: userObject['userId'],
           userName: userName,
           email: userObject['email'] ?? '',
           phoneNumber: userObject['phoneNumber'] ?? '',
-          photoUrl: userObject['profileImage'] ?? null,
+          photoUrl: userObject['profileImage'],
           authType: AuthMethod.userNameAndPassword,
         );
 
@@ -170,18 +264,23 @@ class AuthNotifier extends _$AuthNotifier {
           authMethodKey,
           AuthMethod.userNameAndPassword.name,
         );
+
         final token = _apiService.accessToken;
         if (token != null) {
           ref
               .read(messageNotifierProvider.notifier)
               .connectSocket(user.id, token);
         }
+
         state = state.copyWith(
           isLoading: false,
           isAuthenticated: true,
           authMethod: AuthMethod.userNameAndPassword,
           user: user,
         );
+
+        // 🔥 تم نقل استدعاء الإشعار إلى هنا ليشتغل عند النجاح وليس عند الفشل!
+        await sendTestNotification();
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -194,61 +293,6 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  // اضافة او تعديل الايميل للمستخدم
-  Future<void> updateEmail(String? email) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
-
-    try {
-      final result = await _authService.updateEmail(email);
-
-      if (result['success']) {
-        if (state.user != null) {
-          final updatedUser = state.user!.copyWith(email: email);
-          await LocalStorageService.box.put(userKey, updatedUser.toJson());
-          state = state.copyWith(user: updatedUser);
-        }
-        print("Email updated Successfully");
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          errorMessage: result['error'] ?? "Failed to update email",
-        );
-      }
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: "Failed to update email",
-      );
-    } finally {
-      state = state.copyWith(isLoading: false);
-    }
-  }
-
-  //اضافة رقم هاتف
-  Future<void> updatePhoneNumber(String? phone) async {
-    state = state.copyWith(isLoading: true);
-
-    try {
-      final result = await _authService.updatePhoneNumber(phone);
-
-      if (result['success']) {
-        if (state.user != null) {
-          final updatedUser = state.user!.copyWith(phoneNumber: phone);
-          await LocalStorageService.box.put(userKey, updatedUser.toJson());
-          state = state.copyWith(user: updatedUser);
-        }
-        print("Phone number updated successfully");
-      } else {
-        print("Phone failed to update: ${result['error']}");
-      }
-    } catch (e) {
-      print("Failed to update Phone: $e");
-    } finally {
-      state = state.copyWith(isLoading: false);
-    }
-  }
-
-  // login
   Future<void> loginWithUserNameAndPassword(
     String userName,
     String password,
@@ -262,52 +306,38 @@ class AuthNotifier extends _$AuthNotifier {
       );
 
       if (result['success']) {
-        // final userData = result['user'];
-        // print("Full userData: ${userData['user']}");
-        // print("Email from userData: ${userData['email']}");
-        // print("Phone from userData: ${userData['phoneNumber']}");
-        // print("All keys in userData: ${userData.keys}");
-        // final user = User(
-        //   id:
-        //       userData['id'] ??
-        //       userData['userId'] ??
-        //       userData['user']['id'] ??
-        //       userName,
-        //   userName: userName,
-        //   email: userData['email'] ?? '',
-        //   photoUrl: null,
-        //   authType: AuthMethod.userNameAndPassword,
-        // );
         final responseData = result['user'];
         final accessToken = responseData['accessToken'] ?? '';
         final userObject = responseData['user'] ?? responseData;
-        print("User object: $userObject");
-        print("Response data : $responseData");
-        print("Email from user object: ${userObject['email']}");
-        print("Phone from user object: ${userObject['phoneNumber']}");
 
         final user = User(
           id: userObject['userId'] ?? userName,
           userName: userName,
           email: userObject['email'] ?? '',
           phoneNumber: userObject['phoneNumber'] ?? '',
-          photoUrl: userObject['profileImage'] ?? null,
+          photoUrl: userObject['profileImage'],
           authType: AuthMethod.userNameAndPassword,
         );
+
         await LocalStorageService.box.put(userKey, user.toJson());
         await LocalStorageService.box.put(
           authMethodKey,
           AuthMethod.userNameAndPassword.name,
         );
+
         ref
             .read(messageNotifierProvider.notifier)
             .connectSocket(user.id, accessToken);
+
         state = state.copyWith(
           isAuthenticated: true,
           isLoading: false,
           user: user,
           authMethod: AuthMethod.userNameAndPassword,
         );
+
+        // 🔥 تشغيل الإشعار التجريبي فور نجاح تسجيل الدخول العادي
+        await sendTestNotification();
       } else {
         state = state.copyWith(
           isAuthenticated: false,
@@ -325,61 +355,50 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  // Future<void> restoreSession() async {
-  //   final box = LocalStorageService.box;
+  Future<void> updateEmail(String? email) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final result = await _authService.updateEmail(email);
+      if (result['success']) {
+        if (state.user != null) {
+          final updatedUser = state.user!.copyWith(email: email);
+          await LocalStorageService.box.put(userKey, updatedUser.toJson());
+          state = state.copyWith(user: updatedUser);
+        }
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: result['error'] ?? "Failed to update email",
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: "Failed to update email",
+      );
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
 
-  //   final userJson = box.get(userKey);
-  //   final authMethod = box.get(authMethodKey);
+  Future<void> updatePhoneNumber(String? phone) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final result = await _authService.updatePhoneNumber(phone);
+      if (result['success']) {
+        if (state.user != null) {
+          final updatedUser = state.user!.copyWith(phoneNumber: phone);
+          await LocalStorageService.box.put(userKey, updatedUser.toJson());
+          state = state.copyWith(user: updatedUser);
+        }
+      }
+    } catch (e) {
+      print("Failed to update Phone: $e");
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
 
-  //   if (userJson == null || authMethod == null) {
-  //     state = AuthState(isAuthenticated: false);
-  //     return;
-  //   }
-
-  //
-  //   bool hasInternet = await _checkInternetConnection();
-
-  //   if (hasInternet) {
-  //     try {
-  //       final tokenRefreshed = await _authService.refreshToken();
-  //       if (tokenRefreshed) {
-  //         final user = User.fromJson(Map<String, dynamic>.from(userJson));
-  //         state = state.copyWith(
-  //           isAuthenticated: true,
-  //           user: user,
-  //           authMethod: AuthMethod.values.firstWhere(
-  //             (e) => e.name == authMethod,
-  //             orElse: () => AuthMethod.userNameAndPassword,
-  //           ),
-  //         );
-  //         print("Session restored with fresh token");
-  //         return;
-  //       }
-  //     } catch (e) {
-  //       print("Refresh failed: $e");
-  //     }
-  //   }
-
-  //   //  ثانيا: إذا ما في نت أو فشل التجديد خلي المستخدم "مسجل" بشكل مؤقت
-  //   // بس مع تحذير أنه يحتاج نت للتحديث
-  //   final user = User.fromJson(Map<String, dynamic>.from(userJson));
-  //   state = state.copyWith(
-  //     isAuthenticated: true,
-  //     user: user,
-  //     authMethod: AuthMethod.values.firstWhere(
-  //       (e) => e.name == authMethod,
-  //       orElse: () => AuthMethod.userNameAndPassword,
-  //     ),
-  //   );
-
-  //   print(
-  //     hasInternet
-  //         ? " Using cached session (refresh failed)"
-  //         : " No internet - using cached session",
-  //   );
-  // }
-
-  //التحقق من الاتصال بالإنترنت
   Future<bool> _checkInternetConnection() async {
     try {
       final result = await InternetAddress.lookup('google.com');
@@ -391,19 +410,17 @@ class AuthNotifier extends _$AuthNotifier {
 
   Future<void> restoreSession() async {
     final box = LocalStorageService.box;
-
     try {
       final cookies = await _apiService.cookieJar.loadForRequest(
         Uri.parse(ApiConstants.baseUrl),
       );
-      print("📦 Cookies found: ${cookies.length}");
       for (var cookie in cookies) {
-        print("  - ${cookie.name}: expires at ${cookie.expires}");
-        //  تحقق من صلاحية الـ Refresh Token
         if (cookie.name == 'refreshToken' && cookie.expires != null) {
           final now = DateTime.now().toUtc();
           final expiry = cookie.expires!;
-          print("    ⏰ Time left: ${expiry.difference(now).inDays} days");
+          print(
+            "    ⏰ Cookie Time left: ${expiry.difference(now).inDays} days",
+          );
         }
       }
     } catch (e) {
@@ -432,10 +449,8 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> _refreshTokenInBackground() async {
-    // state = state.copyWith(isLoading: true);
     if (!state.hasInternet) {
       state = state.copyWith(isLoading: false);
-      print(" No internet - using cached session");
       return;
     }
     state = state.copyWith(isLoading: true, hasInternet: true);
@@ -443,33 +458,23 @@ class AuthNotifier extends _$AuthNotifier {
     try {
       final tokenRefreshed = await _authService.refreshToken();
       if (tokenRefreshed) {
-        print(" Token refreshed in background");
         final newToken = _apiService.accessToken;
         if (newToken != null && state.user != null) {
-          print("Allah akbar");
           try {
             ref.read(messageNotifierProvider.notifier).disconnectSocket();
           } catch (e) {
-            print("error happened white disconnecting $e");
+            print("error white disconnecting $e");
           }
-          print(
-            " Calling connectSocket with token: ${newToken.substring(0, 20)}...",
-          );
           ref
               .read(messageNotifierProvider.notifier)
               .connectSocket(state.user!.id, newToken);
         }
         state = state.copyWith(isLoading: false);
       } else {
-        print(" Background refresh failed");
         state = state.copyWith(isLoading: false);
-        //  إذا فشل التحديث ممكن بعدين نسجل خروج
-        // ولكن نترك المستخدم في HomeScreen حالياً
-        // يمكن عرض Snackbar لاحقاً او اي خرية
       }
     } catch (e) {
       state = state.copyWith(isLoading: false);
-      print("Background refresh error: $e");
     }
   }
 
@@ -479,28 +484,7 @@ class AuthNotifier extends _$AuthNotifier {
       _refreshTokenInBackground();
     }
   }
-  // Future<void> checkInternetManually() async {
-  //   final hasInternet = await _checkInternetConnection();
-  //   state = state.copyWith(hasInternet: hasInternet);
 
-  //   if (hasInternet && state.isAuthenticated) {
-  //     await _refreshTokenInBackground();
-  //   }
-  // }
-
-  // log out من سوق الجمعة لانو ليث ما عمل لسا
-  // Future<void> logout() async {
-  //   if (state.authMethod == AuthMethod.google) {
-  //     await _googleSignIn.signOut();
-  //   }
-
-  //   await _authService.logout();
-
-  //   await LocalStorageService.box.delete(userKey);
-  //   await LocalStorageService.box.delete(authMethodKey);
-
-  //   state = AuthState(isAuthenticated: false);
-  // }
   Future<void> logout(BuildContext context) async {
     try {
       state = state.copyWith(isLoading: true);
@@ -514,19 +498,13 @@ class AuthNotifier extends _$AuthNotifier {
       if (state.authMethod == AuthMethod.google) {
         try {
           await _googleSignIn.signOut();
-          print("✅ Google sign out successful");
         } catch (e) {
           print("⚠️ Google sign out error: $e");
         }
       }
 
       try {
-        final result = await _authService.logout();
-        if (result['success']) {
-          print("✅ Server logout successful");
-        } else {
-          print("⚠️ Server logout failed: ${result['error']}");
-        }
+        await _authService.logout();
       } catch (e) {
         print("⚠️ Server logout exception: $e");
       }
@@ -542,8 +520,6 @@ class AuthNotifier extends _$AuthNotifier {
       try {
         await LocalStorageService.box.delete(userKey);
         await LocalStorageService.box.delete(authMethodKey);
-        await LocalStorageService.box.delete(contactsKey);
-        print(" Local storage cleared");
       } catch (e) {
         print(" Error clearing local storage: $e");
       }
@@ -561,10 +537,7 @@ class AuthNotifier extends _$AuthNotifier {
         );
       }
     } catch (e) {
-      print("❌ Logout error: $e");
-
       state = AuthState(isAuthenticated: false, isLoading: false);
-
       WidgetsBinding.instance.addPersistentFrameCallback((_) {
         if (context.mounted) {
           Navigator.of(context).pushAndRemoveUntil(
@@ -576,24 +549,54 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
+  Future<void> updatePhoto(String imagePath) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _authService.updateAvatar(imagePath);
+
+      if (result['success']) {
+        if (state.user != null) {
+          final updatedUser = state.user!.copyWith(
+            photoUrl: result['photoUrl'],
+          );
+          await LocalStorageService.box.put(userKey, updatedUser.toJson());
+          state = state.copyWith(user: updatedUser);
+          print(" Avatar updated successfully: ${result['photoUrl']}");
+        }
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: result['error'] ?? "Failed to update avatar",
+        );
+      }
+    } catch (e) {
+      print(" Error updating avatar: $e");
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: "Failed to update avatar",
+      );
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
   void clearError() {
     state = state.copyWith(errorMessage: null);
   }
 
-  // دالة تحديث الخصوصية
   Future<void> updatePrivacySettings({
     required bool emailVisible,
     required bool phoneVisible,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-
     try {
       final result = await _authService.updatePrivacySettings(
         email: emailVisible,
         firstName: false,
         lastName: false,
         phoneNumber: phoneVisible,
-        profileImage: true, // افتراضي
+        profileImage: true,
         lastSeen: true,
         userName: true,
       );
@@ -607,7 +610,6 @@ class AuthNotifier extends _$AuthNotifier {
           await LocalStorageService.box.put(userKey, updatedUser.toJson());
           state = state.copyWith(user: updatedUser);
         }
-        print("Privacy settings updated successfully");
       } else {
         state = state.copyWith(
           isLoading: false,
