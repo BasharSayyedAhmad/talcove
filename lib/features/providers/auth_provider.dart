@@ -7,7 +7,7 @@ import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/constants/api_constants.dart';
 import 'package:talcove/core/constants/app_settings_keys.dart';
 import 'package:talcove/core/constants/auth_method.dart';
-import 'package:talcove/core/extensions/http_extensions.dart';
+// import 'package:talcove/core/extensions/http_extensions.dart';
 import 'package:talcove/core/services/api_service.dart';
 import 'package:talcove/core/services/auth_service.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
@@ -17,7 +17,7 @@ import 'package:talcove/models/auth_state.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:talcove/models/user.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
-import 'package:talcove/shared/services/socket_service.dart';
+// import 'package:talcove/shared/services/socket_service.dart';
 
 part 'auth_provider.g.dart';
 
@@ -55,7 +55,7 @@ class AuthNotifier extends _$AuthNotifier {
       }
 
       if (idToken != null) {
-        final result = await _authService.loginWithGoogle(idToken);
+        final result = await _authService.loginWithGoogle(idToken: idToken);
 
         if (result['success']) {
           final responseData = result['user'];
