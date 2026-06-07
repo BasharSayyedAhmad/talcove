@@ -31,7 +31,6 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 //     print("Body: $body");
 //   }
 // }
-
 void main() async {
   // تفعيل الربط الأساسي مع المحرك
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
