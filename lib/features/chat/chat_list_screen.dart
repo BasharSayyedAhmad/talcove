@@ -94,7 +94,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final contacts = ref.watch(contactsNotifierProvider);
     final displayedContacts = contacts.take(20).toList();
     final authState = ref.watch(authNotifierProvider);
-
+    final isConnected = authState.hasInternet;
+    print(" UI - hasInternet: $isConnected");
     //  لما الـ contacts يتحملوا لأول مرة، جيب اخر رسالة لكلهم
     ref.listen(contactsNotifierProvider, (previous, next) {
       if ((previous == null || previous.isEmpty) && next.isNotEmpty) {
@@ -106,7 +107,23 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Talcove"),
+        title: !isConnected
+            ? const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text("جاري الاتصال..."),
+                ],
+              )
+            : const Text("Talcove"),
         backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           if (authState.isLoading)
