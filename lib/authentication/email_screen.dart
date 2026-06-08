@@ -49,7 +49,9 @@ class _EmailScreenState extends ConsumerState<EmailScreen> {
       //     next.user?.email == emailController.text.trim())
       if (!next.isLoading &&
           prev?.isLoading == true &&
-          next.user?.email == emailController.text.trim()) {
+          next.user?.email != null &&
+          next.user!.email!.isNotEmpty &&
+          next.user!.email == emailController.text.trim()) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const PhoneScreen()),

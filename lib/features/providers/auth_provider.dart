@@ -537,6 +537,7 @@ class AuthNotifier extends _$AuthNotifier {
       try {
         await LocalStorageService.box.delete(userKey);
         await LocalStorageService.box.delete(authMethodKey);
+        await LocalStorageService.box.delete(contactsKey);
       } catch (e) {
         print(" Error clearing local storage: $e");
       }

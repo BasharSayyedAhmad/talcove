@@ -125,19 +125,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!mounted) return;
 
     final allMessages = ref.read(messageNotifierProvider);
-
+    final currentMessagesCount = _messages.length;
+    final totalMessagesCount = allMessages.length;
     if (allMessages.length == _messages.length) {
       // ما في رسائل جديدة = وصلنا للنهاية
       _hasMore = false;
       setState(() => _isLoading = false);
       return;
     }
-
+    final diff = totalMessagesCount - currentMessagesCount;
     // الرسائل الجديدة القديمة هي الفرق في البداية
-    final oldMessages = allMessages.sublist(
-      0,
-      allMessages.length - _messages.length,
-    );
+    final oldMessages = allMessages.sublist(0, diff);
 
     // أضف للأعلى في _messages و AnimatedList
     for (int i = oldMessages.length - 1; i >= 0; i--) {

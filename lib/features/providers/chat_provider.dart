@@ -1,7 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talcove/core/services/api_service.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
+import 'package:talcove/features/providers/contacts_provider.dart';
 import 'package:talcove/models/message.dart';
+import 'package:talcove/models/user.dart';
 import 'package:talcove/shared/services/socket_service.dart';
 part 'chat_provider.g.dart';
 
@@ -28,6 +30,19 @@ class MessageNotifier extends _$MessageNotifier {
       if (_currentUserId == null) return;
 
       if (data['senderId'] == _currentUserId) return;
+      if (data['receiverId'] != _currentUserId) return;
+      final contacts = ref.read(contactsNotifierProvider);
+      final senderExists = contacts.any((c) => c.id == data['senderId']);
+
+      if (!senderExists) {
+        // أضف المستخدم الجديد إلى الـ contacts تلقائياً
+        final newUser = User(
+          id: data['senderId'],
+          userName: data['senderUserName'] ?? data['senderId'],
+        );
+        ref.read(contactsNotifierProvider.notifier).addContact(newUser);
+        print(" Added new contact from message: ${newUser.userName}");
+      }
 
       final newMessage = Message(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
