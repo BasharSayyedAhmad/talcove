@@ -6,5 +6,14 @@ class LocalStorageService {
     await Hive.openBox("TalcoveBox");
   }
 
+  static Future<void> clearAll() async {
+    await box.clear();
+    await box.close();
+
+    await Hive.deleteBoxFromDisk("TalcoveBox");
+    await Hive.openBox("TalcoveBox");
+    print(" All Hive data cleared");
+  }
+
   static Box get box => Hive.box("TalcoveBox");
 }

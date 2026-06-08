@@ -264,9 +264,9 @@ class SettingsScreen extends ConsumerWidget {
                             TextButton(
                               onPressed: () {
                                 Navigator.of(context).pop();
-                                ref
-                                    .read(authNotifierProvider.notifier)
-                                    .logout(context);
+                                // ref
+                                //     .read(authNotifierProvider.notifier)
+                                //     .logout(context);
                               },
                               child: Text(
                                 "Log out",

@@ -98,6 +98,10 @@ class SocketService {
     _newMessageCallbacks.add(callback);
   }
 
+  void offNewMessage() {
+    _socket.off('newMessage');
+  }
+
   void disconnect() {
     try {
       if (_socket.connected) {
