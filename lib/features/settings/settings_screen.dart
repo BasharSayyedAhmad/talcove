@@ -110,7 +110,10 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _SectionHeader(label: 'Account', colorScheme: colorScheme),
+                _SectionHeader(
+                  label: S.of(context).account,
+                  colorScheme: colorScheme,
+                ),
                 const SizedBox(height: 8),
                 _SettingsCard(
                   colorScheme: colorScheme,
@@ -120,7 +123,7 @@ class SettingsScreen extends ConsumerWidget {
                       icon: Icons.person_rounded,
                       iconColor: colorScheme.primary,
                       title: S.of(context).profile,
-                      subtitle: 'Name, photo, bio',
+                      subtitle: S.of(context).namePhotoBio,
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const ProfileScreen(),
@@ -133,7 +136,7 @@ class SettingsScreen extends ConsumerWidget {
                       icon: Icons.shield_rounded,
                       iconColor: const Color(0xFF10B981),
                       title: S.of(context).privacySettings,
-                      subtitle: 'Email, phone, visibility',
+                      subtitle: S.of(context).emailPhoneVisibility,
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -148,7 +151,10 @@ class SettingsScreen extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
-                _SectionHeader(label: 'Preferences', colorScheme: colorScheme),
+                _SectionHeader(
+                  label: S.of(context).preferences,
+                  colorScheme: colorScheme,
+                ),
                 const SizedBox(height: 8),
                 _SettingsCard(
                   colorScheme: colorScheme,
@@ -158,7 +164,7 @@ class SettingsScreen extends ConsumerWidget {
                       icon: Icons.notifications_rounded,
                       iconColor: const Color(0xFFF59E0B),
                       title: S.of(context).notifications,
-                      subtitle: 'Sound, vibration, alerts',
+                      subtitle: S.of(context).soundVibrationAlerts,
                       onTap: () {},
                       colorScheme: colorScheme,
                     ),
@@ -219,7 +225,9 @@ class SettingsScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 Text(
-                                  isDark ? 'Dark mode on' : 'Light mode on',
+                                  isDark
+                                      ? S.of(context).darkModeOn
+                                      : S.of(context).lightModeOn,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: colorScheme.onSurfaceVariant,
@@ -250,16 +258,14 @@ class SettingsScreen extends ConsumerWidget {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: const Text("log out"),
-                          content: const Text(
-                            "Are you sure you want to log out",
-                          ),
+                          title: Text(S.of(context).logOut),
+                          content: Text(S.of(context).logoutConfirmation),
                           actions: [
                             TextButton(
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: const Text("Cancel"),
+                              child: Text(S.of(context).cancel),
                             ),
                             TextButton(
                               onPressed: () {
@@ -269,7 +275,7 @@ class SettingsScreen extends ConsumerWidget {
                                 //     .logout(context);
                               },
                               child: Text(
-                                "Log out",
+                                S.of(context).logOut,
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.error,
                                 ),

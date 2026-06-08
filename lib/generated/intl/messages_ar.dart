@@ -33,6 +33,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "bio": MessageLookupByLibrary.simpleMessage("السيرة الذاتية"),
     "cancel": MessageLookupByLibrary.simpleMessage("إلغاء"),
     "chats": MessageLookupByLibrary.simpleMessage("المحادثات"),
+    "choosePreferredLanguage": MessageLookupByLibrary.simpleMessage(
+      "اختر لغتك المفضلة",
+    ),
     "confirm": MessageLookupByLibrary.simpleMessage("أعد كتابة كلمة المرور"),
     "confirmPasswordNotMatch": MessageLookupByLibrary.simpleMessage(
       "كلمتا المرور غير متطابقتين",
@@ -40,12 +43,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirmPasswordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "الرجاء تأكيد كلمة المرور",
     ),
+    "connecting": MessageLookupByLibrary.simpleMessage("جاري الاتصال..."),
     "continueWithGoogle": MessageLookupByLibrary.simpleMessage(
       "المتابعة باستخدام Google",
     ),
+    "copy": MessageLookupByLibrary.simpleMessage("نسخ"),
     "createAccount": MessageLookupByLibrary.simpleMessage("إنشاء حساب"),
     "createYourAccount": MessageLookupByLibrary.simpleMessage("أنشئ حسابك"),
-    "dark": MessageLookupByLibrary.simpleMessage("الوضع المظلم"),
+    "dark": MessageLookupByLibrary.simpleMessage("الوضع الداكن"),
+    "darkModeOn": MessageLookupByLibrary.simpleMessage("الوضع الداكن مفعل"),
+    "delete": MessageLookupByLibrary.simpleMessage("حذف"),
+    "edit": MessageLookupByLibrary.simpleMessage("تعديل"),
     "editBio": MessageLookupByLibrary.simpleMessage("تعديل السيرة الذاتية"),
     "editEmail": MessageLookupByLibrary.simpleMessage(
       "تعديل البريد الإلكتروني",
@@ -53,6 +61,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "editPhone": MessageLookupByLibrary.simpleMessage("تعديل رقم الهاتف"),
     "editUsername": MessageLookupByLibrary.simpleMessage("تعديل اسم المستخدم"),
     "email": MessageLookupByLibrary.simpleMessage("البريد الإلكتروني"),
+    "emailPhoneVisibility": MessageLookupByLibrary.simpleMessage(
+      "البريد الإلكتروني، الهاتف، الرؤية",
+    ),
     "emailScreenBenefit1": MessageLookupByLibrary.simpleMessage(
       "📧 استعادة كلمة المرور",
     ),
@@ -88,17 +99,36 @@ class MessageLookup extends MessageLookupByLibrary {
       "الرجاء إدخال بريد إلكتروني صحيح",
     ),
     "language": MessageLookupByLibrary.simpleMessage("اللغة"),
+    "languageChangedImmediately": MessageLookupByLibrary.simpleMessage(
+      "سيتم تغيير اللغة فوراً",
+    ),
+    "languageChangedTo": MessageLookupByLibrary.simpleMessage(
+      "تم تغيير اللغة إلى ",
+    ),
+    "lightModeOn": MessageLookupByLibrary.simpleMessage("الوضع الفاتح مفعل"),
     "logOut": MessageLookupByLibrary.simpleMessage("تسجيل الخروج"),
     "login": MessageLookupByLibrary.simpleMessage("تسجيل الدخول"),
     "loginToYourAccount": MessageLookupByLibrary.simpleMessage(
       "تسجيل الدخول إلى حسابك",
     ),
+    "logoutConfirmation": MessageLookupByLibrary.simpleMessage(
+      "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+    ),
     "message": MessageLookupByLibrary.simpleMessage("رسالة"),
+    "messageCopied": MessageLookupByLibrary.simpleMessage("تم نسخ الرسالة"),
+    "namePhotoBio": MessageLookupByLibrary.simpleMessage(
+      "الاسم، الصورة، السيرة الذاتية",
+    ),
     "noBio": MessageLookupByLibrary.simpleMessage("لا توجد سيرة ذاتية"),
+    "noConversationsYet": MessageLookupByLibrary.simpleMessage(
+      "لا توجد محادثات بعد",
+    ),
+    "noMessagesYet": MessageLookupByLibrary.simpleMessage("لا توجد رسائل بعد"),
     "noResultsFound": MessageLookupByLibrary.simpleMessage("لا توجد نتائج"),
     "noUsersFound": MessageLookupByLibrary.simpleMessage("لا يوجد مستخدمون"),
     "notProvided": MessageLookupByLibrary.simpleMessage("غير مضاف"),
     "notifications": MessageLookupByLibrary.simpleMessage("الإشعارات"),
+    "online": MessageLookupByLibrary.simpleMessage("متصل"),
     "or": MessageLookupByLibrary.simpleMessage("أو"),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage("أو سجّل باستخدام"),
     "orSigninWith": MessageLookupByLibrary.simpleMessage(
@@ -133,8 +163,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "phoneScreenTitle": MessageLookupByLibrary.simpleMessage(
       "إضافة رقم الهاتف",
     ),
+    "preferences": MessageLookupByLibrary.simpleMessage("التفضيلات"),
     "privacySettings": MessageLookupByLibrary.simpleMessage("إعدادات الخصوصية"),
     "profile": MessageLookupByLibrary.simpleMessage("الملف الشخصي"),
+    "reply": MessageLookupByLibrary.simpleMessage("الرد"),
     "retry": MessageLookupByLibrary.simpleMessage("إعادة المحاولة"),
     "save": MessageLookupByLibrary.simpleMessage("حفظ"),
     "searchConversations": MessageLookupByLibrary.simpleMessage(
@@ -150,10 +182,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "showPhoneNumber": MessageLookupByLibrary.simpleMessage("إظهار رقم هاتفي"),
     "signin": MessageLookupByLibrary.simpleMessage("تسجيل الدخول"),
     "signup": MessageLookupByLibrary.simpleMessage("إنشاء حساب"),
+    "soundVibrationAlerts": MessageLookupByLibrary.simpleMessage(
+      "الصوت، الاهتزاز، التنبيهات",
+    ),
+    "startAConversation": MessageLookupByLibrary.simpleMessage("ابدأ محادثة"),
     "theme": MessageLookupByLibrary.simpleMessage("المظهر"),
     "tryDifferentKeyword": MessageLookupByLibrary.simpleMessage(
       "حاول بكلمة بحث مختلفة",
     ),
+    "typeMessage": MessageLookupByLibrary.simpleMessage("اكتب رسالة..."),
     "userName": MessageLookupByLibrary.simpleMessage("اسم المستخدم"),
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "اسم المستخدم مطلوب",

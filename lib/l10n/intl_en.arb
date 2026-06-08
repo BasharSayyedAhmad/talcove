@@ -80,7 +80,28 @@
   "chats":"Chats",
   "groups":"Groups",
   "searchConversations":"Search conversations...",
-  "notifications":"Notifications"
+  "notifications":"Notifications",
+  "noConversationsYet": "No conversations yet",
+  "connecting": "Connecting...",
+  "startAConversation": "Start a conversation",
+  "reply": "Reply",
+  "edit": "Edit",
+"copy": "Copy",
+"delete": "Delete",
+"messageCopied": "Message copied",
+"online": "Online",
+"noMessagesYet": "No messages yet",
+"typeMessage": "Type a message...",
+"choosePreferredLanguage": "Choose your preferred language",
+"languageChangedImmediately": "Language will be changed immediately",
+"languageChangedTo": "Language changed to ",
+"logoutConfirmation": "Are you sure you want to log out?",
+"darkModeOn": "Dark mode on",
+"lightModeOn": "Light mode on",
+"soundVibrationAlerts": "Sound, vibration, alerts",
+"preferences": "Preferences",
+"emailPhoneVisibility": "Email, phone, visibility",
+"namePhotoBio": "Name, photo, bio"
   
 
 }

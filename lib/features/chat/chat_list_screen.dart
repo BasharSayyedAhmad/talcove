@@ -109,10 +109,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: !isConnected
-            ? const Row(
+            ? Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
@@ -120,8 +120,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Text("جاري الاتصال..."),
+                  const SizedBox(width: 8),
+                  Text(S.of(context).connecting),
                 ],
               )
             : const Text("Talcove"),
@@ -258,10 +258,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             color: isDark ? Colors.white54 : Colors.black54,
           ),
           if (orderedContacts.isEmpty)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.all(32.0),
-                child: Text("No conversations yet"),
+                padding: const EdgeInsets.all(32.0),
+                child: Text(S.of(context).noConversationsYet),
               ),
             )
           else
@@ -284,7 +284,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   ),
                   title: Text(user.userName),
                   subtitle: Text(
-                    contact.lastMessage?.text ?? 'Start a conversation',
+                    contact.lastMessage?.text ??
+                        S.of(context).startAConversation,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

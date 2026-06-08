@@ -99,7 +99,7 @@ class LanguageWidget extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Choose your preferred language",
+                  S.of(context).choosePreferredLanguage,
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -289,7 +289,7 @@ class LanguageWidget extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "Language will be changed immediately",
+                      S.of(context).languageChangedImmediately,
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -322,7 +322,7 @@ class LanguageWidget extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          "Language changed to ${newLocale.languageCode.toUpperCase()}",
+          " ${S.of(context).languageChangedTo} ${newLocale.languageCode.toUpperCase()}",
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,

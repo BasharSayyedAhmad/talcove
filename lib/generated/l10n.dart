@@ -698,6 +698,181 @@ class S {
       args: [],
     );
   }
+
+  /// `No conversations yet`
+  String get noConversationsYet {
+    return Intl.message(
+      'No conversations yet',
+      name: 'noConversationsYet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connecting...`
+  String get connecting {
+    return Intl.message(
+      'Connecting...',
+      name: 'connecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start a conversation`
+  String get startAConversation {
+    return Intl.message(
+      'Start a conversation',
+      name: 'startAConversation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reply`
+  String get reply {
+    return Intl.message('Reply', name: 'reply', desc: '', args: []);
+  }
+
+  /// `Edit`
+  String get edit {
+    return Intl.message('Edit', name: 'edit', desc: '', args: []);
+  }
+
+  /// `Copy`
+  String get copy {
+    return Intl.message('Copy', name: 'copy', desc: '', args: []);
+  }
+
+  /// `Delete`
+  String get delete {
+    return Intl.message('Delete', name: 'delete', desc: '', args: []);
+  }
+
+  /// `Message copied`
+  String get messageCopied {
+    return Intl.message(
+      'Message copied',
+      name: 'messageCopied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Online`
+  String get online {
+    return Intl.message('Online', name: 'online', desc: '', args: []);
+  }
+
+  /// `No messages yet`
+  String get noMessagesYet {
+    return Intl.message(
+      'No messages yet',
+      name: 'noMessagesYet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type a message...`
+  String get typeMessage {
+    return Intl.message(
+      'Type a message...',
+      name: 'typeMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose your preferred language`
+  String get choosePreferredLanguage {
+    return Intl.message(
+      'Choose your preferred language',
+      name: 'choosePreferredLanguage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Language will be changed immediately`
+  String get languageChangedImmediately {
+    return Intl.message(
+      'Language will be changed immediately',
+      name: 'languageChangedImmediately',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Language changed to `
+  String get languageChangedTo {
+    return Intl.message(
+      'Language changed to ',
+      name: 'languageChangedTo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to log out?`
+  String get logoutConfirmation {
+    return Intl.message(
+      'Are you sure you want to log out?',
+      name: 'logoutConfirmation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dark mode on`
+  String get darkModeOn {
+    return Intl.message('Dark mode on', name: 'darkModeOn', desc: '', args: []);
+  }
+
+  /// `Light mode on`
+  String get lightModeOn {
+    return Intl.message(
+      'Light mode on',
+      name: 'lightModeOn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sound, vibration, alerts`
+  String get soundVibrationAlerts {
+    return Intl.message(
+      'Sound, vibration, alerts',
+      name: 'soundVibrationAlerts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Preferences`
+  String get preferences {
+    return Intl.message('Preferences', name: 'preferences', desc: '', args: []);
+  }
+
+  /// `Email, phone, visibility`
+  String get emailPhoneVisibility {
+    return Intl.message(
+      'Email, phone, visibility',
+      name: 'emailPhoneVisibility',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name, photo, bio`
+  String get namePhotoBio {
+    return Intl.message(
+      'Name, photo, bio',
+      name: 'namePhotoBio',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

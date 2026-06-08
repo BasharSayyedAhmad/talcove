@@ -32,6 +32,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "bio": MessageLookupByLibrary.simpleMessage("Bio"),
     "cancel": MessageLookupByLibrary.simpleMessage("Annuler"),
     "chats": MessageLookupByLibrary.simpleMessage("Discussions"),
+    "choosePreferredLanguage": MessageLookupByLibrary.simpleMessage(
+      "Choisissez votre langue préférée",
+    ),
     "confirm": MessageLookupByLibrary.simpleMessage(
       "Retapez votre mot de passe",
     ),
@@ -41,14 +44,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "confirmPasswordValidatorEmpty": MessageLookupByLibrary.simpleMessage(
       "Veuillez confirmer votre mot de passe",
     ),
+    "connecting": MessageLookupByLibrary.simpleMessage("Connexion en cours..."),
     "continueWithGoogle": MessageLookupByLibrary.simpleMessage(
       "Continuer avec Google",
     ),
+    "copy": MessageLookupByLibrary.simpleMessage("Copier"),
     "createAccount": MessageLookupByLibrary.simpleMessage("Créer un compte"),
     "createYourAccount": MessageLookupByLibrary.simpleMessage(
       "Créez votre compte",
     ),
     "dark": MessageLookupByLibrary.simpleMessage("Mode sombre"),
+    "darkModeOn": MessageLookupByLibrary.simpleMessage("Mode sombre activé"),
+    "delete": MessageLookupByLibrary.simpleMessage("Supprimer"),
+    "edit": MessageLookupByLibrary.simpleMessage("Modifier"),
     "editBio": MessageLookupByLibrary.simpleMessage("Modifier la bio"),
     "editEmail": MessageLookupByLibrary.simpleMessage("Modifier l\'e-mail"),
     "editPhone": MessageLookupByLibrary.simpleMessage(
@@ -58,6 +66,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Modifier le nom d\'utilisateur",
     ),
     "email": MessageLookupByLibrary.simpleMessage("Email"),
+    "emailPhoneVisibility": MessageLookupByLibrary.simpleMessage(
+      "E-mail, téléphone, visibilité",
+    ),
     "emailScreenBenefit1": MessageLookupByLibrary.simpleMessage(
       "📧 Récupération du mot de passe",
     ),
@@ -93,10 +104,28 @@ class MessageLookup extends MessageLookupByLibrary {
       "Veuillez entrer une adresse e-mail valide",
     ),
     "language": MessageLookupByLibrary.simpleMessage("Langue"),
+    "languageChangedImmediately": MessageLookupByLibrary.simpleMessage(
+      "La langue sera changée immédiatement",
+    ),
+    "languageChangedTo": MessageLookupByLibrary.simpleMessage(
+      "Langue changée en ",
+    ),
+    "lightModeOn": MessageLookupByLibrary.simpleMessage("Mode clair activé"),
     "logOut": MessageLookupByLibrary.simpleMessage("Déconnexion"),
     "login": MessageLookupByLibrary.simpleMessage("Connexion"),
+    "logoutConfirmation": MessageLookupByLibrary.simpleMessage(
+      "Êtes-vous sûr de vouloir vous déconnecter ?",
+    ),
     "message": MessageLookupByLibrary.simpleMessage("Message"),
+    "messageCopied": MessageLookupByLibrary.simpleMessage("Message copié"),
+    "namePhotoBio": MessageLookupByLibrary.simpleMessage("Nom, photo, bio"),
     "noBio": MessageLookupByLibrary.simpleMessage("Pas encore de bio"),
+    "noConversationsYet": MessageLookupByLibrary.simpleMessage(
+      "Aucune conversation pour le moment",
+    ),
+    "noMessagesYet": MessageLookupByLibrary.simpleMessage(
+      "Aucun message pour le moment",
+    ),
     "noResultsFound": MessageLookupByLibrary.simpleMessage(
       "Aucun résultat trouvé",
     ),
@@ -105,6 +134,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "notProvided": MessageLookupByLibrary.simpleMessage("Non fourni"),
     "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
+    "online": MessageLookupByLibrary.simpleMessage("En ligne"),
     "or": MessageLookupByLibrary.simpleMessage("OU"),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage(
       "ou inscrivez-vous avec",
@@ -138,10 +168,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "phoneScreenTitle": MessageLookupByLibrary.simpleMessage(
       "Ajouter un numéro de téléphone",
     ),
+    "preferences": MessageLookupByLibrary.simpleMessage("Préférences"),
     "privacySettings": MessageLookupByLibrary.simpleMessage(
       "Paramètres de confidentialité",
     ),
     "profile": MessageLookupByLibrary.simpleMessage("Profil"),
+    "reply": MessageLookupByLibrary.simpleMessage("Répondre"),
     "retry": MessageLookupByLibrary.simpleMessage("Réessayer"),
     "save": MessageLookupByLibrary.simpleMessage("Enregistrer"),
     "searchConversations": MessageLookupByLibrary.simpleMessage(
@@ -162,9 +194,18 @@ class MessageLookup extends MessageLookupByLibrary {
       "Afficher mon numéro de téléphone",
     ),
     "signup": MessageLookupByLibrary.simpleMessage("Créer un compte"),
+    "soundVibrationAlerts": MessageLookupByLibrary.simpleMessage(
+      "Son, vibration, alertes",
+    ),
+    "startAConversation": MessageLookupByLibrary.simpleMessage(
+      "Démarrer une conversation",
+    ),
     "theme": MessageLookupByLibrary.simpleMessage("Thème"),
     "tryDifferentKeyword": MessageLookupByLibrary.simpleMessage(
       "Essayez un autre mot-clé",
+    ),
+    "typeMessage": MessageLookupByLibrary.simpleMessage(
+      "Écrivez un message...",
     ),
     "userName": MessageLookupByLibrary.simpleMessage("Nom d\'utilisateur"),
     "userNameValidatorEmpty": MessageLookupByLibrary.simpleMessage(

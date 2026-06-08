@@ -1,729 +1,9 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:talcove/features/providers/chat_list_provider.dart';
-// import 'package:talcove/features/providers/chat_provider.dart';
-// import 'package:talcove/models/message.dart';
-
-// class ChatScreen extends ConsumerStatefulWidget {
-//   final String chatId;
-//   final String otherUserId;
-//   final String otherUserName;
-//   final String? otherUserPhoto;
-
-//   const ChatScreen({
-//     super.key,
-//     required this.chatId,
-//     required this.otherUserId,
-//     required this.otherUserName,
-//     this.otherUserPhoto,
-//   });
-
-//   @override
-//   ConsumerState<ChatScreen> createState() => _ChatScreenState();
-// }
-
-// class _ChatScreenState extends ConsumerState<ChatScreen> {
-//   final ScrollController _scrollController = ScrollController();
-//   final List<Message> _messages = [];
-
-//   final ValueNotifier<Message?> _replyNotifier = ValueNotifier(null);
-//   final ValueNotifier<int?> _editIndexNotifier = ValueNotifier(null);
-//   final ValueNotifier<String?> _inputEditTextNotifier = ValueNotifier(null);
-
-//   bool _isLoading = false;
-//   bool _hasMore = true;
-//   int _currentPage = 1;
-//   int _syncedMessageCount = 0;
-
-//   // لتتبع الرسائل المبعوتة محلياً قبل ما يرجعها السيرفر
-//   // key: نص الرسالة — value: index في _messages
-//   final Map<String, int> _pendingByText = {};
-
-//   @override
-//   void initState() {
-//     super.initState();
-
-//     _scrollController.addListener(() {
-//       if (_scrollController.position.pixels <= 80 && !_isLoading && _hasMore) {
-//         _loadMoreMessages();
-//       }
-//     });
-
-//     WidgetsBinding.instance.addPostFrameCallback((_) async {
-//       ref.read(messageNotifierProvider.notifier).clearMessages();
-//       await _loadInitialMessages();
-//       _listenForIncomingMessages();
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _scrollController.dispose();
-//     _replyNotifier.dispose();
-//     _editIndexNotifier.dispose();
-//     _inputEditTextNotifier.dispose();
-//     super.dispose();
-//   }
-
-//   // ─────────────────────────────────────────
-//   // تحميل الرسائل الأولية
-//   // ─────────────────────────────────────────
-//   Future<void> _loadInitialMessages() async {
-//     if (!mounted) return;
-//     setState(() => _isLoading = true);
-
-//     await ref
-//         .read(messageNotifierProvider.notifier)
-//         .fetchMessagesWithUser(
-//           otherUserId: widget.otherUserId,
-//           limit: 20,
-//           page: 1,
-//         );
-
-//     if (!mounted) return;
-
-//     final fetched = ref.read(messageNotifierProvider);
-//     setState(() {
-//       _messages.clear();
-//       _messages.addAll(fetched);
-//       _syncedMessageCount = _messages.length;
-//       _isLoading = false;
-//     });
-
-//     _scrollToBottom();
-//   }
-
-//   // ─────────────────────────────────────────
-//   // تحميل رسائل أقدم (pagination)
-//   // ─────────────────────────────────────────
-//   Future<void> _loadMoreMessages() async {
-//     if (_isLoading || !_hasMore || !mounted) return;
-//     setState(() => _isLoading = true);
-
-//     final countBeforeFetch = _messages.length;
-//     final previousExtent = _scrollController.position.maxScrollExtent;
-
-//     await ref
-//         .read(messageNotifierProvider.notifier)
-//         .fetchMessagesWithUser(
-//           otherUserId: widget.otherUserId,
-//           limit: 20,
-//           page: _currentPage + 1,
-//         );
-
-//     if (!mounted) return;
-
-//     final allMessages = ref.read(messageNotifierProvider);
-
-//     if (allMessages.length <= countBeforeFetch) {
-//       setState(() {
-//         _hasMore = false;
-//         _isLoading = false;
-//       });
-//       return;
-//     }
-
-//     final newOldCount = allMessages.length - countBeforeFetch;
-//     final oldMessages = allMessages.sublist(0, newOldCount);
-
-//     setState(() {
-//       for (final msg in oldMessages) {
-//         if (_messages.any((m) => m.id == msg.id)) continue;
-//         _messages.insert(0, msg);
-//         _syncedMessageCount++;
-//       }
-//       _currentPage++;
-//       _isLoading = false;
-//     });
-
-//     // ابقَ في نفس موقع السكرول
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       if (_scrollController.hasClients) {
-//         final newExtent = _scrollController.position.maxScrollExtent;
-//         _scrollController.jumpTo(newExtent - previousExtent);
-//       }
-//     });
-//   }
-
-//   // ─────────────────────────────────────────
-//   // مراقبة الرسائل الواردة من الـ socket
-//   // ─────────────────────────────────────────
-//   void _listenForIncomingMessages() {
-//     ref.listenManual(messageNotifierProvider, (previous, next) {
-//       if (!mounted) return;
-//       if (next.length <= _syncedMessageCount) return;
-
-//       final newMessages = next.sublist(_syncedMessageCount);
-//       bool didChange = false;
-
-//       for (final msg in newMessages) {
-//         _syncedMessageCount++;
-
-//         // الرسالة إحنا بعثناها — استبدل الـ pending بدل ما نضيف جديدة
-//         if (_pendingByText.containsKey(msg.text)) {
-//           final pendingIndex = _pendingByText.remove(msg.text)!;
-//           if (pendingIndex < _messages.length) {
-//             setState(() {
-//               _messages[pendingIndex] = msg.copyWith(isMe: true);
-//             });
-//           }
-//           continue;
-//         }
-
-//         // رسالة واردة من الطرف الثاني
-//         if (_messages.any((m) => m.id == msg.id)) continue;
-
-//         setState(() => _messages.add(msg));
-//         didChange = true;
-//       }
-
-//       if (didChange) _scrollToBottom();
-//     });
-//   }
-
-//   // ─────────────────────────────────────────
-//   // إرسال رسالة
-//   // ─────────────────────────────────────────
-//   void _sendMessage(String text) {
-//     if (text.trim().isEmpty) return;
-//     final chatNotifier = ref.read(messageNotifierProvider.notifier);
-
-//     // وضع التعديل
-//     final editIdx = _editIndexNotifier.value;
-//     if (editIdx != null) {
-//       setState(() {
-//         _messages[editIdx] = _messages[editIdx].copyWith(
-//           text: text.trim(),
-//           isEdited: true,
-//         );
-//       });
-//       _editIndexNotifier.value = null;
-//       _inputEditTextNotifier.value = null;
-//       return;
-//     }
-
-//     final newMessage = Message(
-//       id: DateTime.now().millisecondsSinceEpoch.toString(),
-//       text: text.trim(),
-//       senderId: chatNotifier.currentUserId ?? '',
-//       receiverId: widget.otherUserId,
-//       isMe: true,
-//       timestamp: DateTime.now(),
-//       replyTo: _replyNotifier.value,
-//       isSent: true,
-//     );
-
-//     setState(() {
-//       final insertIndex = _messages.length;
-//       _pendingByText[text.trim()] = insertIndex;
-//       _messages.add(newMessage);
-//       _syncedMessageCount++;
-//     });
-
-//     _scrollToBottom();
-//     chatNotifier.sendMessageToSocket(text.trim(), widget.otherUserId);
-//     _replyNotifier.value = null;
-
-//     ref
-//         .read(chatListNotifierProvider.notifier)
-//         .updateLastMessage(contactId: widget.otherUserId, message: newMessage);
-//   }
-
-//   // ─────────────────────────────────────────
-//   // حذف رسالة
-//   // ─────────────────────────────────────────
-//   void _deleteMessage(int index) {
-//     if (index < 0 || index >= _messages.length) return;
-//     setState(() {
-//       _messages.removeAt(index);
-//       _syncedMessageCount = _messages.length;
-//     });
-//   }
-
-//   // ─────────────────────────────────────────
-//   // السكرول للأسفل
-//   // ─────────────────────────────────────────
-//   void _scrollToBottom() {
-//     Future.delayed(const Duration(milliseconds: 100), () {
-//       if (mounted && _scrollController.hasClients) {
-//         _scrollController.animateTo(
-//           _scrollController.position.maxScrollExtent,
-//           duration: const Duration(milliseconds: 300),
-//           curve: Curves.easeOut,
-//         );
-//       }
-//     });
-//   }
-
-//   // ─────────────────────────────────────────
-//   // بناء فقاعة الرسالة
-//   // ─────────────────────────────────────────
-//   Widget _buildBubble(Message msg, int index) {
-//     final colorScheme = Theme.of(context).colorScheme;
-
-//     final bubbleColor = msg.isMe
-//         ? colorScheme.primary
-//         : colorScheme.surfaceContainerHighest;
-//     final bubbleTextColor = msg.isMe
-//         ? colorScheme.onPrimary
-//         : colorScheme.onSurface;
-
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-//       child: GestureDetector(
-//         onLongPress: () => _showMessageMenu(msg, index),
-//         child: Align(
-//           alignment: msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
-//           child: Column(
-//             crossAxisAlignment: msg.isMe
-//                 ? CrossAxisAlignment.end
-//                 : CrossAxisAlignment.start,
-//             children: [
-//               // ردّ على رسالة
-//               if (msg.replyTo != null)
-//                 Container(
-//                   padding: const EdgeInsets.all(8),
-//                   margin: const EdgeInsets.only(bottom: 4),
-//                   decoration: BoxDecoration(
-//                     color: colorScheme.tertiary.withOpacity(0.15),
-//                     borderRadius: BorderRadius.circular(8),
-//                     border: Border(
-//                       left: BorderSide(color: colorScheme.tertiary, width: 3),
-//                     ),
-//                   ),
-//                   child: Text(
-//                     msg.replyTo!.text,
-//                     style: TextStyle(
-//                       fontSize: 12,
-//                       color: colorScheme.onSurface.withOpacity(0.7),
-//                     ),
-//                   ),
-//                 ),
-
-//               // الفقاعة
-//               Container(
-//                 padding: const EdgeInsets.all(12),
-//                 constraints: BoxConstraints(
-//                   maxWidth: MediaQuery.of(context).size.width * 0.7,
-//                 ),
-//                 decoration: BoxDecoration(
-//                   color: bubbleColor,
-//                   borderRadius: BorderRadius.circular(12),
-//                 ),
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.end,
-//                   children: [
-//                     Text(msg.text, style: TextStyle(color: bubbleTextColor)),
-//                     if (msg.isEdited == true)
-//                       Text(
-//                         'edited',
-//                         style: TextStyle(
-//                           fontSize: 10,
-//                           color: bubbleTextColor.withOpacity(0.6),
-//                           fontStyle: FontStyle.italic,
-//                         ),
-//                       ),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   // ─────────────────────────────────────────
-//   // قائمة خيارات الرسالة
-//   // ─────────────────────────────────────────
-//   void _showMessageMenu(Message msg, int index) {
-//     final colorScheme = Theme.of(context).colorScheme;
-//     showMenu<String>(
-//       context: context,
-//       position: const RelativeRect.fromLTRB(30, 100, 30, 30),
-//       items: [
-//         PopupMenuItem(
-//           value: 'reply',
-//           child: Row(
-//             children: [
-//               Icon(Icons.reply, color: colorScheme.primary),
-//               const SizedBox(width: 10),
-//               const Text('الرد'),
-//             ],
-//           ),
-//         ),
-//         if (msg.isMe)
-//           PopupMenuItem(
-//             value: 'edit',
-//             child: Row(
-//               children: [
-//                 Icon(Icons.edit, color: colorScheme.secondary),
-//                 const SizedBox(width: 10),
-//                 const Text('تعديل'),
-//               ],
-//             ),
-//           ),
-//         PopupMenuItem(
-//           value: 'copy',
-//           child: Row(
-//             children: [
-//               Icon(Icons.copy, color: colorScheme.tertiary),
-//               const SizedBox(width: 10),
-//               const Text('نسخ'),
-//             ],
-//           ),
-//         ),
-//         const PopupMenuDivider(),
-//         PopupMenuItem(
-//           value: 'delete',
-//           child: Row(
-//             children: [
-//               Icon(Icons.delete, color: colorScheme.error),
-//               const SizedBox(width: 10),
-//               const Text('حذف'),
-//             ],
-//           ),
-//         ),
-//       ],
-//     ).then((value) {
-//       if (!mounted) return;
-//       switch (value) {
-//         case 'reply':
-//           _replyNotifier.value = msg;
-//         case 'edit':
-//           _editIndexNotifier.value = index;
-//           _inputEditTextNotifier.value = msg.text;
-//         case 'copy':
-//           Clipboard.setData(ClipboardData(text: msg.text));
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             SnackBar(
-//               content: const Text('تم نسخ الرسالة'),
-//               backgroundColor: colorScheme.inverseSurface,
-//             ),
-//           );
-//         case 'delete':
-//           _deleteMessage(index);
-//       }
-//     });
-//   }
-
-//   // ─────────────────────────────────────────
-//   // build
-//   // ─────────────────────────────────────────
-//   @override
-//   Widget build(BuildContext context) {
-//     final colorScheme = Theme.of(context).colorScheme;
-
-//     return Scaffold(
-//       resizeToAvoidBottomInset: true,
-//       appBar: AppBar(
-//         centerTitle: false,
-//         title: Row(
-//           children: [
-//             if (widget.otherUserPhoto != null) ...[
-//               CircleAvatar(
-//                 radius: 16,
-//                 backgroundImage: NetworkImage(widget.otherUserPhoto!),
-//               ),
-//               const SizedBox(width: 8),
-//             ],
-//             Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   widget.otherUserName,
-//                   style: const TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.w500,
-//                   ),
-//                 ),
-//                 Text(
-//                   'Online',
-//                   style: TextStyle(
-//                     fontSize: 11,
-//                     color: colorScheme.tertiary,
-//                     fontWeight: FontWeight.w500,
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),
-//       body: Column(
-//         children: [
-//           // مؤشر التحميل
-//           if (_isLoading)
-//             LinearProgressIndicator(
-//               backgroundColor: colorScheme.surfaceContainerHighest,
-//               color: colorScheme.primary,
-//             ),
-
-//           // معاينة الرد
-//           ValueListenableBuilder<Message?>(
-//             valueListenable: _replyNotifier,
-//             builder: (_, replyMsg, __) {
-//               if (replyMsg == null) return const SizedBox.shrink();
-//               return Container(
-//                 padding: const EdgeInsets.symmetric(
-//                   horizontal: 12,
-//                   vertical: 8,
-//                 ),
-//                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-//                 decoration: BoxDecoration(
-//                   color: colorScheme.surfaceContainerHighest,
-//                   borderRadius: BorderRadius.circular(8),
-//                   border: Border(
-//                     left: BorderSide(color: colorScheme.primary, width: 3),
-//                   ),
-//                 ),
-//                 child: Row(
-//                   children: [
-//                     Expanded(
-//                       child: Text(
-//                         replyMsg.text,
-//                         style: TextStyle(color: colorScheme.onSurface),
-//                         maxLines: 1,
-//                         overflow: TextOverflow.ellipsis,
-//                       ),
-//                     ),
-//                     IconButton(
-//                       icon: Icon(
-//                         Icons.close,
-//                         color: colorScheme.onSurfaceVariant,
-//                       ),
-//                       onPressed: () => _replyNotifier.value = null,
-//                     ),
-//                   ],
-//                 ),
-//               );
-//             },
-//           ),
-
-//           // معاينة التعديل
-//           ValueListenableBuilder<int?>(
-//             valueListenable: _editIndexNotifier,
-//             builder: (_, editIdx, __) {
-//               if (editIdx == null) return const SizedBox.shrink();
-//               return Container(
-//                 padding: const EdgeInsets.symmetric(
-//                   horizontal: 12,
-//                   vertical: 8,
-//                 ),
-//                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-//                 decoration: BoxDecoration(
-//                   color: colorScheme.secondaryContainer,
-//                   borderRadius: BorderRadius.circular(8),
-//                   border: Border.all(
-//                     color: colorScheme.secondary.withOpacity(0.4),
-//                   ),
-//                 ),
-//                 child: Row(
-//                   children: [
-//                     Icon(Icons.edit, color: colorScheme.secondary, size: 16),
-//                     const SizedBox(width: 8),
-//                     Expanded(
-//                       child: Text(
-//                         editIdx < _messages.length
-//                             ? _messages[editIdx].text
-//                             : '',
-//                         style: TextStyle(color: colorScheme.onSurface),
-//                         maxLines: 1,
-//                         overflow: TextOverflow.ellipsis,
-//                       ),
-//                     ),
-//                     IconButton(
-//                       icon: Icon(
-//                         Icons.close,
-//                         color: colorScheme.onSurfaceVariant,
-//                       ),
-//                       onPressed: () {
-//                         _editIndexNotifier.value = null;
-//                         _inputEditTextNotifier.value = null;
-//                       },
-//                     ),
-//                   ],
-//                 ),
-//               );
-//             },
-//           ),
-
-//           // قائمة الرسائل
-//           Expanded(
-//             child: _messages.isEmpty && !_isLoading
-//                 ? Center(
-//                     child: Column(
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: [
-//                         Icon(
-//                           Icons.chat_bubble_outline,
-//                           size: 64,
-//                           color: colorScheme.onSurface.withOpacity(0.3),
-//                         ),
-//                         const SizedBox(height: 16),
-//                         Text(
-//                           'No messages yet',
-//                           style: TextStyle(
-//                             color: colorScheme.onSurface.withOpacity(0.5),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   )
-//                 : ListView.builder(
-//                     controller: _scrollController,
-//                     itemCount: _messages.length,
-//                     itemBuilder: (context, index) {
-//                       return _buildBubble(_messages[index], index);
-//                     },
-//                   ),
-//           ),
-
-//           _ChatInputField(
-//             editTextNotifier: _inputEditTextNotifier,
-//             onSend: _sendMessage,
-//             onCancelEdit: () {
-//               _editIndexNotifier.value = null;
-//               _inputEditTextNotifier.value = null;
-//             },
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// // ─────────────────────────────────────────────────────────────────────────────
-// // حقل الإدخال
-// // ─────────────────────────────────────────────────────────────────────────────
-// class _ChatInputField extends StatefulWidget {
-//   final ValueNotifier<String?> editTextNotifier;
-//   final void Function(String) onSend;
-//   final VoidCallback onCancelEdit;
-
-//   const _ChatInputField({
-//     required this.editTextNotifier,
-//     required this.onSend,
-//     required this.onCancelEdit,
-//   });
-
-//   @override
-//   State<_ChatInputField> createState() => _ChatInputFieldState();
-// }
-
-// class _ChatInputFieldState extends State<_ChatInputField> {
-//   final TextEditingController _controller = TextEditingController();
-//   bool _hasText = false;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _controller.addListener(_onTextChanged);
-//     widget.editTextNotifier.addListener(_onEditRequested);
-//   }
-
-//   void _onTextChanged() {
-//     final has = _controller.text.isNotEmpty;
-//     if (has != _hasText) setState(() => _hasText = has);
-//   }
-
-//   void _onEditRequested() {
-//     final text = widget.editTextNotifier.value;
-//     if (text != null) {
-//       _controller.text = text;
-//       _controller.selection = TextSelection.fromPosition(
-//         TextPosition(offset: text.length),
-//       );
-//     } else {
-//       _controller.clear();
-//     }
-//   }
-
-//   @override
-//   void dispose() {
-//     _controller.removeListener(_onTextChanged);
-//     widget.editTextNotifier.removeListener(_onEditRequested);
-//     _controller.dispose();
-//     super.dispose();
-//   }
-
-//   void _handleSend() {
-//     final text = _controller.text.trim();
-//     if (text.isEmpty) return;
-//     widget.onSend(text);
-//     _controller.clear();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final colorScheme = Theme.of(context).colorScheme;
-
-//     return SafeArea(
-//       top: false,
-//       child: Container(
-//         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-//         decoration: BoxDecoration(
-//           color: colorScheme.surface,
-//           border: Border(
-//             top: BorderSide(
-//               color: colorScheme.onSurface.withOpacity(0.12),
-//               width: 1,
-//             ),
-//           ),
-//         ),
-//         child: Row(
-//           children: [
-//             IconButton(
-//               onPressed: () {},
-//               icon: Icon(
-//                 Icons.attach_file,
-//                 color: colorScheme.onSurfaceVariant,
-//               ),
-//               style: IconButton.styleFrom(
-//                 backgroundColor: colorScheme.onSurface.withOpacity(0.08),
-//               ),
-//             ),
-//             Expanded(
-//               child: TextField(
-//                 controller: _controller,
-//                 cursorColor: colorScheme.primary,
-//                 decoration: InputDecoration(
-//                   hintText: 'اكتب رسالة...',
-//                   border: InputBorder.none,
-//                   hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-//                 ),
-//                 style: TextStyle(color: colorScheme.onSurface),
-//                 minLines: 1,
-//                 maxLines: 5,
-//               ),
-//             ),
-//             !_hasText
-//                 ? IconButton(
-//                     onPressed: () {},
-//                     icon: Icon(Icons.mic, color: colorScheme.onPrimary),
-//                     style: IconButton.styleFrom(
-//                       backgroundColor: colorScheme.primary,
-//                     ),
-//                   )
-//                 : IconButton(
-//                     icon: Icon(Icons.send, color: colorScheme.onPrimary),
-//                     style: IconButton.styleFrom(
-//                       backgroundColor: colorScheme.primary,
-//                     ),
-//                     onPressed: _handleSend,
-//                   ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/features/providers/chat_list_provider.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
+import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/models/message.dart';
 
 //تشات سكرين مع لظلظة وحركات
@@ -1094,7 +374,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             children: [
               Icon(Icons.reply, color: colorScheme.primary),
               const SizedBox(width: 10),
-              const Text('الرد'),
+              Text(S.of(context).reply),
             ],
           ),
         ),
@@ -1105,7 +385,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               children: [
                 Icon(Icons.edit, color: colorScheme.secondary),
                 const SizedBox(width: 10),
-                const Text('تعديل'),
+                Text(S.of(context).edit),
               ],
             ),
           ),
@@ -1115,7 +395,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             children: [
               Icon(Icons.copy, color: colorScheme.tertiary),
               const SizedBox(width: 10),
-              const Text('نسخ'),
+              Text(S.of(context).copy),
             ],
           ),
         ),
@@ -1126,7 +406,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             children: [
               Icon(Icons.delete, color: colorScheme.error),
               const SizedBox(width: 10),
-              const Text('حذف'),
+              Text(S.of(context).delete),
             ],
           ),
         ),
@@ -1145,7 +425,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Clipboard.setData(ClipboardData(text: msg.text));
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('تم نسخ الرسالة'),
+              content: Text(S.of(context).messageCopied),
               backgroundColor: colorScheme.inverseSurface,
             ),
           );
@@ -1186,7 +466,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
                 Text(
-                  'Online',
+                  S.of(context).online,
                   style: TextStyle(
                     fontSize: 11,
                     color: colorScheme.tertiary,
@@ -1219,9 +499,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color:
-                      colorScheme.surfaceContainerHighest ??
-                      colorScheme.surface,
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                   border: Border(
                     left: BorderSide(color: colorScheme.primary, width: 3),
@@ -1262,9 +540,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color:
-                      colorScheme.secondaryContainer ??
-                      colorScheme.secondary.withOpacity(0.1),
+                  color: colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: colorScheme.secondary.withOpacity(0.4),
@@ -1341,7 +617,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No messages yet',
+                              S.of(context).noMessagesYet,
                               style: TextStyle(
                                 color: colorScheme.onSurface.withOpacity(0.5),
                               ),
@@ -1438,12 +714,7 @@ class _ChatInputFieldState extends State<_ChatInputField> {
         decoration: BoxDecoration(
           color: colorScheme.surface,
           border: Border(
-            top: BorderSide(
-              color:
-                  colorScheme.outlineVariant ??
-                  colorScheme.onSurface.withOpacity(0.12),
-              width: 1,
-            ),
+            top: BorderSide(color: colorScheme.outlineVariant, width: 1),
           ),
         ),
         child: Row(
@@ -1455,9 +726,7 @@ class _ChatInputFieldState extends State<_ChatInputField> {
                 color: colorScheme.onSurfaceVariant,
               ),
               style: IconButton.styleFrom(
-                backgroundColor:
-                    colorScheme.surfaceContainerHighest ??
-                    colorScheme.onSurface.withOpacity(0.08),
+                backgroundColor: colorScheme.surfaceContainerHighest,
               ),
             ),
             Expanded(
@@ -1465,7 +734,7 @@ class _ChatInputFieldState extends State<_ChatInputField> {
                 controller: _controller,
                 cursorColor: colorScheme.primary,
                 decoration: InputDecoration(
-                  hintText: 'اكتب رسالة...',
+                  hintText: S.of(context).typeMessage,
                   border: InputBorder.none,
                   hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
                 ),
