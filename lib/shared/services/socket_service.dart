@@ -90,16 +90,22 @@ class SocketService {
 
   void onMessageSent(void Function(Map<String, dynamic>) callback) {
     print("on Message sent");
+    _messageSentCallbacks.clear();
     _messageSentCallbacks.add(callback);
   }
 
   void onNewMessage(void Function(Map<String, dynamic>) callback) {
     print("On new message");
+    _newMessageCallbacks.clear();
     _newMessageCallbacks.add(callback);
   }
 
   void offNewMessage() {
-    _socket.off('newMessage');
+    _newMessageCallbacks.clear();
+  }
+
+  void offMessageSent() {
+    _messageSentCallbacks.clear();
   }
 
   void disconnect() {

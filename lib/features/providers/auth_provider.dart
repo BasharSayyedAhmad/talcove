@@ -358,7 +358,7 @@ class AuthNotifier extends _$AuthNotifier {
         state = state.copyWith(
           isAuthenticated: false,
           isLoading: false,
-          errorMessage: result['error'] ?? "Invalid username or password",
+          errorMessage: "Invalid username or password",
         );
       }
     } catch (e) {
@@ -366,7 +366,7 @@ class AuthNotifier extends _$AuthNotifier {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: e.toString(),
+        errorMessage: "Try using other username or password",
       );
     }
   }

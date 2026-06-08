@@ -6,12 +6,9 @@ part of 'chat_list_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$chatListNotifierHash() => r'e1a4d6846e21eeb858979ec1f5c990f5bccd4204';
+String _$chatListNotifierHash() => r'53b48a0845d638a95099810a6d07f6822bc82ada';
 
-/// يخزن آخر رسالة لكل محادثة: Map<contactId, Message>
-/// منفصل عن messageNotifierProvider اللي للـ ChatScreen
-///
-/// Copied from [ChatListNotifier].
+/// See also [ChatListNotifier].
 @ProviderFor(ChatListNotifier)
 final chatListNotifierProvider =
     AutoDisposeNotifierProvider<
