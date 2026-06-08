@@ -95,6 +95,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final displayedContacts = contacts.take(20).toList();
     final authState = ref.watch(authNotifierProvider);
     final isConnected = authState.hasInternet;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     print(" UI - hasInternet: $isConnected");
     //  لما الـ contacts يتحملوا لأول مرة، جيب اخر رسالة لكلهم
     ref.listen(contactsNotifierProvider, (previous, next) {
@@ -124,7 +125,24 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 ],
               )
             : const Text("Talcove"),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: !isDark
+                  ? [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.tertiary,
+                    ]
+                  : const [
+                      Color.fromARGB(255, 26, 35, 126),
+                      Color.fromARGB(255, 57, 73, 171),
+                    ],
+            ),
+          ),
+        ),
         actions: [
           if (authState.isLoading)
             const Padding(
@@ -233,6 +251,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 );
               },
             ),
+          ),
+          Divider(
+            height: 1,
+            indent: 0,
+            color: isDark ? Colors.white54 : Colors.black54,
           ),
           if (orderedContacts.isEmpty)
             const Center(
