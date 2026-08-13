@@ -59,6 +59,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "edit": MessageLookupByLibrary.simpleMessage("Modifier"),
     "editBio": MessageLookupByLibrary.simpleMessage("Modifier la bio"),
     "editEmail": MessageLookupByLibrary.simpleMessage("Modifier l\'e-mail"),
+    "editFirstName": MessageLookupByLibrary.simpleMessage("Modifier le prénom"),
+    "editLastName": MessageLookupByLibrary.simpleMessage(
+      "Modifier le nom de famille",
+    ),
     "editPhone": MessageLookupByLibrary.simpleMessage(
       "Modifier le numéro de téléphone",
     ),
@@ -99,6 +103,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Entrez un nom d\'utilisateur",
     ),
     "errorOccurred": m0,
+    "firstName": MessageLookupByLibrary.simpleMessage("Prénom"),
+    "firstNameRequired": MessageLookupByLibrary.simpleMessage(
+      "Le prénom est obligatoire",
+    ),
     "groups": MessageLookupByLibrary.simpleMessage("Groupes"),
     "invalidEmail": MessageLookupByLibrary.simpleMessage(
       "Veuillez entrer une adresse e-mail valide",
@@ -109,6 +117,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "languageChangedTo": MessageLookupByLibrary.simpleMessage(
       "Langue changée en ",
+    ),
+    "lastName": MessageLookupByLibrary.simpleMessage("Nom de famille"),
+    "lastNameRequired": MessageLookupByLibrary.simpleMessage(
+      "Le nom de famille est obligatoire",
     ),
     "lightModeOn": MessageLookupByLibrary.simpleMessage("Mode clair activé"),
     "logOut": MessageLookupByLibrary.simpleMessage("Déconnexion"),

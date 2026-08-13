@@ -65,7 +65,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     setState(() => _pickedImage = File(picked.path));
 
-    // هنا ترسل الصورة للـ provider/server
     ref.read(authNotifierProvider.notifier).updatePhoto(picked.path);
   }
 
@@ -118,12 +117,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         children: [
                           _InfoTile(
                             icon: Icons.person_outline_rounded,
+                            label: S.of(context).firstName,
+                            value: user?.firstName?.isNotEmpty == true
+                                ? user!.firstName!
+                                : S.of(context).notProvided,
+                            isEditable: true,
+                            onEdit: () => _showEditDialog(
+                              title: S.of(context).editFirstName,
+                              initialValue: user?.firstName ?? '',
+                              keyboardType: TextInputType.name,
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return "هذا الحقل مطلوب";
+                                }
+                                return null;
+                              },
+                              onSave: (v) => ref
+                                  .read(authNotifierProvider.notifier)
+                                  .updateFirstLastName(fName: v),
+                            ),
+                            colorScheme: colorScheme,
+                          ),
+                          _Separator(colorScheme: colorScheme),
+
+                          _InfoTile(
+                            icon: Icons.person_outline_rounded,
+                            label: S.of(context).lastName,
+                            value: user?.lastName?.isNotEmpty == true
+                                ? user!.lastName!
+                                : S.of(context).notProvided,
+                            isEditable: true,
+                            onEdit: () => _showEditDialog(
+                              title: S.of(context).editLastName,
+                              initialValue: user?.lastName ?? '',
+                              keyboardType: TextInputType.name,
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return "هذا الحقل مطلوب";
+                                }
+                                return null;
+                              },
+                              onSave: (v) => ref
+                                  .read(authNotifierProvider.notifier)
+                                  .updateFirstLastName(lName: v),
+                            ),
+                            colorScheme: colorScheme,
+                          ),
+                          _Separator(colorScheme: colorScheme),
+                          _InfoTile(
+                            icon: Icons.person_outline_rounded,
                             label: S.of(context).UserName,
                             value: user?.userName ?? '',
                             isEditable: false,
                             onEdit: () {},
                             colorScheme: colorScheme,
                           ),
+
                           _Separator(colorScheme: colorScheme),
                           _InfoTile(
                             icon: Icons.email_outlined,

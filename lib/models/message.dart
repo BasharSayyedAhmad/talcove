@@ -35,9 +35,6 @@ class Message {
     this.isVoice = false,
   });
 
-  // -------------------------
-  // 🔥 fromJson (للتخزين المحلي أو API)
-  // -------------------------
   factory Message.fromJson(Map<String, dynamic> json, String currentUserId) {
     return Message(
       id: json['_id'] ?? json['id'],
@@ -78,9 +75,6 @@ class Message {
     };
   }
 
-  // -------------------------
-  // 🔥 fromSocket (أهم نقطة: ID من الباك فقط)
-  // -------------------------
   factory Message.fromSocket(Map<String, dynamic> json, String currentUserId) {
     final senderId =
         json['senderId'] ?? json['senderUserName']?.toString() ?? '';
@@ -102,9 +96,6 @@ class Message {
     );
   }
 
-  // -------------------------
-  // 🔥 copyWith
-  // -------------------------
   Message copyWith({
     String? id,
     String? text,

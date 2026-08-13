@@ -101,7 +101,13 @@
 "soundVibrationAlerts": "Sound, vibration, alerts",
 "preferences": "Preferences",
 "emailPhoneVisibility": "Email, phone, visibility",
-"namePhotoBio": "Name, photo, bio"
+"namePhotoBio": "Name, photo, bio",
+"firstName": "First Name",
+  "lastName": "Last Name",
+  "editFirstName": "Edit First Name",
+  "editLastName": "Edit Last Name",
+  "firstNameRequired": "First name is required",
+  "lastNameRequired": "Last name is required"
   
 
 }

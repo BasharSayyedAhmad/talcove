@@ -44,24 +44,17 @@ class ContactsNotifier extends _$ContactsNotifier {
   void addContact(User user) {
     print(" Adding contact: ${user.userName} with ID: '${user.id}'");
 
-    final existingIndex = state.indexWhere(
-      (contact) => contact.userName == user.userName,
-    );
+    final existingIndex = state.indexWhere((contact) => contact.id == user.id);
 
     if (existingIndex != -1) {
       final existing = state[existingIndex];
-
-      if (existing.id.isEmpty && user.id.isNotEmpty) {
-        print(" Updating existing contact with ID: ${user.id}");
-        final updatedUser = existing.copyWith(id: user.id);
+      if (existing.userName == "Unknown" && user.userName != "Unknown") {
         state = [
           ...state.sublist(0, existingIndex),
-          updatedUser,
+          user,
           ...state.sublist(existingIndex + 1),
         ];
         _saveContactsToHive();
-      } else {
-        print(" Contact already exists: ${user.userName}");
       }
       return;
     }
@@ -69,7 +62,6 @@ class ContactsNotifier extends _$ContactsNotifier {
     // إضافة contact جديد
     state = [...state, user];
     _saveContactsToHive();
-    print(" Contact added: ${user.userName} (ID: ${user.id})");
   }
 
   void updateContactId(String userName, String newId) {

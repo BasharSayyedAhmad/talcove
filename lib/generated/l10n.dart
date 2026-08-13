@@ -873,6 +873,56 @@ class S {
       args: [],
     );
   }
+
+  /// `First Name`
+  String get firstName {
+    return Intl.message('First Name', name: 'firstName', desc: '', args: []);
+  }
+
+  /// `Last Name`
+  String get lastName {
+    return Intl.message('Last Name', name: 'lastName', desc: '', args: []);
+  }
+
+  /// `Edit First Name`
+  String get editFirstName {
+    return Intl.message(
+      'Edit First Name',
+      name: 'editFirstName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Last Name`
+  String get editLastName {
+    return Intl.message(
+      'Edit Last Name',
+      name: 'editLastName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First name is required`
+  String get firstNameRequired {
+    return Intl.message(
+      'First name is required',
+      name: 'firstNameRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last name is required`
+  String get lastNameRequired {
+    return Intl.message(
+      'Last name is required',
+      name: 'lastNameRequired',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

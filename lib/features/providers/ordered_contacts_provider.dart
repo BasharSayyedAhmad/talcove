@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
-import 'package:talcove/features/providers/chat_provider.dart';
+import 'package:talcove/features/providers/chat_list_provider.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
 import 'package:talcove/models/chat_contact.dart';
 import 'package:talcove/models/message.dart';
@@ -13,47 +13,65 @@ class OrderedContactsNotifier extends _$OrderedContactsNotifier {
   @override
   List<ChatContact> build() {
     final contacts = ref.watch(contactsNotifierProvider);
-    final messages = ref.watch(messageNotifierProvider);
+    final lastMessagesMap = ref.watch(chatListNotifierProvider);
+
     final currentUserId = ref.watch(authNotifierProvider).user?.id ?? '';
 
-    return _computeOrderedContacts(contacts, messages, currentUserId);
+    return _computeOrderedContacts(contacts, lastMessagesMap, currentUserId);
   }
 
   List<ChatContact> _computeOrderedContacts(
     List<User> contacts,
-    List<Message> messages,
+    Map<String, Message> lastMessagesMap,
     String currentUserId,
   ) {
-    final Map<String, ChatContact> contactMap = {};
+    final List<ChatContact> orderedList = [];
+    final Set<String> processedUserIds = {};
 
     for (final user in contacts) {
-      contactMap[user.id] = ChatContact(
-        user: user,
-        lastMessage: null,
-        lastMessageTime: DateTime(2000),
+      final lastMsg = lastMessagesMap[user.id];
+      processedUserIds.add(user.id);
+
+      orderedList.add(
+        ChatContact(
+          user: user,
+          lastMessage: lastMsg,
+          lastMessageTime: lastMsg?.timestamp ?? DateTime(2000),
+        ),
       );
     }
 
-    for (final message in messages) {
-      final otherId = message.senderId == currentUserId
-          ? message.receiverId
-          : message.senderId;
+    for (final entry in lastMessagesMap.entries) {
+      final contactId = entry.key;
+      final lastMsg = entry.value;
 
-      final existing = contactMap[otherId];
-      if (existing != null) {
-        if (existing.lastMessageTime.isBefore(message.timestamp)) {
-          contactMap[otherId] = ChatContact(
-            user: existing.user,
-            lastMessage: message,
-            lastMessageTime: message.timestamp,
-          );
-        }
+      // إذا الشخص مو معالج مسبقاً بالـ contacts، بنضيفه فوراً كـ Dynamic Contact
+      if (!processedUserIds.contains(contactId)) {
+        // تحديد من هو المرسل الحقيقي بناءً على الـ ID
+        final isMe = lastMsg.senderId == currentUserId;
+
+        // بناء كائن مستخدم مؤقت طالما الداتا لسا ما إجت كاملة من الـ API
+        final dynamicUser = User(
+          id: contactId,
+          userName: isMe
+              ? "Me"
+              : "User $contactId", // أو اسم افتراضي لحين جلب البيانات
+          photoUrl: null,
+          email: '',
+        );
+
+        orderedList.add(
+          ChatContact(
+            user: dynamicUser,
+            lastMessage: lastMsg,
+            lastMessageTime: lastMsg.timestamp,
+          ),
+        );
       }
     }
 
-    final ordered = contactMap.values.toList();
-    ordered.sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
-
-    return ordered;
+    // ترتيب القائمة تنازلياً: الأحدث دايماً فوق
+    orderedList.sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
+    return orderedList;
   }
 }

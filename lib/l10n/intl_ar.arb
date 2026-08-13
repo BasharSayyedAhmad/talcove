@@ -99,6 +99,12 @@
 "soundVibrationAlerts": "الصوت، الاهتزاز، التنبيهات",
 "preferences": "التفضيلات",
 "emailPhoneVisibility": "البريد الإلكتروني، الهاتف، الرؤية",
-"namePhotoBio": "الاسم، الصورة، السيرة الذاتية"
+"namePhotoBio": "الاسم، الصورة، السيرة الذاتية",
+"firstName": "الاسم الأول",
+  "lastName": "الاسم الأخير",
+  "editFirstName": "تعديل الاسم الأول",
+  "editLastName": "تعديل الاسم الأخير",
+  "firstNameRequired": "الاسم الأول مطلوب",
+  "lastNameRequired": "الاسم الأخير مطلوب"
 
 }

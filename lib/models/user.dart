@@ -3,6 +3,8 @@ import 'package:talcove/core/constants/auth_method.dart';
 class User {
   final String id;
   final String userName;
+  final String? firstName;
+  final String? lastName;
   final String? deviceToken;
   final String? email;
   final bool isEmailVisible;
@@ -13,12 +15,15 @@ class User {
   final String? token;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final DateTime? lastSeen;
   final String? status;
   final String? bio;
 
   User({
     required this.id,
     required this.userName,
+    this.firstName,
+    this.lastName,
     this.deviceToken,
     this.isEmailVisible = false,
     this.isPhoneNumberVisible = false,
@@ -29,6 +34,7 @@ class User {
     this.token,
     this.createdAt,
     this.updatedAt,
+    this.lastSeen,
     this.status,
     this.bio,
   });
@@ -39,10 +45,18 @@ class User {
     return User(
       id: id,
       userName: json['userName'] ?? '',
+      firstName: json['firstName'],
+      lastName: json['lastName'],
       email: json['email'],
       deviceToken: json['deviceToken'],
       phoneNumber: json['phoneNumber'],
-      photoUrl: json['photoUrl'],
+      photoUrl: () {
+        final url = json['profileImage'] ?? json['photoUrl'];
+        if (url != null && url.startsWith('http://')) {
+          return url.replaceFirst('http://', 'https://');
+        }
+        return url;
+      }(),
       isEmailVisible: json['isEmailVisible'] ?? false,
       isPhoneNumberVisible: json['isPhoneNumberVisible'] ?? false,
       authType: json['authType'] != null
@@ -58,6 +72,9 @@ class User {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
           : null,
+      lastSeen: json['lastSeen'] != null
+          ? DateTime.parse(json['lastSeen'])
+          : null,
       status: json['status'],
       bio: json['bio'],
     );
@@ -67,10 +84,13 @@ class User {
     return {
       'userId': id,
       'userName': userName,
+      'firstName': firstName,
+      'lastName': lastName,
       'deviceToken': deviceToken,
       'email': email,
       'phoneNumber': phoneNumber,
       'photoUrl': photoUrl,
+      'profileImage': photoUrl,
 
       'isEmailVisible': isEmailVisible,
       'isPhoneNumberVisible': isPhoneNumberVisible,
@@ -78,6 +98,7 @@ class User {
       'token': token,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
+      'lastSeen': lastSeen?.toIso8601String(),
       'status': status,
       'bio': bio,
     };
@@ -86,6 +107,8 @@ class User {
   User copyWith({
     String? id,
     String? userName,
+    String? firstName,
+    String? lastName,
     String? deviceToken,
     String? email,
     bool? isEmailVisible,
@@ -96,12 +119,15 @@ class User {
     String? token,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? lastSeen,
     String? status,
     String? bio,
   }) {
     return User(
       id: id ?? this.id,
       userName: userName ?? this.userName,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       deviceToken: deviceToken ?? this.deviceToken,
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
@@ -112,6 +138,7 @@ class User {
       token: token ?? this.token,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastSeen: lastSeen ?? this.lastSeen,
       status: status ?? this.status,
       bio: bio ?? this.bio,
     );

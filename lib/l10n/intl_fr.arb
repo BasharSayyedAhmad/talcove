@@ -94,5 +94,11 @@
 "soundVibrationAlerts": "Son, vibration, alertes",
 "preferences": "Préférences",
 "emailPhoneVisibility": "E-mail, téléphone, visibilité",
-"namePhotoBio": "Nom, photo, bio"
+"namePhotoBio": "Nom, photo, bio",
+"firstName": "Prénom",
+  "lastName": "Nom de famille",
+  "editFirstName": "Modifier le prénom",
+  "editLastName": "Modifier le nom de famille",
+  "firstNameRequired": "Le prénom est obligatoire",
+  "lastNameRequired": "Le nom de famille est obligatoire"
 }

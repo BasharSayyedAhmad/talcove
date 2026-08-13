@@ -58,6 +58,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "editEmail": MessageLookupByLibrary.simpleMessage(
       "تعديل البريد الإلكتروني",
     ),
+    "editFirstName": MessageLookupByLibrary.simpleMessage("تعديل الاسم الأول"),
+    "editLastName": MessageLookupByLibrary.simpleMessage("تعديل الاسم الأخير"),
     "editPhone": MessageLookupByLibrary.simpleMessage("تعديل رقم الهاتف"),
     "editUsername": MessageLookupByLibrary.simpleMessage("تعديل اسم المستخدم"),
     "email": MessageLookupByLibrary.simpleMessage("البريد الإلكتروني"),
@@ -94,6 +96,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "أدخل اسم مستخدم للبحث",
     ),
     "errorOccurred": m0,
+    "firstName": MessageLookupByLibrary.simpleMessage("الاسم الأول"),
+    "firstNameRequired": MessageLookupByLibrary.simpleMessage(
+      "الاسم الأول مطلوب",
+    ),
     "groups": MessageLookupByLibrary.simpleMessage("المجموعات"),
     "invalidEmail": MessageLookupByLibrary.simpleMessage(
       "الرجاء إدخال بريد إلكتروني صحيح",
@@ -104,6 +110,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "languageChangedTo": MessageLookupByLibrary.simpleMessage(
       "تم تغيير اللغة إلى ",
+    ),
+    "lastName": MessageLookupByLibrary.simpleMessage("الاسم الأخير"),
+    "lastNameRequired": MessageLookupByLibrary.simpleMessage(
+      "الاسم الأخير مطلوب",
     ),
     "lightModeOn": MessageLookupByLibrary.simpleMessage("الوضع الفاتح مفعل"),
     "logOut": MessageLookupByLibrary.simpleMessage("تسجيل الخروج"),

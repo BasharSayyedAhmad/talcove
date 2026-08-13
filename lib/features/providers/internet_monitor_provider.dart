@@ -47,6 +47,7 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
     _init();
     _startPolling();
   }
+
   void _startPolling() {
     _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       final hasRealInternet = await _internetService.hasInternet();
@@ -75,7 +76,8 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
     ) async {
       print("onConnectivityChanged FIRED with: $result");
 
-      final previousState = state.hasInternet;
+      final previousState =
+          state.hasInternet; // الحفاظ على الحالة السابقة قبل التحديث
       final hasRealInternet = await _internetService.hasInternet();
 
       print("hasRealInternet: $hasRealInternet");
@@ -83,6 +85,7 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
 
       final connectionType = result;
 
+      // 1. تحديث حالة الـ Monitor كـ UI أولاً
       state = state.copyWith(
         hasInternet: hasRealInternet,
         connectionType: connectionType,
@@ -90,12 +93,24 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
 
       print("state.hasInternet after update: ${state.hasInternet}");
 
-      final authNotifier = ref.read(authNotifierProvider.notifier);
-      print("About to call updateInternetStatus with: $hasRealInternet");
-      authNotifier.updateInternetStatus(hasRealInternet);
+      // 2. 🛡️ الفحص الذكي والآمن لمنع التكرار والـ Race Condition:
+      // لا نطلب تحديث الـ Socket والـ Session إلا إذا تغيرت حالة الإنترنت الفعلية (مثلاً من قطع لاتصال أو العكس)
+      if (previousState != hasRealInternet) {
+        print(
+          "🌐 Internet status changed from $previousState to $hasRealInternet. Updating Auth...",
+        );
 
-      if (!previousState && hasRealInternet) {
-        await _onInternetRestored();
+        final authNotifier = ref.read(authNotifierProvider.notifier);
+        authNotifier.updateInternetStatus(hasRealInternet);
+
+        if (!previousState && hasRealInternet) {
+          await _onInternetRestored();
+        }
+      } else {
+        // إذا انضربت الدالة عند الإقلاع والإنترنت متصل أصلاً (true -> true)، سيتخطى استدعاء السوكيت المكرر بسلام
+        print(
+          "ℹ️ Internet status remains unchanged ($hasRealInternet). Skipping redundant socket update.",
+        );
       }
     });
     print("Called updateInternetStatus successfully");
@@ -113,9 +128,7 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
 
   Future<void> _onInternetRestored() async {
     print("Internet restored - refreshing session automatically");
-
-    final authNotifier = ref.read(authNotifierProvider.notifier);
-    authNotifier.updateInternetStatus(true);
+    // تم حذف استدعاء updateInternetStatus الزائد هنا لأن الدالة الأب أصبحت تستدعيه بشكل صحيح عند تحقق الشرط
   }
 
   @override

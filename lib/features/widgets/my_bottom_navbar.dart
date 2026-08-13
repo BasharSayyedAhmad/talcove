@@ -34,11 +34,11 @@ class MyBottomNavBar extends StatelessWidget {
                 activeIcon: const Icon(Icons.people_rounded),
                 label: S.of(context).people,
               ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.group_add_outlined),
-                activeIcon: const Icon(Icons.group_add_rounded),
-                label: S.of(context).groups,
-              ),
+              // BottomNavigationBarItem(
+              //   icon: const Icon(Icons.group_add_outlined),
+              //   activeIcon: const Icon(Icons.group_add_rounded),
+              //   label: S.of(context).groups,
+              // ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.settings_outlined),
                 activeIcon: const Icon(Icons.settings_rounded),

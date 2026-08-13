@@ -1,12 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:talcove/features/chat/chat_screen.dart';
-import 'package:talcove/features/providers/contacts_provider.dart';
+import 'package:talcove/features/people/user_profile_screen.dart';
 import 'package:talcove/features/providers/search_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/models/search_state.dart';
-import 'package:talcove/shared/widgets/app_snackbar.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -178,29 +176,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: Icon(Icons.chat_bubble_outline, color: Colors.blue),
           ),
           onTap: () {
-            print(
-              " BEFORE ADD - Current contacts: ${ref.read(contactsNotifierProvider).length}",
+            debugPrint(
+              "🔍 [SearchScreen] Viewing profile of: ${user.userName}",
             );
-            print(" Adding: ${user.userName} (ID: ${user.id})");
-            ref.read(contactsNotifierProvider.notifier).addContact(user);
-            print(
-              " AFTER ADD - Contacts: ${ref.read(contactsNotifierProvider).length}",
-            );
-            print(
-              "Contacts list: ${ref.read(contactsNotifierProvider).map((u) => u.userName).toList()}",
-            );
-            AppSnackBar.show(
-              context,
-              message: "${user.userName} added to your contacts",
-            );
+
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ChatScreen(
-                  chatId: "",
-                  otherUserId: user.id,
-                  otherUserName: user.userName,
-                ),
-              ),
+              MaterialPageRoute(builder: (_) => UserProfileScreen(user: user)),
             );
           },
         );

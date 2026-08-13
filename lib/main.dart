@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/services/api_service.dart';
@@ -36,14 +37,15 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await LocalStorageService.init();
-
-  await Firebase.initializeApp();
-
-  Future.microtask(() async {
-    await ApiService().init();
-    await NotificationService().initialize();
-  });
-
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+  }
+  if (!kIsWeb) {
+    Future.microtask(() async {
+      await ApiService().init();
+      await NotificationService().initialize();
+    });
+  }
   FlutterNativeSplash.remove();
   runApp(const ProviderScope(child: MyApp()));
 }

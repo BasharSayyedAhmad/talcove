@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/features/chat/chat_list_screen.dart';
-import 'package:talcove/features/groups/groups_screen.dart';
 import 'package:talcove/features/people/people_screen.dart';
 import 'package:talcove/features/providers/internet_monitor_provider.dart';
 import 'package:talcove/features/settings/settings_screen.dart';
@@ -34,7 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: const [
           ChatListScreen(),
           PeopleScreen(),
-          GroupsScreen(),
+          // GroupsScreen(),
           SettingsScreen(),
         ],
       ),
