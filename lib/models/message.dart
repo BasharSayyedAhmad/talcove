@@ -10,7 +10,7 @@ class Message {
   final bool isSent;
   final bool isDelivered;
   final bool isRead;
-
+  final int unreadCount;
   final String? replyToMessageId;
   final String? imageUrl;
   final String? voiceUrl;
@@ -28,6 +28,7 @@ class Message {
     this.isSent = false,
     this.isDelivered = false,
     this.isRead = false,
+    this.unreadCount = 0,
     this.replyToMessageId,
     this.imageUrl,
     this.voiceUrl,
@@ -35,14 +36,29 @@ class Message {
     this.isVoice = false,
   });
 
+  static String _extractId(dynamic field) {
+    if (field == null) return '';
+    if (field is Map) {
+      return field['id']?.toString() ?? field['_id']?.toString() ?? '';
+    }
+    return field.toString();
+  }
+
   factory Message.fromJson(Map<String, dynamic> json, String currentUserId) {
+    final senderId = _extractId(json['senderId'] ?? json['sender']);
+    final receiverId = _extractId(json['receiverId'] ?? json['receiver']);
+
     return Message(
-      id: json['_id'] ?? json['id'],
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       text: json['message'] ?? json['text'] ?? '',
-      senderId: json['senderId'],
-      receiverId: json['receiverId'],
-      timestamp: DateTime.parse(json['createdAt'] ?? json['timestamp']),
-      isMe: json['senderId'] == currentUserId,
+      senderId: senderId,
+      receiverId: receiverId,
+      timestamp: DateTime.parse(
+        json['createdAt'] ??
+            json['timestamp'] ??
+            DateTime.now().toIso8601String(),
+      ),
+      isMe: senderId == currentUserId,
       isEdited: json['isEdited'] ?? false,
       isSent: json['isSent'] ?? true,
       isDelivered: json['isDelivered'] ?? json['delivered'] ?? false,
@@ -76,23 +92,40 @@ class Message {
   }
 
   factory Message.fromSocket(Map<String, dynamic> json, String currentUserId) {
-    final senderId =
-        json['senderId'] ?? json['senderUserName']?.toString() ?? '';
-    final receiverId =
-        json['receiverId'] ?? json['receiverUserName']?.toString() ?? '';
+    String senderId = '';
+    if (json['sender'] is Map) {
+      senderId = json['sender']['id'] ?? json['sender']['_id'] ?? '';
+    } else {
+      senderId = json['senderId'] ?? json['sender'] ?? '';
+    }
+
+    String receiverId = '';
+    if (json['receiver'] is Map) {
+      receiverId = json['receiver']['id'] ?? json['receiver']['_id'] ?? '';
+    } else {
+      receiverId = json['receiverId'] ?? json['receiver'] ?? '';
+    }
+
+    final text = (json['message'] ?? json['text'] ?? '').toString();
+
+    final id =
+        (json['_id'] ??
+                json['id'] ??
+                'soc_${DateTime.now().microsecondsSinceEpoch}')
+            .toString();
 
     return Message(
-      id:
-          json['_id'] ??
-          json['id'] ??
-          "srv_${DateTime.now().microsecondsSinceEpoch}",
-      text: json['message'] ?? '',
+      id: id,
+      text: text,
       senderId: senderId,
       receiverId: receiverId,
       isMe: senderId == currentUserId,
-      timestamp: DateTime.parse(json['createdAt']),
+      timestamp: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
       isSent: true,
       isDelivered: json['delivered'] ?? false,
+      isRead: json['read'] ?? false,
     );
   }
 
@@ -107,6 +140,7 @@ class Message {
     bool? isSent,
     bool? isDelivered,
     bool? isRead,
+    int? unreadCount,
     String? replyToMessageId,
     String? imageUrl,
     String? voiceUrl,
@@ -124,6 +158,7 @@ class Message {
       isSent: isSent ?? this.isSent,
       isDelivered: isDelivered ?? this.isDelivered,
       isRead: isRead ?? this.isRead,
+      unreadCount: unreadCount ?? this.unreadCount,
       replyToMessageId: replyToMessageId ?? this.replyToMessageId,
       imageUrl: imageUrl ?? this.imageUrl,
       voiceUrl: voiceUrl ?? this.voiceUrl,

@@ -11,6 +11,14 @@ class ContactsNotifier extends _$ContactsNotifier {
     return _loadContactsFromHive();
   }
 
+  void setContacts(List<User> newContacts) {
+    if (newContacts.isEmpty) return;
+
+    state = newContacts;
+    _saveContactsToHive();
+    print(" Contacts updated from API: ${newContacts.length} contacts saved");
+  }
+
   List<User> _loadContactsFromHive() {
     try {
       final contactsData = LocalStorageService.box.get(contactsKey);
@@ -41,19 +49,43 @@ class ContactsNotifier extends _$ContactsNotifier {
     }
   }
 
+  // void addContact(User user) {
+  //   print(" Adding contact: ${user.userName} with ID: '${user.id}'");
+
+  //   final existingIndex = state.indexWhere((contact) => contact.id == user.id);
+
+  //   if (existingIndex != -1) {
+  //     final existing = state[existingIndex];
+  //     if (existing.userName == "Unknown" && user.userName != "Unknown") {
+  //       state = [
+  //         ...state.sublist(0, existingIndex),
+  //         user,
+  //         ...state.sublist(existingIndex + 1),
+  //       ];
+  //       _saveContactsToHive();
+  //     }
+  //     return;
+  //   }
+
+  //   // إضافة contact جديد
+  //   state = [...state, user];
+  //   _saveContactsToHive();
+  // }
   void addContact(User user) {
-    print(" Adding contact: ${user.userName} with ID: '${user.id}'");
+    print(" Adding/Updating contact: ${user.userName} with ID: '${user.id}'");
 
     final existingIndex = state.indexWhere((contact) => contact.id == user.id);
 
     if (existingIndex != -1) {
       final existing = state[existingIndex];
-      if (existing.userName == "Unknown" && user.userName != "Unknown") {
-        state = [
-          ...state.sublist(0, existingIndex),
-          user,
-          ...state.sublist(existingIndex + 1),
-        ];
+
+      if ((existing.userName == "Unknown" ||
+              existing.userName == existing.id) &&
+          user.userName != user.id &&
+          user.userName != "Unknown") {
+        final updatedList = List<User>.from(state);
+        updatedList[existingIndex] = user;
+        state = updatedList;
         _saveContactsToHive();
       }
       return;

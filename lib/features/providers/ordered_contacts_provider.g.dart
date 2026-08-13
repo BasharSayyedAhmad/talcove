@@ -6,8 +6,26 @@ part of 'ordered_contacts_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$totalUnreadMessagesHash() =>
+    r'7387560d7e26a9494f91db35faaf217ae7e4a893';
+
+/// See also [totalUnreadMessages].
+@ProviderFor(totalUnreadMessages)
+final totalUnreadMessagesProvider = AutoDisposeProvider<int>.internal(
+  totalUnreadMessages,
+  name: r'totalUnreadMessagesProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$totalUnreadMessagesHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef TotalUnreadMessagesRef = AutoDisposeProviderRef<int>;
 String _$orderedContactsNotifierHash() =>
-    r'1294e4295029d21943b869d7ea9b42568c677d17';
+    r'2497ae191abed95f0264ab478ecf6cfdf115e6af';
 
 /// See also [OrderedContactsNotifier].
 @ProviderFor(OrderedContactsNotifier)

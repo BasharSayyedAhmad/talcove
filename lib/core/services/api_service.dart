@@ -18,6 +18,9 @@ class ApiService {
     dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
+        validateStatus: (status) {
+          return status != null && status < 500;
+        },
         connectTimeout: const Duration(seconds: 90),
         receiveTimeout: const Duration(seconds: 120),
         sendTimeout: const Duration(seconds: 60),

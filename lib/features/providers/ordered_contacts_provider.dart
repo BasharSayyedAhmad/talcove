@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/features/providers/chat_list_provider.dart';
@@ -10,11 +11,12 @@ part 'ordered_contacts_provider.g.dart';
 
 @riverpod
 class OrderedContactsNotifier extends _$OrderedContactsNotifier {
+  final Map<String, int> _unreadCounts = {};
+
   @override
   List<ChatContact> build() {
     final contacts = ref.watch(contactsNotifierProvider);
     final lastMessagesMap = ref.watch(chatListNotifierProvider);
-
     final currentUserId = ref.watch(authNotifierProvider).user?.id ?? '';
 
     return _computeOrderedContacts(contacts, lastMessagesMap, currentUserId);
@@ -37,6 +39,7 @@ class OrderedContactsNotifier extends _$OrderedContactsNotifier {
           user: user,
           lastMessage: lastMsg,
           lastMessageTime: lastMsg?.timestamp ?? DateTime(2000),
+          unreadCount: _unreadCounts[user.id] ?? 0,
         ),
       );
     }
@@ -45,17 +48,12 @@ class OrderedContactsNotifier extends _$OrderedContactsNotifier {
       final contactId = entry.key;
       final lastMsg = entry.value;
 
-      // إذا الشخص مو معالج مسبقاً بالـ contacts، بنضيفه فوراً كـ Dynamic Contact
       if (!processedUserIds.contains(contactId)) {
-        // تحديد من هو المرسل الحقيقي بناءً على الـ ID
         final isMe = lastMsg.senderId == currentUserId;
 
-        // بناء كائن مستخدم مؤقت طالما الداتا لسا ما إجت كاملة من الـ API
         final dynamicUser = User(
           id: contactId,
-          userName: isMe
-              ? "Me"
-              : "User $contactId", // أو اسم افتراضي لحين جلب البيانات
+          userName: isMe ? "Me" : "User $contactId",
           photoUrl: null,
           email: '',
         );
@@ -65,13 +63,44 @@ class OrderedContactsNotifier extends _$OrderedContactsNotifier {
             user: dynamicUser,
             lastMessage: lastMsg,
             lastMessageTime: lastMsg.timestamp,
+            unreadCount: _unreadCounts[contactId] ?? 0,
           ),
         );
       }
     }
 
-    // ترتيب القائمة تنازلياً: الأحدث دايماً فوق
     orderedList.sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
     return orderedList;
   }
+
+  void incrementUnread(String senderId) {
+    _unreadCounts[senderId] = (_unreadCounts[senderId] ?? 0) + 1;
+
+    state = state.map((contact) {
+      if (contact.user.id == senderId) {
+        return contact.copyWith(unreadCount: _unreadCounts[senderId]);
+      }
+      return contact;
+    }).toList();
+  }
+
+  void markAsRead(String userId) {
+    _unreadCounts[userId] = 0;
+
+    state = state.map((contact) {
+      if (contact.user.id == userId) {
+        return contact.copyWith(unreadCount: 0);
+      }
+      return contact;
+    }).toList();
+  }
+}
+
+@riverpod
+int totalUnreadMessages(Ref ref) {
+  final contacts = ref.watch(orderedContactsNotifierProvider);
+  return contacts.fold<int>(
+    0,
+    (sum, contact) => sum + (contact.unreadCount ?? 0),
+  );
 }

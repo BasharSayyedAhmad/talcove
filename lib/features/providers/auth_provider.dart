@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
 import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/constants/api_constants.dart';
 import 'package:talcove/core/constants/app_settings_keys.dart';
@@ -16,19 +15,20 @@ import 'package:talcove/features/providers/ordered_contacts_provider.dart';
 import 'package:talcove/models/auth_state.dart';
 import 'package:talcove/models/user.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
-
 part 'auth_provider.g.dart';
 
 @riverpod
 class AuthNotifier extends _$AuthNotifier {
-  late final AuthService _authService;
-  late final ApiService _apiService;
+  // late final AuthService _authService;
+  // late final ApiService _apiService;
+  final AuthService _authService = AuthService();
+  final ApiService _apiService = ApiService();
   bool _isConnectingSocket = false;
 
   @override
   AuthState build() {
-    _authService = AuthService();
-    _apiService = ApiService();
+    // _authService = AuthService();
+    // _apiService = ApiService();
     return AuthState();
   }
 
@@ -134,6 +134,124 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
+  // Future<void> signUpWithUserNameAndPassword(
+  //   String userName,
+  //   String password,
+  // ) async {
+  //   state = state.copyWith(isLoading: true, errorMessage: null);
+
+  //   try {
+  //     final deviceToken = await _getDeviceToken();
+  //     final result = await _authService.registerWithUsernamePassword(
+  //       userName: userName,
+  //       password: password,
+  //       deviceToken: deviceToken,
+  //     );
+
+  //     if (result['success']) {
+  //       final responseData = result['user'];
+  //       final userObject = responseData['user'] ?? responseData;
+
+  //       final user = User(
+  //         id: userObject['userId'],
+  //         userName: userName,
+  //         email: userObject['email'] ?? '',
+  //         phoneNumber: userObject['phoneNumber'] ?? '',
+  //         photoUrl: userObject['profileImage'],
+  //         authType: AuthMethod.userNameAndPassword,
+  //       );
+
+  //       await LocalStorageService.box.put(userKey, user.toJson());
+  //       await LocalStorageService.box.put(
+  //         authMethodKey,
+  //         AuthMethod.userNameAndPassword.name,
+  //       );
+
+  //       final token = _apiService.accessToken;
+  //       if (token != null) {
+  //         ref
+  //             .read(messageNotifierProvider.notifier)
+  //             .connectSocket(user.id, token);
+  //       }
+
+  //       state = state.copyWith(
+  //         isLoading: false,
+  //         isAuthenticated: true,
+  //         authMethod: AuthMethod.userNameAndPassword,
+  //         user: user,
+  //       );
+  //     } else {
+  //       state = state.copyWith(
+  //         isLoading: false,
+  //         errorMessage: result['error'] ?? "Sign-up failed",
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //     state = state.copyWith(isLoading: false, errorMessage: e.toString());
+  //   }
+  // }
+
+  // Future<void> loginWithUserNameAndPassword(
+  //   String userName,
+  //   String password,
+  // ) async {
+  //   state = state.copyWith(isLoading: true, errorMessage: null);
+
+  //   try {
+  //     final deviceToken = await _getDeviceToken();
+  //     final result = await _authService.loginWithUsernamePassword(
+  //       userName: userName,
+  //       password: password,
+  //       deviceToken: deviceToken,
+  //     );
+
+  //     if (result['success']) {
+  //       final responseData = result['user'];
+  //       final accessToken = responseData['accessToken'] ?? '';
+  //       final userObject = responseData['user'] ?? responseData;
+
+  //       final user = User(
+  //         id: userObject['userId'] ?? userName,
+  //         userName: userName,
+  //         email: userObject['email'] ?? '',
+  //         phoneNumber: userObject['phoneNumber'] ?? '',
+  //         photoUrl: userObject['profileImage'],
+  //         authType: AuthMethod.userNameAndPassword,
+  //       );
+
+  //       await LocalStorageService.box.put(userKey, user.toJson());
+  //       await LocalStorageService.box.put(
+  //         authMethodKey,
+  //         AuthMethod.userNameAndPassword.name,
+  //       );
+
+  //       ref
+  //           .read(messageNotifierProvider.notifier)
+  //           .connectSocket(user.id, accessToken);
+
+  //       state = state.copyWith(
+  //         isAuthenticated: true,
+  //         isLoading: false,
+  //         user: user,
+  //         authMethod: AuthMethod.userNameAndPassword,
+  //       );
+  //     } else {
+  //       state = state.copyWith(
+  //         isAuthenticated: false,
+  //         isLoading: false,
+  //         errorMessage: "Invalid username or password",
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //     state = state.copyWith(
+  //       isLoading: false,
+  //       isAuthenticated: false,
+  //       errorMessage: "Try using another username or password",
+  //     );
+  //   }
+  // }
   Future<void> signUpWithUserNameAndPassword(
     String userName,
     String password,
@@ -148,16 +266,21 @@ class AuthNotifier extends _$AuthNotifier {
         deviceToken: deviceToken,
       );
 
-      if (result['success']) {
+      if (result['success'] == true && result['user'] != null) {
         final responseData = result['user'];
-        final userObject = responseData['user'] ?? responseData;
+        final userObject =
+            (responseData is Map && responseData.containsKey('user'))
+            ? responseData['user']
+            : responseData;
+
+        final userId = userObject?['userId'] ?? userObject?['_id'] ?? userName;
 
         final user = User(
-          id: userObject['userId'],
+          id: userId,
           userName: userName,
-          email: userObject['email'] ?? '',
-          phoneNumber: userObject['phoneNumber'] ?? '',
-          photoUrl: userObject['profileImage'],
+          email: userObject?['email'] ?? '',
+          phoneNumber: userObject?['phoneNumber'] ?? '',
+          photoUrl: userObject?['profileImage'],
           authType: AuthMethod.userNameAndPassword,
         );
 
@@ -168,7 +291,7 @@ class AuthNotifier extends _$AuthNotifier {
         );
 
         final token = _apiService.accessToken;
-        if (token != null) {
+        if (token != null && token.isNotEmpty) {
           ref
               .read(messageNotifierProvider.notifier)
               .connectSocket(user.id, token);
@@ -179,16 +302,22 @@ class AuthNotifier extends _$AuthNotifier {
           isAuthenticated: true,
           authMethod: AuthMethod.userNameAndPassword,
           user: user,
+          errorMessage: null,
         );
       } else {
         state = state.copyWith(
           isLoading: false,
+          isAuthenticated: false,
           errorMessage: result['error'] ?? "Sign-up failed",
         );
       }
-    } catch (e) {
-      print(e);
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    } catch (e, stackTrace) {
+      print("SignUp Exception: $e\n$stackTrace");
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        errorMessage: e.toString(),
+      );
     }
   }
 
@@ -206,17 +335,22 @@ class AuthNotifier extends _$AuthNotifier {
         deviceToken: deviceToken,
       );
 
-      if (result['success']) {
+      if (result['success'] == true && result['user'] != null) {
         final responseData = result['user'];
-        final accessToken = responseData['accessToken'] ?? '';
-        final userObject = responseData['user'] ?? responseData;
+        final accessToken = responseData?['accessToken'] ?? '';
+        final userObject =
+            (responseData is Map && responseData.containsKey('user'))
+            ? responseData['user']
+            : responseData;
+
+        final userId = userObject?['userId'] ?? userObject?['_id'] ?? userName;
 
         final user = User(
-          id: userObject['userId'] ?? userName,
+          id: userId,
           userName: userName,
-          email: userObject['email'] ?? '',
-          phoneNumber: userObject['phoneNumber'] ?? '',
-          photoUrl: userObject['profileImage'],
+          email: userObject?['email'] ?? '',
+          phoneNumber: userObject?['phoneNumber'] ?? '',
+          photoUrl: userObject?['profileImage'],
           authType: AuthMethod.userNameAndPassword,
         );
 
@@ -226,25 +360,28 @@ class AuthNotifier extends _$AuthNotifier {
           AuthMethod.userNameAndPassword.name,
         );
 
-        ref
-            .read(messageNotifierProvider.notifier)
-            .connectSocket(user.id, accessToken);
+        if (accessToken.isNotEmpty) {
+          ref
+              .read(messageNotifierProvider.notifier)
+              .connectSocket(user.id, accessToken);
+        }
 
         state = state.copyWith(
           isAuthenticated: true,
           isLoading: false,
           user: user,
           authMethod: AuthMethod.userNameAndPassword,
+          errorMessage: null,
         );
       } else {
         state = state.copyWith(
           isAuthenticated: false,
           isLoading: false,
-          errorMessage: "Invalid username or password",
+          errorMessage: result['error'] ?? "Invalid username or password",
         );
       }
-    } catch (e) {
-      print(e);
+    } catch (e, stackTrace) {
+      print("Login Exception: $e\n$stackTrace");
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,

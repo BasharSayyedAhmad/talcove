@@ -43,22 +43,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final authState = ref.watch(authNotifierProvider);
     final authNotifier = ref.read(authNotifierProvider.notifier);
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
-      if (next.errorMessage != null) {
+      // 1. عرض رسالة الخطأ
+      if (next.errorMessage != null && next.errorMessage!.trim().isNotEmpty) {
         AppSnackBar.show(
           context,
           message: next.errorMessage!,
           backgroundColor: Colors.red,
         );
-        authNotifier.clearError();
+
+        // إزالة clearError من هنا مباشرة لتجنب مسح الخطأ قبل عرضه
       }
 
+      // 2. النجاح والانتقال
       if (next.isAuthenticated && prev?.isAuthenticated != true) {
         AppSnackBar.show(
           context,
           message: S.of(context).signupSuccess,
           backgroundColor: Colors.green,
         );
+
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+
           Widget nextScreen;
           if (next.authMethod == AuthMethod.google) {
             final hasPhoneNumber =
@@ -72,6 +78,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           } else {
             nextScreen = const EmailScreen();
           }
+
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => nextScreen),
             (route) => false,
@@ -79,6 +86,43 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         });
       }
     });
+    // ref.listen<AuthState>(authNotifierProvider, (prev, next) {
+    //   if (next.errorMessage != null) {
+    //     AppSnackBar.show(
+    //       context,
+    //       message: next.errorMessage!,
+    //       backgroundColor: Colors.red,
+    //     );
+    //     authNotifier.clearError();
+    //   }
+
+    //   if (next.isAuthenticated && prev?.isAuthenticated != true) {
+    //     AppSnackBar.show(
+    //       context,
+    //       message: S.of(context).signupSuccess,
+    //       backgroundColor: Colors.green,
+    //     );
+    //     WidgetsBinding.instance.addPostFrameCallback((_) {
+    //       Widget nextScreen;
+    //       if (next.authMethod == AuthMethod.google) {
+    //         final hasPhoneNumber =
+    //             next.user?.phoneNumber != null &&
+    //             next.user!.phoneNumber!.isNotEmpty;
+    //         if (hasPhoneNumber) {
+    //           nextScreen = const HomeScreen();
+    //         } else {
+    //           nextScreen = const PhoneScreen();
+    //         }
+    //       } else {
+    //         nextScreen = const EmailScreen();
+    //       }
+    //       Navigator.of(context).pushAndRemoveUntil(
+    //         MaterialPageRoute(builder: (_) => nextScreen),
+    //         (route) => false,
+    //       );
+    //     });
+    //   }
+    // });
 
     return Form(
       key: validateKey,

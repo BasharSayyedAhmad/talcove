@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talcove/features/providers/ordered_contacts_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 
-class MyBottomNavBar extends StatelessWidget {
+class MyBottomNavBar extends ConsumerWidget {
   const MyBottomNavBar({
     super.key,
     required this.selectedIndex,
@@ -12,7 +14,9 @@ class MyBottomNavBar extends StatelessWidget {
   final Function(int) onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalUnread = ref.watch(totalUnreadMessagesProvider);
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -22,11 +26,18 @@ class MyBottomNavBar extends StatelessWidget {
           child: BottomNavigationBar(
             onTap: onTap,
             currentIndex: selectedIndex,
-
             items: [
               BottomNavigationBarItem(
-                icon: const Icon(Icons.chat_bubble_outline_rounded),
-                activeIcon: const Icon(Icons.chat_bubble_rounded),
+                icon: Badge(
+                  isLabelVisible: totalUnread > 0,
+                  label: Text('$totalUnread'),
+                  child: const Icon(Icons.chat_bubble_outline_rounded),
+                ),
+                activeIcon: Badge(
+                  isLabelVisible: totalUnread > 0,
+                  label: Text('$totalUnread'),
+                  child: const Icon(Icons.chat_bubble_rounded),
+                ),
                 label: S.of(context).chats,
               ),
               BottomNavigationBarItem(
@@ -34,11 +45,6 @@ class MyBottomNavBar extends StatelessWidget {
                 activeIcon: const Icon(Icons.people_rounded),
                 label: S.of(context).people,
               ),
-              // BottomNavigationBarItem(
-              //   icon: const Icon(Icons.group_add_outlined),
-              //   activeIcon: const Icon(Icons.group_add_rounded),
-              //   label: S.of(context).groups,
-              // ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.settings_outlined),
                 activeIcon: const Icon(Icons.settings_rounded),

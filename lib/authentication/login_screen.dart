@@ -22,39 +22,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final userNameController = TextEditingController();
   final passwordController = TextEditingController();
   final GlobalKey<FormState> validateKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    userNameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = AppDimensions.screenWidth(context);
     final isMobile = width < AppBreakpoints.tablet;
     final authState = ref.watch(authNotifierProvider);
-    final authNotifier = ref.read(authNotifierProvider.notifier);
+
+    // 👈 الاستماع للتغيرات بأمان تام بدون clearError() وبحماية للـ Context
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
-      if (next.errorMessage != null) {
+      // 1. عرض رسالة الخطأ
+      if (next.errorMessage != null && next.errorMessage!.trim().isNotEmpty) {
         AppSnackBar.show(
           context,
           message: next.errorMessage!,
           backgroundColor: Colors.red,
         );
-        authNotifier.clearError();
       }
 
+      // 2. النجاح والانتقال الآمن لـ HomeScreen
       if (next.isAuthenticated && prev?.isAuthenticated != true) {
         AppSnackBar.show(
           context,
-          message: S.of(context).signupSuccess,
+          message: S
+              .of(context)
+              .signupSuccess, // أو رسالة النجاح الخاصة بالـ Login
           backgroundColor: Colors.green,
         );
 
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-          (Route<dynamic> route) => false,
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return; // 👈 حماية الـ Context من الكراش
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (Route<dynamic> route) => false,
+          );
+        });
       }
     });
+
     return Form(
       key: validateKey,
       child: Scaffold(
-        // backgroundColor: Theme.of(context).colorScheme.background,
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

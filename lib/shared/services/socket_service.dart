@@ -135,7 +135,6 @@ class SocketService {
   factory SocketService() => _instance;
   SocketService._internal();
 
-  // 🛡️ تحويل السوكيت إلى Nullable لتجنب أخطاء الـ LateInitializationError كلياً
   IO.Socket? _socket;
   bool _isConnected = false;
   String? _currentUserId;
@@ -151,8 +150,6 @@ class SocketService {
 
     print(" Connecting to socket with token: ${token.substring(0, 20)}...");
 
-    // 🛡️ الإجراء الاحترافي الأول: إذا كان السوكيت منشأ سابقاً (حتى لو لسه ما اتصل)
-    // اقطع اتصاله فوراً واعمله dispose لتنظيف الذاكرة ومنع الخطوط المتوازية
     if (_socket != null) {
       print(
         "⚠️ Found an existing socket instance. Disconnecting and disposing before creating a new one...",
@@ -180,7 +177,7 @@ class SocketService {
           .setQuery({'token': token})
           .enableReconnection()
           .setReconnectionAttempts(5)
-          .enableForceNew() // 🔥 تجبر المكتبة على إنشاء خط نقي تماماً وعدم استخدام خطوط عشوائية بالخلفية
+          .enableForceNew()
           .build(),
     );
 
@@ -203,19 +200,61 @@ class SocketService {
       print("Error happened $error");
     });
 
+    Map<String, dynamic> normalizeSocketPayload(dynamic rawData) {
+      if (rawData is! Map) return {};
+
+      final Map<String, dynamic> data = Map<String, dynamic>.from(rawData);
+
+      if (data['sender'] is Map) {
+        final senderMap = Map<String, dynamic>.from(data['sender']);
+        data['senderId'] = senderMap['id'] ?? senderMap['_id'] ?? '';
+        data['senderUserName'] =
+            senderMap['senderUserName'] ?? senderMap['userName'] ?? '';
+      } else if (data['senderId'] == null && data['sender'] is String) {
+        data['senderId'] = data['sender'];
+      }
+
+      if (data['receiver'] is Map) {
+        final receiverMap = Map<String, dynamic>.from(data['receiver']);
+        data['receiverId'] = receiverMap['id'] ?? receiverMap['_id'] ?? '';
+        data['receiverUserName'] =
+            receiverMap['receiverUserName'] ?? receiverMap['userName'] ?? '';
+      } else if (data['receiverId'] == null && data['receiver'] is String) {
+        data['receiverId'] = data['receiver'];
+      }
+
+      return data;
+    }
+
     _socket!.on(SocketEvents.messageSent, (data) {
-      print("Message sent $data");
+      print("Message sent raw: $data");
+      final normalizedData = normalizeSocketPayload(data);
       for (var callback in _messageSentCallbacks) {
-        callback(data);
+        callback(normalizedData);
       }
     });
 
     _socket!.on(SocketEvents.newMessage, (data) {
-      print("new message received $data");
+      print("new message received raw: $data");
+      final normalizedData = normalizeSocketPayload(data);
       for (var callback in _newMessageCallbacks) {
-        callback(data);
+        callback(normalizedData);
       }
     });
+
+    // _socket!.on(SocketEvents.messageSent, (data) {
+    //   print("Message sent $data");
+    //   for (var callback in _messageSentCallbacks) {
+    //     callback(data);
+    //   }
+    // });
+
+    // _socket!.on(SocketEvents.newMessage, (data) {
+    //   print("new message received $data");
+    //   for (var callback in _newMessageCallbacks) {
+    //     callback(data);
+    //   }
+    // });
 
     _socket!.onAny((event, data) {
       print("⚡ ALL EVENT: $event, data: $data");

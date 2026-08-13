@@ -26,72 +26,205 @@ class ChatListNotifier extends _$ChatListNotifier {
       SocketService().onNewMessage((data) {
         try {
           final mapData = data as Map<String, dynamic>;
-          print("📥 Processing socket message in ChatListNotifier...");
+          final senderId = mapData['senderId'] ?? "";
+          final receiverId = mapData['receiverId'] ?? "";
+
+          if (senderId != _currentUserId && receiverId != _currentUserId) {
+            return;
+          }
+
+          final bool isMe = (senderId == _currentUserId);
 
           final newMessage = Message(
-            id:
-                mapData['_id'] ??
-                mapData['createdAt'] ??
-                DateTime.now().toString(),
+            id: mapData['_id'] ?? DateTime.now().toString(),
             text: mapData['message'] ?? "",
-            senderId: mapData['senderId'] ?? "",
-            receiverId: mapData['receiverId'] ?? "",
-            isMe: mapData['senderId'] == _currentUserId,
+            senderId: senderId,
+            receiverId: receiverId,
+            isMe: isMe,
             timestamp: mapData['createdAt'] != null
                 ? DateTime.parse(mapData['createdAt'])
                 : DateTime.now(),
             isSent: true,
             isDelivered: mapData['delivered'] ?? true,
-            isRead: mapData['read'] ?? false,
+            isRead: false,
           );
 
-          final contactId = newMessage.senderId == _currentUserId
-              ? newMessage.receiverId
-              : newMessage.senderId;
+          final contactId = isMe ? receiverId : senderId;
+          final rawPartnerName = isMe
+              ? (mapData['receiverUserName'] ?? '')
+              : (mapData['senderUserName'] ?? '');
 
-          print("🎯 Adding message to contact: $contactId");
-
-          // 🔥 التعديل: التأكد من حفظ المستخدم في Hive عبر ContactsNotifier
           final contactsNotifier = ref.read(contactsNotifierProvider.notifier);
           final existingContact = contactsNotifier.getContactById(contactId);
 
           if (existingContact == null) {
-            print(
-              "🕵️ New sender detected! Saving to Hive via ContactsNotifier...",
-            );
+            final String fallbackName =
+                "User_${contactId.length >= 4 ? contactId.substring(contactId.length - 4) : contactId}";
+            final String finalUserName =
+                (rawPartnerName.toString().trim().isNotEmpty)
+                ? rawPartnerName.toString()
+                : fallbackName;
 
-            // إنشاء مستخدم مؤقت بالاعتماد على الـ ID
             final newUser = User(
               id: contactId,
-              userName: "User_${contactId.substring(contactId.length - 4)}",
+              userName: finalUserName,
               photoUrl: null,
               email: '',
             );
-
-            // هذه الدالة ستقوم بتحديث الـ state وحفظ البيانات في Hive تلقائياً
             contactsNotifier.addContact(newUser);
           }
 
-          // ✅ تحديث قائمة المحادثات (الرسالة الأخيرة)
-          addOrUpdateContact(contactId: contactId, lastMessage: newMessage);
+          addOrUpdateContact(
+            contactId: contactId,
+            lastMessage: newMessage,
+            incrementUnread: false,
+          );
         } catch (e, stack) {
-          print("❌ Error parsing socket message in ChatListNotifier: $e");
-          print(stack);
+          print("Error parsing socket message in ChatListNotifier: $e");
         }
       });
+      // SocketService().onNewMessage((data) {
+      //   try {
+      //     final mapData = data as Map<String, dynamic>;
+      //     final senderId = mapData['senderId'] ?? "";
+      //     final receiverId = mapData['receiverId'] ?? "";
+
+      //     // فلترة: تجاهل أي رسالة لا تخص المستخدم الحالي
+      //     if (senderId != _currentUserId && receiverId != _currentUserId) {
+      //       return;
+      //     }
+
+      //     final newMessage = Message(
+      //       id: mapData['_id'] ?? DateTime.now().toString(),
+      //       text: mapData['message'] ?? "",
+      //       senderId: senderId,
+      //       receiverId: receiverId,
+      //       isMe: senderId == _currentUserId,
+      //       timestamp: mapData['createdAt'] != null
+      //           ? DateTime.parse(mapData['createdAt'])
+      //           : DateTime.now(),
+      //       isSent: true,
+      //       isDelivered: mapData['delivered'] ?? true,
+      //       isRead: false,
+      //     );
+
+      //     // معرفة الشخص الآخر في المحادثة
+      //     final contactId = newMessage.isMe
+      //         ? newMessage.receiverId
+      //         : newMessage.senderId;
+
+      //     // إضافة جهة الاتصال إذا لم تكن موجودة
+      //     final contactsNotifier = ref.read(contactsNotifierProvider.notifier);
+      //     final existingContact = contactsNotifier.getContactById(contactId);
+
+      //     if (existingContact == null) {
+      //       final newUser = User(
+      //         id: contactId,
+      //         userName:
+      //             "User_${contactId.length >= 4 ? contactId.substring(contactId.length - 4) : contactId}",
+      //         photoUrl: null,
+      //         email: '',
+      //       );
+      //       contactsNotifier.addContact(newUser);
+      //     }
+
+      //     addOrUpdateContact(
+      //       contactId: contactId,
+      //       lastMessage: newMessage,
+      //       incrementUnread: false, // تم إيقاف زيادة العداد
+      //     );
+      //   } catch (e, stack) {
+      //     print("Error parsing socket message in ChatListNotifier: $e");
+      //   }
+      // });
     }
 
     ref.onDispose(() {
       _isSocketListening = false;
     });
 
-    // ✅ المرجع الصحيح لريفربود: إرجاع Map فارغة كحالة ابتدائية آمنة عند أول بناء
     return {};
   }
 
-  bool get isFetching => _isFetching;
+  Future<void> fetchNewMessages() async {
+    if (_currentUserId == null) return;
 
-  // دالة الـ fetchLastMessages بتضل متل ما هيي وبتستخدم state عادي
+    try {
+      final response = await _apiService.dio.get('/api/v1/messages/new');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final List<dynamic> newMessagesJson =
+            response.data['data']['newMessages'] ?? [];
+
+        if (newMessagesJson.isEmpty) return;
+
+        final contactsNotifier = ref.read(contactsNotifierProvider.notifier);
+
+        for (var json in newMessagesJson) {
+          final msg = Message(
+            id: json['_id'],
+            text: json['message'] ?? "",
+            senderId: json['senderId'] ?? "",
+            receiverId: json['receiverId'] ?? "",
+            isMe: json['senderId'] == _currentUserId,
+            timestamp: DateTime.parse(json['createdAt']),
+            isSent: true,
+            isDelivered: json['delivered'] ?? true,
+            isRead: false,
+          );
+
+          final contactId = msg.isMe ? msg.receiverId : msg.senderId;
+
+          if (contactsNotifier.getContactById(contactId) == null) {
+            final newUser = User(
+              id: contactId,
+              userName:
+                  "User_${contactId.length >= 4 ? contactId.substring(contactId.length - 4) : contactId}",
+              photoUrl: null,
+              email: '',
+            );
+            contactsNotifier.addContact(newUser);
+          }
+
+          addOrUpdateContact(
+            contactId: contactId,
+            lastMessage: msg,
+            incrementUnread: !msg.isMe,
+          );
+        }
+      }
+    } catch (e) {
+      print("Error fetching new messages: $e");
+    }
+  }
+
+  void addOrUpdateContact({
+    required String contactId,
+    required Message lastMessage,
+    bool incrementUnread = false,
+  }) {
+    final newMap = Map<String, Message>.from(state);
+    final existingMessage = newMap[contactId];
+    final currentUnread = existingMessage?.unreadCount ?? 0;
+
+    final newUnread = incrementUnread ? (currentUnread + 1) : currentUnread;
+
+    newMap[contactId] = lastMessage.copyWith(unreadCount: newUnread);
+    state = newMap;
+  }
+
+  void markAsRead(String contactId) {
+    if (!state.containsKey(contactId)) return;
+
+    final newMap = Map<String, Message>.from(state);
+    final currentMsg = newMap[contactId];
+
+    if (currentMsg != null) {
+      newMap[contactId] = currentMsg.copyWith(unreadCount: 0);
+      state = newMap;
+    }
+  }
+
   Future<void> fetchLastMessages(List<String> contactIds) async {
     if (contactIds.isEmpty || _currentUserId == null || _isFetching) return;
 
@@ -124,47 +257,25 @@ class ChatListNotifier extends _$ChatListNotifier {
             }
           }
         } catch (e) {
-          print(" ❌ Error fetching for $contactId: $e");
+          print("Error fetching for $contactId: $e");
         }
         return null;
       }).toList();
 
       final results = await Future.wait(futures);
 
-      // ✅ هون بنقرا الـ state بأمان لأننا برات الـ build
       final newMap = Map<String, Message>.from(state);
       for (final entry in results) {
         if (entry != null) {
-          newMap[entry.key] = entry.value;
+          final existingMsg = newMap[entry.key];
+          final currentUnread = existingMsg?.unreadCount ?? 0;
+
+          newMap[entry.key] = entry.value.copyWith(unreadCount: currentUnread);
         }
       }
       state = newMap;
     } finally {
       _isFetching = false;
-    }
-  }
-
-  void addOrUpdateContact({
-    required String contactId,
-    required Message lastMessage,
-  }) {
-    // 🔥 إنشاء مرجع جديد كلياً في الذاكرة لتنبيه Riverpod
-    final newMap = Map<String, Message>.from(state);
-
-    if (!newMap.containsKey(contactId)) {
-      newMap[contactId] = lastMessage;
-      state = newMap; // 🚀 إسناد المرجع الجديد للـ state
-      print("✅ State updated inside ChatListNotifier (New Contact Added)");
-      return;
-    }
-
-    final oldMessage = newMap[contactId]!;
-    if (lastMessage.timestamp.isAfter(oldMessage.timestamp)) {
-      newMap[contactId] = lastMessage;
-      state = newMap; // 🚀 إسناد المرجع الجديد للـ state
-      print(
-        "✅ State updated inside ChatListNotifier (Existing Contact Updated)",
-      );
     }
   }
 }

@@ -18,16 +18,15 @@ class MessageNotifier extends _$MessageNotifier {
   String? _activeChatUserId;
   bool _isLoading = false;
 
-  late void Function(dynamic) _onNewMessageHandler;
-  late void Function(dynamic) _onMessageSentHandler;
-  bool _listenersActive = false;
+  void Function(dynamic)? _onNewMessageHandler;
+  void Function(dynamic)? _onMessageSentHandler;
 
   bool get isLoading => _isLoading;
   String? get currentUserId => _currentUserId;
 
   @override
   List<Message> build() {
-    final authState = ref.read(authNotifierProvider);
+    final authState = ref.watch(authNotifierProvider);
     _currentUserId = authState.user?.id;
 
     ref.onDispose(() {
@@ -37,54 +36,65 @@ class MessageNotifier extends _$MessageNotifier {
     return [];
   }
 
+  String _extractId(dynamic rawData) {
+    if (rawData == null) return '';
+    if (rawData is Map) {
+      return (rawData['id'] ?? rawData['_id'] ?? '').toString();
+    }
+    return rawData.toString();
+  }
+
   void setActiveChatUser(String? userId) {
     _activeChatUserId = userId;
   }
 
   void setupSocketListeners() {
-    if (_listenersActive) {
-      _tearDownListeners();
-    }
+    _tearDownListeners();
 
     _onNewMessageHandler = (dynamic data) {
       if (data == null || _currentUserId == null) return;
 
-      final newMessage = Message.fromSocket(
-        data as Map<String, dynamic>,
-        _currentUserId!,
-      );
+      final mapData = data as Map<String, dynamic>;
+      final newMessage = Message.fromSocket(mapData, _currentUserId!);
 
-      // 1. إضافة جهة الاتصال دائماً في الخلفية
-      final contacts = ref.read(contactsNotifierProvider);
-      if (!contacts.any((c) => c.id == newMessage.senderId)) {
-        ref
-            .read(contactsNotifierProvider.notifier)
-            .addContact(
-              User(
-                id: newMessage.senderId,
-                userName: (data)['senderUserName'] ?? newMessage.senderId,
-              ),
-            );
+      final senderId = _extractId(mapData['sender']).isNotEmpty
+          ? _extractId(mapData['sender'])
+          : newMessage.senderId;
+
+      final receiverId = _extractId(mapData['receiver']).isNotEmpty
+          ? _extractId(mapData['receiver'])
+          : newMessage.receiverId;
+
+      String extractedUserName = senderId;
+      if (mapData['sender'] is Map) {
+        final senderMap = mapData['sender'] as Map<String, dynamic>;
+        extractedUserName =
+            senderMap['senderUserName'] ?? senderMap['userName'] ?? senderId;
+      } else if (mapData['senderUserName'] != null) {
+        extractedUserName = mapData['senderUserName'].toString();
       }
 
-      // 2. تحديث قائمة المحادثات العامة (Chat List) دائماً
+      final contacts = ref.read(contactsNotifierProvider);
+      if (!contacts.any((c) => c.id == senderId)) {
+        ref
+            .read(contactsNotifierProvider.notifier)
+            .addContact(User(id: senderId, userName: extractedUserName));
+      }
+
+      final isMessageForActiveChat =
+          _activeChatUserId != null &&
+          (_activeChatUserId == senderId || _activeChatUserId == receiverId);
+
       ref
           .read(chatListNotifierProvider.notifier)
           .addOrUpdateContact(
-            contactId: newMessage.senderId,
+            contactId: senderId,
             lastMessage: newMessage,
+            incrementUnread: !isMessageForActiveChat,
           );
 
-      // 3. 🎯 الإصلاح الجذري: تحقّق هل الرسالة تخص المحادثة المفتوحة حالياً أمام المستخدم؟
-      final isMessageForActiveChat =
-          _activeChatUserId != null &&
-          (newMessage.senderId == _activeChatUserId ||
-              newMessage.receiverId == _activeChatUserId);
-
-      // إذا لم تكن للمحادثة النشطة، لا تحقنها في state الشاشة المفتوحة!
       if (!isMessageForActiveChat) return;
 
-      // تحديث شاشة الشات الحالية إن كانت مطابقة
       final existingIndex = state.indexWhere((m) => m.id == newMessage.id);
       if (existingIndex != -1) {
         final updated = List<Message>.from(state);
@@ -98,24 +108,21 @@ class MessageNotifier extends _$MessageNotifier {
     _onMessageSentHandler = (dynamic data) {
       if (data == null || _currentUserId == null) return;
 
-      final sentMessage = Message.fromSocket(
-        data as Map<String, dynamic>,
-        _currentUserId!,
-      );
+      final mapData = data as Map<String, dynamic>;
+      final sentMessage = Message.fromSocket(mapData, _currentUserId!);
 
-      // تحديث قائمة المحادثات العامة دائماً
+      final receiverId = _extractId(mapData['receiver']).isNotEmpty
+          ? _extractId(mapData['receiver'])
+          : sentMessage.receiverId;
+
       ref
           .read(chatListNotifierProvider.notifier)
-          .addOrUpdateContact(
-            contactId: sentMessage.receiverId,
-            lastMessage: sentMessage,
-          );
+          .addOrUpdateContact(contactId: receiverId, lastMessage: sentMessage);
 
-      // 🎯 تحقق هل تأكيد الإرسال يعود للمحادثة النشطة حالياً؟
       final isMessageForActiveChat =
           _activeChatUserId != null &&
-          (sentMessage.receiverId == _activeChatUserId ||
-              sentMessage.senderId == _activeChatUserId);
+          (_activeChatUserId == receiverId ||
+              _activeChatUserId == sentMessage.senderId);
 
       if (!isMessageForActiveChat) return;
 
@@ -129,7 +136,8 @@ class MessageNotifier extends _$MessageNotifier {
         (m) =>
             m.id.startsWith('temp_') &&
             m.text.trim() == sentMessage.text.trim() &&
-            m.receiverId == sentMessage.receiverId,
+            (m.receiverId == receiverId ||
+                m.receiverId == sentMessage.receiverId),
       );
 
       if (tempIndex != -1) {
@@ -144,20 +152,22 @@ class MessageNotifier extends _$MessageNotifier {
       }
     };
 
-    _socketService.onNewMessage(_onNewMessageHandler);
-    _socketService.onMessageSent(_onMessageSentHandler);
-    _listenersActive = true;
+    _socketService.onNewMessage(_onNewMessageHandler!);
+    _socketService.onMessageSent(_onMessageSentHandler!);
   }
 
   void _tearDownListeners() {
-    if (!_listenersActive) return;
-    _socketService.offNewMessage(_onNewMessageHandler);
-    _socketService.offMessageSent(_onMessageSentHandler);
-    _listenersActive = false;
+    if (_onNewMessageHandler != null) {
+      _socketService.offNewMessage(_onNewMessageHandler!);
+      _onNewMessageHandler = null;
+    }
+    if (_onMessageSentHandler != null) {
+      _socketService.offMessageSent(_onMessageSentHandler!);
+      _onMessageSentHandler = null;
+    }
   }
 
   void detachListeners() {
-    _activeChatUserId = null;
     _tearDownListeners();
   }
 
@@ -218,7 +228,7 @@ class MessageNotifier extends _$MessageNotifier {
   }) async {
     try {
       _isLoading = true;
-      _activeChatUserId = otherUserId; // 👈 ضبط المستلم النشط عند جلب المحادثة
+      _activeChatUserId = otherUserId;
 
       final response = await _apiService.dio.get(
         '/api/v1/messages/$otherUserId/?limit=$limit&page=$page',
@@ -227,12 +237,15 @@ class MessageNotifier extends _$MessageNotifier {
       if (response.statusCode == 200) {
         final List<dynamic> messagesData = response.data['data']['messages'];
         final messages = messagesData.map((json) {
+          final sId = _extractId(json['senderId'] ?? json['sender']);
+          final rId = _extractId(json['receiverId'] ?? json['receiver']);
+
           return Message(
-            id: json['_id'],
-            text: json['message'] ?? '',
-            senderId: json['senderId'],
-            receiverId: json['receiverId'],
-            isMe: json['senderId'] == _currentUserId,
+            id: (json['_id'] ?? json['id']).toString(),
+            text: json['message'] ?? json['text'] ?? '',
+            senderId: sId,
+            receiverId: rId,
+            isMe: sId == _currentUserId,
             timestamp: DateTime.parse(json['createdAt']),
             isSent: true,
             isDelivered: json['delivered'] ?? false,
@@ -256,12 +269,15 @@ class MessageNotifier extends _$MessageNotifier {
       if (response.statusCode == 200) {
         final List<dynamic> messagesData = response.data['data']['newMessages'];
         final newMessages = messagesData.map((json) {
+          final sId = _extractId(json['senderId'] ?? json['sender']);
+          final rId = _extractId(json['receiverId'] ?? json['receiver']);
+
           return Message(
             id: json['id'].toString(),
-            text: json['text'] ?? '',
-            senderId: json['senderId'] ?? '',
-            receiverId: json['receiverId'] ?? '',
-            isMe: json['senderId'] == _currentUserId,
+            text: json['text'] ?? json['message'] ?? '',
+            senderId: sId,
+            receiverId: rId,
+            isMe: sId == _currentUserId,
             timestamp: DateTime.parse(json['createdAt']),
             isSent: true,
             isDelivered: json['delivered'] ?? false,
@@ -293,12 +309,15 @@ class MessageNotifier extends _$MessageNotifier {
             final List<dynamic> data = response.data['data']['messages'];
             if (data.isNotEmpty) {
               final json = data.first;
+              final sId = _extractId(json['senderId'] ?? json['sender']);
+              final rId = _extractId(json['receiverId'] ?? json['receiver']);
+
               return Message(
-                id: json['_id'],
-                text: json['message'] ?? '',
-                senderId: json['senderId'],
-                receiverId: json['receiverId'],
-                isMe: json['senderId'] == _currentUserId,
+                id: (json['_id'] ?? json['id']).toString(),
+                text: json['message'] ?? json['text'] ?? '',
+                senderId: sId,
+                receiverId: rId,
+                isMe: sId == _currentUserId,
                 timestamp: DateTime.parse(json['createdAt']),
                 isSent: true,
                 isDelivered: json['delivered'] ?? false,

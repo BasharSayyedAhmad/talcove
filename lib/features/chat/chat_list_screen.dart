@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:talcove/core/services/api_service.dart';
+import 'package:talcove/core/services/user_service.dart';
 import 'package:talcove/features/chat/chat_screen.dart';
 import 'package:talcove/features/people/search_screen.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
@@ -12,6 +14,7 @@ import 'package:talcove/features/providers/chat_provider.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
 import 'package:talcove/features/providers/ordered_contacts_provider.dart';
 import 'package:talcove/generated/l10n.dart';
+
 import 'package:talcove/shared/services/socket_service.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
@@ -22,9 +25,20 @@ class ChatListScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatListScreenState extends ConsumerState<ChatListScreen> {
-  final TextEditingController searchController = TextEditingController();
   late final SocketService _socketService;
   Timer? _pollingTimer;
+
+  Future<void> _syncContacts() async {
+    try {
+      final contacts = await UserService().fetchUserContacts();
+
+      if (contacts.isNotEmpty && mounted) {
+        ref.read(contactsNotifierProvider.notifier).setContacts(contacts);
+      }
+    } catch (e) {
+      print("❌ Error syncing contacts: $e");
+    }
+  }
 
   @override
   void initState() {
@@ -32,6 +46,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     _socketService = SocketService();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncContacts();
       _connectSocketIfNeeded();
       _startPolling();
     });
@@ -40,7 +55,6 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   @override
   void dispose() {
     _pollingTimer?.cancel();
-    searchController.dispose();
     super.dispose();
   }
 
@@ -51,21 +65,15 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
     if (userId != null) {
       try {
-        // جلب الـ Token المباشر من الـ Auth state أو ApiService
         final token = user?.token ?? ApiService().accessToken;
 
-        if (token != null) {
-          if (!_socketService.isConnected) {
-            print("🔄 Reconnecting socket with dynamic token...");
-            ref
-                .read(messageNotifierProvider.notifier)
-                .connectSocket(userId, token);
-          }
-        } else {
-          print("⚠️ Dynamic Token is null!");
+        if (token != null && !_socketService.isConnected) {
+          ref
+              .read(messageNotifierProvider.notifier)
+              .connectSocket(userId, token);
         }
       } catch (e) {
-        print("❌ Error getting dynamic token: $e");
+        debugPrint("❌ Error getting dynamic token: $e");
       }
 
       _fetchLastMessages();
@@ -73,7 +81,6 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   }
 
   Future<void> _fetchLastMessages() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
     final contacts = ref.read(contactsNotifierProvider);
@@ -88,29 +95,44 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   void _startPolling() {
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted) {
-        print("🔄 Polling triggered: Updating chat list entries via API...");
         _fetchLastMessages();
       }
     });
   }
 
+  void _navigateToChat(String userId, String userName, String? photoUrl) {
+    ref.read(chatListNotifierProvider.notifier).markAsRead(userId);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          chatId: "",
+          otherUserId: userId,
+          otherUserName: userName,
+          otherUserPhoto: photoUrl,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final contacts = ref.watch(contactsNotifierProvider);
-    final displayedContacts = contacts.take(20).toList();
-    final authState = ref.watch(authNotifierProvider);
-    final isConnected = authState.hasInternet;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // استماع للتغيرات الأساسية للـ contacts
+    // الاستماع لتغيرات جهات الاتصال لجلب أحدث الرسائل
     ref.listen(contactsNotifierProvider, (previous, next) {
       if ((previous == null || previous.isEmpty) && next.isNotEmpty) {
         _fetchLastMessages();
       }
     });
 
+    final contacts = ref.watch(contactsNotifierProvider);
+    final displayedContacts = contacts.take(20).toList();
+    final authState = ref.watch(authNotifierProvider);
+    final isConnected = authState.hasInternet;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final chatMap = ref.watch(chatListNotifierProvider);
     final orderedContacts = ref.watch(orderedContactsNotifierProvider);
 
     return Scaffold(
@@ -172,167 +194,193 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             ),
         ],
       ),
-      body: CustomScrollView(
-        // إزالة الـ Key لضمان استقرار الحركة أثناء الـ Scroll وسلاسة تحديث Riverpod
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    S.of(context).people,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _fetchLastMessages();
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      S.of(context).people,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 100,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: displayedContacts.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 100,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: displayedContacts.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const SearchScreen(),
+                                    ),
+                                  );
+                                },
+                                child: const CircleAvatar(
+                                  maxRadius: 25,
+                                  backgroundColor: Colors.blue,
+                                  child: Icon(Icons.add, color: Colors.white),
+                                ),
+                              ),
+                            );
+                          }
+
+                          final user = displayedContacts[index - 1];
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const SearchScreen(),
+                              onTap: () => _navigateToChat(
+                                user.id,
+                                user.userName,
+                                user.photoUrl,
+                              ),
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 35,
+                                    backgroundImage: user.photoUrl != null
+                                        ? NetworkImage(user.photoUrl!)
+                                        : null,
+                                    child: user.photoUrl == null
+                                        ? Text(
+                                            user.userName.isNotEmpty
+                                                ? user.userName[0].toUpperCase()
+                                                : '?',
+                                            style: const TextStyle(
+                                              fontSize: 24,
+                                            ),
+                                          )
+                                        : null,
                                   ),
-                                );
-                              },
-                              child: const CircleAvatar(
-                                maxRadius: 25,
-                                backgroundColor: Colors.blue,
-                                child: Icon(Icons.add, color: Colors.white),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    user.userName.length > 10
+                                        ? '${user.userName.substring(0, 10)}...'
+                                        : user.userName,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ],
                               ),
                             ),
                           );
-                        }
-
-                        final user = displayedContacts[index - 1];
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ChatScreen(
-                                    chatId: "",
-                                    otherUserId: user.id,
-                                    otherUserName: user.userName,
-                                    otherUserPhoto: user.photoUrl,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Column(
-                              children: [
-                                CircleAvatar(
-                                  radius: 35,
-                                  backgroundImage: user.photoUrl != null
-                                      ? NetworkImage(user.photoUrl!)
-                                      : null,
-                                  child: user.photoUrl == null
-                                      ? Text(
-                                          user.userName.isNotEmpty
-                                              ? user.userName[0].toUpperCase()
-                                              : '?',
-                                          style: const TextStyle(fontSize: 24),
-                                        )
-                                      : null,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  user.userName.length > 10
-                                      ? '${user.userName.substring(0, 10)}...'
-                                      : user.userName,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Divider(
-                    height: 1,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ),
-            ),
-          ),
-          if (orderedContacts.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: Text(S.of(context).noConversationsYet)),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final contact = orderedContacts[index];
-                  final user = contact.user;
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                    leading: CircleAvatar(
-                      backgroundImage: user.photoUrl != null
-                          ? NetworkImage(user.photoUrl!)
-                          : null,
-                      child: user.photoUrl == null
-                          ? Text(
-                              user.userName.isNotEmpty
-                                  ? user.userName[0].toUpperCase()
-                                  : '?',
-                            )
-                          : null,
-                    ),
-                    title: Text(user.userName),
-                    subtitle: Text(
-                      contact.lastMessage?.text ??
-                          S.of(context).startAConversation,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight:
-                            contact.lastMessage?.isRead == false &&
-                                !contact.lastMessage!.isMe
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        },
                       ),
                     ),
-                    trailing: Text(_formatTime(contact.lastMessageTime)),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatScreen(
-                            chatId: "",
-                            otherUserId: user.id,
-                            otherUserName: user.userName,
-                            otherUserPhoto: user.photoUrl,
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }, childCount: orderedContacts.length),
+                    const SizedBox(height: 10),
+                    Divider(
+                      height: 1,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
               ),
             ),
-        ],
+            if (orderedContacts.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: Text(S.of(context).noConversationsYet)),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final contact = orderedContacts[index];
+                    final user = contact.user;
+
+                    final lastMsg = chatMap[user.id] ?? contact.lastMessage;
+                    final unreadCount = lastMsg?.unreadCount ?? 0;
+
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                      leading: CircleAvatar(
+                        backgroundImage: user.photoUrl != null
+                            ? NetworkImage(user.photoUrl!)
+                            : null,
+                        child: user.photoUrl == null
+                            ? Text(
+                                user.userName.isNotEmpty
+                                    ? user.userName[0].toUpperCase()
+                                    : '?',
+                              )
+                            : null,
+                      ),
+                      title: Text(user.userName),
+                      subtitle: Text(
+                        lastMsg?.text ?? S.of(context).startAConversation,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: unreadCount > 0
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            _formatTime(contact.lastMessageTime),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: unreadCount > 0
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.grey,
+                            ),
+                          ),
+                          if (unreadCount > 0) ...[
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                unreadCount > 99 ? '99+' : '$unreadCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      onTap: () => _navigateToChat(
+                        user.id,
+                        user.userName,
+                        user.photoUrl,
+                      ),
+                    );
+                  }, childCount: orderedContacts.length),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -340,13 +388,16 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
 String _formatTime(DateTime time) {
   final now = DateTime.now();
-  final diff = now.difference(time);
+  final localTime = time.toLocal();
+  final diff = now.difference(localTime);
 
-  if (diff.inDays > 0) {
+  if (diff.inDays >= 7) {
+    return '${localTime.day}/${localTime.month}';
+  } else if (diff.inDays >= 1) {
     return '${diff.inDays}d';
-  } else if (diff.inHours > 0) {
+  } else if (diff.inHours >= 1) {
     return '${diff.inHours}h';
-  } else if (diff.inMinutes > 0) {
+  } else if (diff.inMinutes >= 1) {
     return '${diff.inMinutes}m';
   } else {
     return 'now';
