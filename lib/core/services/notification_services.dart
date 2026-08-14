@@ -1,120 +1,57 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-// دالة التعامل مع الإشعارات في الخلفية أو عند إغلاق التطبيق تماماً
+// دالة التعامل مع الإشعارات أثناء إغلاق التطبيق تماماً (ضرورية لـ FCM)
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("📡 تم استقبال إشعار في الخلفية بنجاح: ${message.messageId}");
-}
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 class NotificationService {
-  static final NotificationService _instance = NotificationService._internal();
-  factory NotificationService() => _instance;
-  NotificationService._internal();
-
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  final AndroidNotificationChannel _channel = const AndroidNotificationChannel(
-    'chat_notifications_channel',
-    'Chat Notifications',
-    description: 'This channel is used for real-time chat push notifications.',
-    importance: Importance.max, // تضمن ظهور الإشعار كرأس منبثق في الأعلى
-    playSound: true,
-  );
-
   Future<void> initialize() async {
-    // 1. طلب صلاحيات النظام لظهور التنبيهات
-    NotificationSettings settings = await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    // 1. طلب الصلاحيات
+    await _fcm.requestPermission();
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print(' تم تفعيل صلاحيات الإشعارات بنجاح في النظام');
-      await _fcm.subscribeToTopic('MessageMe1');
-    }
-
-    // 2. تهيئة وتحديد أيقونة الإشعارات المحلية
-    const androidInit = AndroidInitializationSettings('b1');
+    // 2. تهيئة الإشعارات المحلية (لإظهار الإشعار والتطبيق مفتوح)
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
     await _localNotifications.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
-      onDidReceiveNotificationResponse: (response) {
-        _handleNotificationClick(response.payload);
-      },
     );
 
-    // 3. بناء وحقن قناة الصوت والأهمية داخل نظام الأندرويد
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(_channel);
-
-    // 4. ربط دالة معالجة الخلفية
+    // 3. ربط معالج الخلفية
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // 5. الاستماع للإشعارات والتطبيق مفتوح (Foreground)
+    // 4. استلام الإشعارات والتطبيق مفتوح (Foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
 
-      // 💡 تم تبسيط الشرط هنا بالاكتفاء بفحص وجود الإشعار لضمان استقرار الاستقبال دائماً
       if (notification != null) {
         _localNotifications.show(
           notification.hashCode,
           notification.title,
           notification.body,
-          NotificationDetails(
+          const NotificationDetails(
             android: AndroidNotificationDetails(
-              _channel.id,
-              _channel.name,
-              channelDescription: _channel.description,
-              icon: 'b1',
-              importance: Importance
-                  .max, // تضمن إجبار النظام على إظهاره بالكامل والتطبيق مفتوح
+              'high_importance_channel',
+              'High Importance Notifications',
+              importance: Importance.max,
               priority: Priority.high,
-              playSound: true,
             ),
-            iOS: const DarwinNotificationDetails(
-              presentAlert: true,
-              presentSound: true,
-              presentBadge: true,
-            ),
+            iOS: DarwinNotificationDetails(),
           ),
-          payload: message.data['chat_room_id'],
         );
       }
     });
-
-    // 6. تشغيل مستمعي النقرات والتوجيه
-    _setupNotificationClickListeners();
-  }
-
-  void _setupNotificationClickListeners() async {
-    // في حال كان مغلقاً تماماً وتم تشغيله عبر الضغط على الإشعار
-    RemoteMessage? initialMessage = await _fcm.getInitialMessage();
-    if (initialMessage != null) {
-      _handleNotificationClick(initialMessage.data['chat_room_id']);
-    }
-
-    // في حال كان في الخلفية وتم العودة إليه عبر الإشعار
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _handleNotificationClick(message.data['chat_room_id']);
+      // كود التوجيه للنظام (Navigator / Router)
+      print('تم الضغط على الإشعار: ${message.data}');
     });
   }
 
-  // دالة التعامل مع الضغط لفتح الشات المستهدف برمجياً
-  void _handleNotificationClick(String? chatRoomId) {
-    if (chatRoomId != null) {
-      print("🚀 يتم الآن التوجيه برمجياً إلى الغرفة المستهدفة: $chatRoomId");
-      // يمكنك وضع كود الـ Navigator أو الـ Routing هنا مستقبلاً لفتح الشات تلقائياً
-    }
-  }
-
-  // جلب التوكن الفريد للجهاز الحالي لحفظه بالفايرستور
+  // جلب رمز الجهاز (FCM Token)
   Future<String?> getDeviceToken() async {
     return await _fcm.getToken();
   }

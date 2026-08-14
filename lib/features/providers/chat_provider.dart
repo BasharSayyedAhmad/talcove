@@ -1,8 +1,10 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talcove/core/services/api_service.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/features/providers/chat_list_provider.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
+import 'package:talcove/features/providers/notifire_provider.dart';
 import 'package:talcove/models/message.dart';
 import 'package:talcove/models/user.dart';
 import 'package:talcove/shared/services/socket_service.dart';
@@ -44,6 +46,14 @@ class MessageNotifier extends _$MessageNotifier {
     return rawData.toString();
   }
 
+  String? _extractDeviceToken(dynamic rawData) {
+    if (rawData == null) return null;
+    if (rawData is Map<String, dynamic>) {
+      return rawData['deviceToken']?.toString();
+    }
+    return null;
+  }
+
   void setActiveChatUser(String? userId) {
     _activeChatUserId = userId;
   }
@@ -65,6 +75,8 @@ class MessageNotifier extends _$MessageNotifier {
           ? _extractId(mapData['receiver'])
           : newMessage.receiverId;
 
+      final senderToken = _extractDeviceToken(mapData['sender']);
+
       String extractedUserName = senderId;
       if (mapData['sender'] is Map) {
         final senderMap = mapData['sender'] as Map<String, dynamic>;
@@ -74,11 +86,18 @@ class MessageNotifier extends _$MessageNotifier {
         extractedUserName = mapData['senderUserName'].toString();
       }
 
+      // إضافة المُرْسِل للجهات وتحديث التوكن الخاص به
       final contacts = ref.read(contactsNotifierProvider);
       if (!contacts.any((c) => c.id == senderId)) {
         ref
             .read(contactsNotifierProvider.notifier)
-            .addContact(User(id: senderId, userName: extractedUserName));
+            .addContact(
+              User(
+                id: senderId,
+                userName: extractedUserName,
+                deviceToken: senderToken,
+              ),
+            );
       }
 
       final isMessageForActiveChat =
@@ -171,8 +190,18 @@ class MessageNotifier extends _$MessageNotifier {
     _tearDownListeners();
   }
 
-  void sendMessageToSocket(String text, String receiverId) {
+  void sendMessageToSocket(
+    String text,
+    String receiverId, {
+    String? receiverFcmToken,
+  }) async {
     if (text.trim().isEmpty) return;
+
+    // 1. البحث عن توكن المستلم من قائمة Contacts إن لم يُمرر صراحة
+    final contacts = ref.read(contactsNotifierProvider);
+    final targetContact = contacts.where((c) => c.id == receiverId).firstOrNull;
+
+    final finalToken = receiverFcmToken ?? targetContact?.deviceToken;
 
     final tempId = 'temp_${DateTime.now().microsecondsSinceEpoch}';
     final tempMessage = Message(
@@ -187,13 +216,39 @@ class MessageNotifier extends _$MessageNotifier {
       isRead: false,
     );
 
+    // تحديث الشاشة فوراً (Optimistic UI)
     state = [...state, tempMessage];
 
     ref
         .read(chatListNotifierProvider.notifier)
         .addOrUpdateContact(contactId: receiverId, lastMessage: tempMessage);
 
+    // إرسال عبر Socket.io
     _socketService.sendMessage(text.trim(), receiverId);
+
+    // إرسال الإشعار باستخدام التوكن الديناميكي الصحيح
+    if (finalToken != null && finalToken.isNotEmpty) {
+      final senderName =
+          ref.read(authNotifierProvider).user?.userName ?? 'رسالة جديدة';
+      //
+      //
+      //********************************************************************* */
+      //
+      //
+      sendNotificationToUser(
+        receiverFcmToken: finalToken,
+        title: senderName,
+        body: text.trim(),
+        chatRoomId: _currentUserId,
+      );
+      //******************************************************************** */
+      //******************************************************************** */
+      //******************************************************************** */
+      //******************************************************************** */
+      //******************************************************************** */
+    } else {
+      print('⚠️ لم يتم العثور على FCM Token للمستقبل: $receiverId');
+    }
   }
 
   void connectSocket(String userId, String token) {

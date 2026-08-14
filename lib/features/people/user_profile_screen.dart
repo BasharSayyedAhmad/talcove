@@ -56,7 +56,7 @@ class UserProfileScreen extends ConsumerWidget {
                         debugPrint("📸 [UI DEBUG] User: ${user.userName}");
                         debugPrint("📸 [UI DEBUG] rawUrl value is: '$rawUrl'");
 
-                        if (rawUrl != null && rawUrl.isNotEmpty) {
+                        if (rawUrl!=null&&rawUrl.isNotEmpty) {
                           if (rawUrl.startsWith('http://')) {
                             rawUrl = rawUrl.replaceFirst('http://', 'https://');
                           }
