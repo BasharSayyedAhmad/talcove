@@ -43,6 +43,7 @@ void main() async {
   if (!kIsWeb) {
     Future.microtask(() async {
       await ApiService().init();
+
       await NotificationService().initialize();
     });
   }
