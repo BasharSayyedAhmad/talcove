@@ -25,7 +25,6 @@ class AuthService {
         _apiService.setAccessToken(accessToken);
         return {'success': true, 'user': userData, 'accessToken': accessToken};
       }
-
       return {
         'success': false,
         'error': 'Login failed with status: ${response.statusCode}',
@@ -93,13 +92,10 @@ class AuthService {
         'password': password,
         'deviceToken': deviceToken,
       });
-
       final response = await _apiService.dio.post(
         '/api/v1/users/register',
         data: formData,
       );
-
-      // 1. إذا كان الكود نجاح (200-299) والـ success = true
       if (response.statusCode.isSuccess() &&
           response.data is Map &&
           response.data['success'] == true &&
@@ -110,19 +106,14 @@ class AuthService {
         }
         return {'success': true, 'user': userData};
       }
-
-      // 2. إذا الكود رجّع 400 أو 409 أو غيرها والسيرفر بعت message
       String serverError = 'Registration failed';
       if (response.data is Map) {
         serverError =
             response.data['message'] ?? response.data['error'] ?? serverError;
       }
-
       return {'success': false, 'error': serverError};
     } on DioException catch (e) {
-      // التعامل مع أخطاء الشبكة والـ Timeout
       String errorMessage = 'Registration failed';
-
       if (e.response?.data != null && e.response?.data is Map) {
         errorMessage =
             e.response?.data['message'] ??
@@ -132,7 +123,6 @@ class AuthService {
           e.type == DioExceptionType.connectionError) {
         errorMessage = 'No internet connection';
       }
-
       return {'success': false, 'error': errorMessage};
     } catch (e) {
       return {'success': false, 'error': 'An unexpected error occurred'};
@@ -154,7 +144,6 @@ class AuthService {
           'deviceToken': deviceToken,
         }),
       );
-
       if (response.statusCode.isSuccess() &&
           response.data is Map &&
           response.data['success'] == true &&
@@ -165,13 +154,11 @@ class AuthService {
         }
         return {'success': true, 'user': userData};
       }
-
       String serverError = 'Invalid credentials';
       if (response.data is Map) {
         serverError =
             response.data['message'] ?? response.data['error'] ?? serverError;
       }
-
       return {'success': false, 'error': serverError};
     } on DioException catch (e) {
       String error = 'Login failed';
@@ -234,7 +221,6 @@ class AuthService {
       FormData formData = FormData.fromMap({
         'image': await MultipartFile.fromFile(imagePath),
       });
-
       final response = await _apiService.dio.post(
         '/api/v1/users/avatar',
         data: formData,
@@ -242,7 +228,6 @@ class AuthService {
       );
       print("-------------------------------------------------");
       print(" Update avatar response: ${response.data}");
-
       if (response.statusCode.isSuccess()) {
         final imageUrl = response.data['data']['imageURL'];
         return {'success': true, 'photoUrl': imageUrl};
@@ -283,17 +268,15 @@ class AuthService {
         '/api/v1/users',
         data: {'email': email},
       );
-
       print("Update email response: ${response.statusCode}");
       print("Update email body: ${response.data}");
-
       if (response.statusCode.isSuccess()) {
         return {'success': true, 'data': response.data};
       }
       return {'success': false, 'error': 'Failed to update email'};
     } catch (e) {
       print("Failed to update email: $e");
-      return {'success': false, 'error': e.toString()};
+      return {'success': false, 'error': "an unknown error happened"};
     }
   }
 
@@ -303,17 +286,15 @@ class AuthService {
         '/api/v1/users',
         data: {'phoneNumber': phone},
       );
-
       print("Update phone response: ${response.statusCode}");
       print("Update phone body: ${response.data}");
-
       if (response.statusCode.isSuccess()) {
         return {'success': true, 'data': response.data};
       }
       return {'success': false, 'error': 'Failed to update phone'};
     } catch (e) {
       print("Failed to update phone: $e");
-      return {'success': false, 'error': e.toString()};
+      return {'success': false, 'error': "an unknown error happened"};
     }
   }
 
@@ -343,18 +324,15 @@ class AuthService {
   Future<Map<String, dynamic>> searchUsers(String query) async {
     try {
       String encodedQuery = Uri.encodeComponent(query);
-
       final response = await _apiService.dio.get(
         '/api/v1/users/$encodedQuery?fields=userName,userId,deviceToken,profileImage,email,firstName,lastName,phoneNumber,lastSeen',
         options: Options(
           headers: {'Authorization': 'Bearer ${_apiService.accessToken}'},
         ),
       );
-
       print("Response data : ${response.data}");
       if (response.statusCode.isSuccess()) {
         final userData = response.data['data']['user'];
-
         print(
           " User ID from API: ${userData['id'] ?? userData['userId'] ?? 'NO ID!'}",
         );

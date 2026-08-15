@@ -270,12 +270,10 @@ class SocketService {
   void sendMessage(String message, String receiverId) {
     print(" Sending message: '$message' to '$receiverId'");
     print(" Socket connected: $_isConnected");
-
     if (!_isConnected || _socket == null) {
       print("Failed to send message: Socket is not connected");
       return;
     }
-
     _socket!.emit(SocketEvents.sendMessage, {
       'message': message,
       'receiverId': receiverId,

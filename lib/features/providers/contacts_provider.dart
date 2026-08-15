@@ -73,12 +73,9 @@ class ContactsNotifier extends _$ContactsNotifier {
   // }
   void addContact(User user) {
     print(" Adding/Updating contact: ${user.userName} with ID: '${user.id}'");
-
     final existingIndex = state.indexWhere((contact) => contact.id == user.id);
-
     if (existingIndex != -1) {
       final existing = state[existingIndex];
-
       if ((existing.userName == "Unknown" ||
               existing.userName == existing.id) &&
           user.userName != user.id &&

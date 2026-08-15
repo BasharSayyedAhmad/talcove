@@ -117,6 +117,13 @@ class PeopleScreen extends ConsumerWidget {
                           'http://',
                           'https://',
                         );
+                      if (finalPhotoUrl != null) {
+                        if (finalPhotoUrl.startsWith('http://')) {
+                          finalPhotoUrl = finalPhotoUrl.replaceFirst(
+                            'http://',
+                            'https://',
+                          );
+                        }
                       }
 
                       // تخصيص لون الـ Card بناءً على الـ Theme
@@ -144,9 +151,12 @@ class PeopleScreen extends ConsumerWidget {
                                 finalPhotoUrl != null &&
                                     finalPhotoUrl.isNotEmpty
                                 ? NetworkImage(finalPhotoUrl)
+                            backgroundImage: finalPhotoUrl?.isNotEmpty == true
+                                ? NetworkImage(finalPhotoUrl!)
                                 : null,
                             child:
                                 finalPhotoUrl == null || finalPhotoUrl.isEmpty
+                            child: finalPhotoUrl?.isEmpty == true
                                 ? Text(
                                     firstChar,
                                     style: TextStyle(
