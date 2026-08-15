@@ -27,7 +27,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ValueNotifier<Message?> _replyNotifier = ValueNotifier(null);
   final ValueNotifier<int?> _editIndexNotifier = ValueNotifier(null);
   final ValueNotifier<String?> _inputEditTextNotifier = ValueNotifier(null);
-  late MessageNotifier _messageNotifier;
+
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 1;
@@ -38,19 +38,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _messageNotifier = ref.read(messageNotifierProvider.notifier);
-      _messageNotifier.setActiveChatUser(widget.otherUserId);
-      _messageNotifier.setupSocketListeners();
-      _messageNotifier.clearMessages();
+      final notifier = ref.read(messageNotifierProvider.notifier);
+      notifier.setActiveChatUser(widget.otherUserId);
+      notifier.setupSocketListeners();
+      notifier.clearMessages();
       _loadInitialMessages();
     });
+
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _messageNotifier.detachListeners();
-    _messageNotifier.setActiveChatUser(null);
+    // نستخدم ref.read مباشرة في الـ dispose للوصول للنسخة الحالية وإغلاق المستمعات
+    ref.read(messageNotifierProvider.notifier).detachListeners();
+    ref.read(messageNotifierProvider.notifier).setActiveChatUser(null);
+
     _scrollController.dispose();
     _replyNotifier.dispose();
     _editIndexNotifier.dispose();
@@ -130,9 +133,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
-  // -----------------------------------------------------------
-  // دالة بناء فقاعة الرسالة مع عرض صورة واسم المرسل
-  // -----------------------------------------------------------
   Widget _buildBubble(Message msg) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -151,13 +151,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         mainAxisAlignment: msg.isMe
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment
-            .start, // نحافظ عليها start لتكون المحاذاة من الأعلى
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1) عرض صورة بروفايل المرسل الآخر بجانب رسالته (يسار الشاشة)
           if (!msg.isMe) ...[
             Padding(
-              // 💡 أضفنا padding علوي بمقدار 16 لتنزيل الصورة لتصبح بمستوى بداية الفقاعة وليس الاسم
               padding: const EdgeInsets.only(top: 16.0),
               child: CircleAvatar(
                 radius: 16,
@@ -179,14 +176,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             const SizedBox(width: 8),
           ],
-
-          // 2) محتوى الرسالة (الاسم + الفقاعة + الوقت/الحالة)
           Column(
             crossAxisAlignment: msg.isMe
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
-              // اسم المرسل
               if (!msg.isMe)
                 Padding(
                   padding: const EdgeInsets.only(left: 4, bottom: 2),
@@ -199,8 +193,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                   ),
                 ),
-
-              // فقاعة النص الأساسية
               Opacity(
                 opacity: isPending ? 0.65 : 1.0,
                 child: Container(
@@ -236,8 +228,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
               ),
-
-              // مؤشر الإرسال وحالة الرسالة لرسائلك الخاصة
               if (msg.isMe)
                 Padding(
                   padding: const EdgeInsets.only(top: 2, right: 4),
@@ -264,6 +254,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 💡 الاستماع لتغيرات قائمة الرسائل مع تنفيذ تمرير تلقائي عند وصول رسالة جديدة
+    ref.listen<List<Message>>(messageNotifierProvider, (previous, next) {
+      if (previous != null && next.length > previous.length) {
+        _scrollToBottom();
+      }
+    });
+
     final messages = ref.watch(messageNotifierProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -339,9 +336,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 }
 
-// ============================================================
-// حقل الإدخال — لم يتغير منطقه الجوهري
-// ============================================================
 class _ChatInputField extends StatefulWidget {
   final ValueNotifier<String?> editTextNotifier;
   final void Function(String) onSend;

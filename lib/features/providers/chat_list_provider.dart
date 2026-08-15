@@ -25,7 +25,7 @@ class ChatListNotifier extends _$ChatListNotifier {
 
       SocketService().onNewMessage((data) {
         try {
-          final mapData = data as Map<String, dynamic>;
+          final mapData = data;
           final senderId = mapData['senderId'] ?? "";
           final receiverId = mapData['receiverId'] ?? "";
 
@@ -79,7 +79,7 @@ class ChatListNotifier extends _$ChatListNotifier {
             lastMessage: newMessage,
             incrementUnread: false,
           );
-        } catch (e, stack) {
+        } catch (e) {
           print("Error parsing socket message in ChatListNotifier: $e");
         }
       });

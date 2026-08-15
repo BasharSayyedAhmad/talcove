@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talcove/core/services/api_service.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
@@ -86,7 +85,7 @@ class MessageNotifier extends _$MessageNotifier {
         extractedUserName = mapData['senderUserName'].toString();
       }
 
-      // إضافة المُرْسِل للجهات وتحديث التوكن الخاص به
+      // 1. إضافة المُرْسِل لقائمة الجهات وتحديث التوكن الخاص به
       final contacts = ref.read(contactsNotifierProvider);
       if (!contacts.any((c) => c.id == senderId)) {
         ref
@@ -104,6 +103,7 @@ class MessageNotifier extends _$MessageNotifier {
           _activeChatUserId != null &&
           (_activeChatUserId == senderId || _activeChatUserId == receiverId);
 
+      // 2. إضافة/تحديث المحادثة في chatList عند استلام رسالة جديدة
       ref
           .read(chatListNotifierProvider.notifier)
           .addOrUpdateContact(
@@ -134,6 +134,7 @@ class MessageNotifier extends _$MessageNotifier {
           ? _extractId(mapData['receiver'])
           : sentMessage.receiverId;
 
+      // تحديث قائمة المحادثات عند إرسال رسالة
       ref
           .read(chatListNotifierProvider.notifier)
           .addOrUpdateContact(contactId: receiverId, lastMessage: sentMessage);
@@ -197,7 +198,6 @@ class MessageNotifier extends _$MessageNotifier {
   }) async {
     if (text.trim().isEmpty) return;
 
-    // 1. البحث عن توكن المستلم من قائمة Contacts إن لم يُمرر صراحة
     final contacts = ref.read(contactsNotifierProvider);
     final targetContact = contacts.where((c) => c.id == receiverId).firstOrNull;
 
@@ -216,9 +216,10 @@ class MessageNotifier extends _$MessageNotifier {
       isRead: false,
     );
 
-    // تحديث الشاشة فوراً (Optimistic UI)
+    // تحديث واجهة المحادثة الحالية (Optimistic UI)
     state = [...state, tempMessage];
 
+    // إضافة/تحديث المحادثة فوراً في قائمة المحادثات (ChatList)
     ref
         .read(chatListNotifierProvider.notifier)
         .addOrUpdateContact(contactId: receiverId, lastMessage: tempMessage);
@@ -226,26 +227,22 @@ class MessageNotifier extends _$MessageNotifier {
     // إرسال عبر Socket.io
     _socketService.sendMessage(text.trim(), receiverId);
 
-    // إرسال الإشعار باستخدام التوكن الديناميكي الصحيح
+    // إرسال الإشعار وتمرير بيانات المرسل
     if (finalToken != null && finalToken.isNotEmpty) {
-      final senderName =
-          ref.read(authNotifierProvider).user?.userName ?? 'رسالة جديدة';
-      //
-      //
-      //********************************************************************* */
-      //
-      //
+      final currentUser = ref.read(authNotifierProvider).user;
+      final senderName = currentUser?.userName ?? 'رسالة جديدة';
+
       sendNotificationToUser(
         receiverFcmToken: finalToken,
         title: senderName,
         body: text.trim(),
         chatRoomId: _currentUserId,
+        data: {
+          'senderId': _currentUserId ?? '',
+          'senderName': senderName,
+          'profileImage': currentUser?.photoUrl ?? '',
+        },
       );
-      //******************************************************************** */
-      //******************************************************************** */
-      //******************************************************************** */
-      //******************************************************************** */
-      //******************************************************************** */
     } else {
       print('⚠️ لم يتم العثور على FCM Token للمستقبل: $receiverId');
     }
