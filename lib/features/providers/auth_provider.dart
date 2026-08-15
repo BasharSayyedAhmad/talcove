@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/constants/api_constants.dart';
 import 'package:talcove/core/constants/app_settings_keys.dart';
 import 'package:talcove/core/constants/auth_method.dart';
@@ -12,7 +11,6 @@ import 'package:talcove/core/services/auth_service.dart';
 import 'package:talcove/features/providers/chat_list_provider.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
-import 'package:talcove/features/providers/ordered_contacts_provider.dart';
 import 'package:talcove/models/auth_state.dart';
 import 'package:talcove/models/user.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
@@ -135,124 +133,6 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  // Future<void> signUpWithUserNameAndPassword(
-  //   String userName,
-  //   String password,
-  // ) async {
-  //   state = state.copyWith(isLoading: true, errorMessage: null);
-
-  //   try {
-  //     final deviceToken = await _getDeviceToken();
-  //     final result = await _authService.registerWithUsernamePassword(
-  //       userName: userName,
-  //       password: password,
-  //       deviceToken: deviceToken,
-  //     );
-
-  //     if (result['success']) {
-  //       final responseData = result['user'];
-  //       final userObject = responseData['user'] ?? responseData;
-
-  //       final user = User(
-  //         id: userObject['userId'],
-  //         userName: userName,
-  //         email: userObject['email'] ?? '',
-  //         phoneNumber: userObject['phoneNumber'] ?? '',
-  //         photoUrl: userObject['profileImage'],
-  //         authType: AuthMethod.userNameAndPassword,
-  //       );
-
-  //       await LocalStorageService.box.put(userKey, user.toJson());
-  //       await LocalStorageService.box.put(
-  //         authMethodKey,
-  //         AuthMethod.userNameAndPassword.name,
-  //       );
-
-  //       final token = _apiService.accessToken;
-  //       if (token != null) {
-  //         ref
-  //             .read(messageNotifierProvider.notifier)
-  //             .connectSocket(user.id, token);
-  //       }
-
-  //       state = state.copyWith(
-  //         isLoading: false,
-  //         isAuthenticated: true,
-  //         authMethod: AuthMethod.userNameAndPassword,
-  //         user: user,
-  //       );
-  //     } else {
-  //       state = state.copyWith(
-  //         isLoading: false,
-  //         errorMessage: result['error'] ?? "Sign-up failed",
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //     state = state.copyWith(isLoading: false, errorMessage: e.toString());
-  //   }
-  // }
-
-  // Future<void> loginWithUserNameAndPassword(
-  //   String userName,
-  //   String password,
-  // ) async {
-  //   state = state.copyWith(isLoading: true, errorMessage: null);
-
-  //   try {
-  //     final deviceToken = await _getDeviceToken();
-  //     final result = await _authService.loginWithUsernamePassword(
-  //       userName: userName,
-  //       password: password,
-  //       deviceToken: deviceToken,
-  //     );
-
-  //     if (result['success']) {
-  //       final responseData = result['user'];
-  //       final accessToken = responseData['accessToken'] ?? '';
-  //       final userObject = responseData['user'] ?? responseData;
-
-  //       final user = User(
-  //         id: userObject['userId'] ?? userName,
-  //         userName: userName,
-  //         email: userObject['email'] ?? '',
-  //         phoneNumber: userObject['phoneNumber'] ?? '',
-  //         photoUrl: userObject['profileImage'],
-  //         authType: AuthMethod.userNameAndPassword,
-  //       );
-
-  //       await LocalStorageService.box.put(userKey, user.toJson());
-  //       await LocalStorageService.box.put(
-  //         authMethodKey,
-  //         AuthMethod.userNameAndPassword.name,
-  //       );
-
-  //       ref
-  //           .read(messageNotifierProvider.notifier)
-  //           .connectSocket(user.id, accessToken);
-
-  //       state = state.copyWith(
-  //         isAuthenticated: true,
-  //         isLoading: false,
-  //         user: user,
-  //         authMethod: AuthMethod.userNameAndPassword,
-  //       );
-  //     } else {
-  //       state = state.copyWith(
-  //         isAuthenticated: false,
-  //         isLoading: false,
-  //         errorMessage: "Invalid username or password",
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //     state = state.copyWith(
-  //       isLoading: false,
-  //       isAuthenticated: false,
-  //       errorMessage: "Try using another username or password",
-  //     );
-  //   }
-  // }
   Future<void> signUpWithUserNameAndPassword(
     String userName,
     String password,

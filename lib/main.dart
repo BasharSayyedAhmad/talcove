@@ -28,7 +28,6 @@ void main() async {
   if (!kIsWeb) {
     Future.microtask(() async {
       await ApiService().init();
-
       await NotificationService().initialize();
     });
   }
@@ -47,8 +46,11 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(authNotifierProvider.notifier).restoreSession();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(authNotifierProvider.notifier).restoreSession();
+      if (!kIsWeb && ref.read(authNotifierProvider).isAuthenticated) {
+        await NotificationService().getDeviceToken();
+      }
     });
   }
 

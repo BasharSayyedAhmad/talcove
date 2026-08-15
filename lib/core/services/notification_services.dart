@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:talcove/core/services/navigation_services.dart';
+import 'package:talcove/core/services/user_service.dart';
 import 'package:talcove/features/chat/chat_screen.dart';
 
 @pragma('vm:entry-point')
@@ -14,12 +15,19 @@ class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+  final UserService _userService = UserService();
 
   Future<void> initialize() async {
     // 1. طلب الصلاحيات
     await _fcm.requestPermission();
 
-    // 2. تهيئة الإشعارات المحلية
+    // 2. الاستماع لتغيرات الـ Device Token وتحديثه في السيرفر مباشرة عبر UserService
+    _fcm.onTokenRefresh.listen((newToken) async {
+      debugPrint('🔔 FCM Token refreshed: $newToken');
+      await _userService.updateDeviceToken(customToken: newToken);
+    });
+
+    // 3. تهيئة الإشعارات المحلية
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
 
@@ -38,10 +46,10 @@ class NotificationService {
       },
     );
 
-    // 3. ربط معالج الخلفية لـ Firebase
+    // 4. ربط معالج الخلفية لـ Firebase
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // 4. استلام الإشعارات والتطبيق مفتوح (Foreground)
+    // 5. استلام الإشعارات والتطبيق مفتوح (Foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
 
@@ -64,12 +72,12 @@ class NotificationService {
       }
     });
 
-    // 5. النقر على الإشعار والتطبيق في الخلفية (Background)
+    // 6. النقر على الإشعار والتطبيق في الخلفية (Background)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _navigateToChat(message.data);
     });
 
-    // 6. فتح التطبيق من حالة الإغلاق التام (Terminated) عبر النقر على الإشعار
+    // 7. فتح التطبيق من حالة الإغلاق التام (Terminated) عبر النقر على الإشعار
     RemoteMessage? initialMessage = await _fcm.getInitialMessage();
     if (initialMessage != null) {
       _navigateToChat(initialMessage.data);
@@ -146,8 +154,12 @@ class NotificationService {
     }
   }
 
-  // جلب رمز الجهاز (FCM Token)
+  // جلب رمز الجهاز (FCM Token) وتحديثه بالسيرفر
   Future<String?> getDeviceToken() async {
-    return await _fcm.getToken();
+    final token = await _fcm.getToken();
+    if (token != null && token.isNotEmpty) {
+      await _userService.updateDeviceToken(customToken: token);
+    }
+    return token;
   }
 }
