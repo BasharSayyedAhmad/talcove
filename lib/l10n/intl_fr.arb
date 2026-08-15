@@ -100,5 +100,11 @@
   "editFirstName": "Modifier le prénom",
   "editLastName": "Modifier le nom de famille",
   "firstNameRequired": "Le prénom est obligatoire",
-  "lastNameRequired": "Le nom de famille est obligatoire"
+  "lastNameRequired": "Le nom de famille est obligatoire",
+  "notificationsSettings": "Paramètres de notification",
+"enableNotifications": "Activer les notifications",
+"enableNotificationsSubtitle": "Recevoir des alertes et de nouveaux messages dans l'application",
+"phoneValidatorEmpty": "Veuillez entrer votre numéro de téléphone",
+"phoneValidatorInvalid": "Veuillez entrer un numéro de téléphone valide (ex: +33612345678)"
+
 }

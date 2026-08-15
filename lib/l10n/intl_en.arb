@@ -107,7 +107,11 @@
   "editFirstName": "Edit First Name",
   "editLastName": "Edit Last Name",
   "firstNameRequired": "First name is required",
-  "lastNameRequired": "Last name is required"
-  
+  "lastNameRequired": "Last name is required",
+  "notificationsSettings": "Notification Settings",
+"enableNotifications": "Enable Notifications",
+"enableNotificationsSubtitle": "Receive alerts and new messages inside the app",
+  "phoneValidatorEmpty": "Please enter your phone number",
+  "phoneValidatorInvalid": "Please enter a valid phone number (e.g. +1234567890)"
 
 }

@@ -923,6 +923,56 @@ class S {
       args: [],
     );
   }
+
+  /// `Notification Settings`
+  String get notificationsSettings {
+    return Intl.message(
+      'Notification Settings',
+      name: 'notificationsSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable Notifications`
+  String get enableNotifications {
+    return Intl.message(
+      'Enable Notifications',
+      name: 'enableNotifications',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Receive alerts and new messages inside the app`
+  String get enableNotificationsSubtitle {
+    return Intl.message(
+      'Receive alerts and new messages inside the app',
+      name: 'enableNotificationsSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your phone number`
+  String get phoneValidatorEmpty {
+    return Intl.message(
+      'Please enter your phone number',
+      name: 'phoneValidatorEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a valid phone number (e.g. +1234567890)`
+  String get phoneValidatorInvalid {
+    return Intl.message(
+      'Please enter a valid phone number (e.g. +1234567890)',
+      name: 'phoneValidatorInvalid',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

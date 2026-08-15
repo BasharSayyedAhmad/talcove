@@ -11,6 +11,12 @@ class ContactsNotifier extends _$ContactsNotifier {
     return _loadContactsFromHive();
   }
 
+  void clear() {
+    state = [];
+    LocalStorageService.box.delete(contactsKey);
+    print("Contacts state and local storage cleared.");
+  }
+
   void setContacts(List<User> newContacts) {
     if (newContacts.isEmpty) return;
 

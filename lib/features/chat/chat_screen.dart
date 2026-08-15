@@ -27,7 +27,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ValueNotifier<Message?> _replyNotifier = ValueNotifier(null);
   final ValueNotifier<int?> _editIndexNotifier = ValueNotifier(null);
   final ValueNotifier<String?> _inputEditTextNotifier = ValueNotifier(null);
-
+  late MessageNotifier _chatNotifier;
   bool _isLoading = false;
   bool _hasMore = true;
   int _currentPage = 1;
@@ -36,12 +36,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
 
+    // 💡 نقرأ الـ Notifier ونحفظ المرجع فوراً طالما الـ Widget متصلة بالكامل
+    _chatNotifier = ref.read(messageNotifierProvider.notifier);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final notifier = ref.read(messageNotifierProvider.notifier);
-      notifier.setActiveChatUser(widget.otherUserId);
-      notifier.setupSocketListeners();
-      notifier.clearMessages();
+      _chatNotifier.setActiveChatUser(widget.otherUserId);
+      _chatNotifier.setupSocketListeners();
+      _chatNotifier.clearMessages();
       _loadInitialMessages();
     });
 
@@ -50,9 +52,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    // نستخدم ref.read مباشرة في الـ dispose للوصول للنسخة الحالية وإغلاق المستمعات
-    ref.read(messageNotifierProvider.notifier).detachListeners();
-    ref.read(messageNotifierProvider.notifier).setActiveChatUser(null);
+    // 💡 نستخدم المرجع المحفوظ بدون الحاجة لـ ref.read نهائياً!
+    _chatNotifier.detachListeners();
+    _chatNotifier.setActiveChatUser(null);
 
     _scrollController.dispose();
     _replyNotifier.dispose();

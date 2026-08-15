@@ -55,6 +55,29 @@ class Validators {
     return null;
   }
 
+  static String? phone(
+    BuildContext context,
+    String? value, {
+    bool isOptional = false,
+  }) {
+    final input = value?.trim();
+
+    if (isOptional && (input == null || input.isEmpty)) {
+      return null;
+    }
+
+    if (!isOptional && (input == null || input.isEmpty)) {
+      return S.of(context).phoneValidatorEmpty;
+    }
+
+    final phoneRegex = RegExp(r'^\+?[0-9]{8,15}$');
+    if (!phoneRegex.hasMatch(input!)) {
+      return S.of(context).phoneValidatorInvalid;
+    }
+
+    return null;
+  }
+
   static bool isStrongPassword(String password) {
     if (password.length < 6) return false;
     if (!RegExp(r'[A-Z]').hasMatch(password)) return false;

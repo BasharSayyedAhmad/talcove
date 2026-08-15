@@ -99,6 +99,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "emailValidatorInvalid": MessageLookupByLibrary.simpleMessage(
       "Veuillez entrer une adresse e-mail valide",
     ),
+    "enableNotifications": MessageLookupByLibrary.simpleMessage(
+      "Activer les notifications",
+    ),
+    "enableNotificationsSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Recevoir des alertes et de nouveaux messages dans l\'application",
+    ),
     "enterUsernameToSearch": MessageLookupByLibrary.simpleMessage(
       "Entrez un nom d\'utilisateur",
     ),
@@ -146,6 +152,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "notProvided": MessageLookupByLibrary.simpleMessage("Non fourni"),
     "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
+    "notificationsSettings": MessageLookupByLibrary.simpleMessage(
+      "Paramètres de notification",
+    ),
     "online": MessageLookupByLibrary.simpleMessage("En ligne"),
     "or": MessageLookupByLibrary.simpleMessage("OU"),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage(
@@ -179,6 +188,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "phoneScreenTitle": MessageLookupByLibrary.simpleMessage(
       "Ajouter un numéro de téléphone",
+    ),
+    "phoneValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "Veuillez entrer votre numéro de téléphone",
+    ),
+    "phoneValidatorInvalid": MessageLookupByLibrary.simpleMessage(
+      "Veuillez entrer un numéro de téléphone valide (ex: +33612345678)",
     ),
     "preferences": MessageLookupByLibrary.simpleMessage("Préférences"),
     "privacySettings": MessageLookupByLibrary.simpleMessage(

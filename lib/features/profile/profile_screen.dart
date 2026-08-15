@@ -202,7 +202,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             value: user?.phoneNumber?.isNotEmpty == true
                                 ? user!.phoneNumber!
                                 : S.of(context).notProvided,
+
                             onEdit: () => _showEditDialog(
+                              validator: (val) =>
+                                  Validators.phone(context, val),
                               title: S.of(context).editPhone,
                               initialValue: user?.phoneNumber ?? '',
                               keyboardType: TextInputType.phone,
@@ -216,30 +219,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
 
                       const SizedBox(height: 24),
-                      _SectionLabel(label: 'About', colorScheme: colorScheme),
-                      const SizedBox(height: 12),
-
-                      _InfoCard(
-                        colorScheme: colorScheme,
-                        isDark: isDark,
-                        children: [
-                          _InfoTile(
-                            icon: Icons.notes_rounded,
-                            label: S.of(context).bio,
-                            value: user?.bio?.isNotEmpty == true
-                                ? user!.bio!
-                                : S.of(context).noBio,
-                            onEdit: () => _showEditDialog(
-                              title: S.of(context).editBio,
-                              initialValue: user?.bio ?? '',
-                              maxLines: 3,
-                              onSave: (v) => _updateField('bio', v),
-                            ),
-                            colorScheme: colorScheme,
-                            multiLine: true,
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -296,6 +275,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               style: TextStyle(
                 color: colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
+                fontSize: 15,
               ),
             ),
           ],

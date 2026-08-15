@@ -9,6 +9,7 @@ import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/features/providers/language_provider.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
 import 'package:talcove/features/settings/language_screen.dart';
+import 'package:talcove/features/settings/notifications_settings_screen.dart';
 import 'package:talcove/generated/l10n.dart';
 
 String _getCurrentLanguageName(WidgetRef ref) {
@@ -30,14 +31,6 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(authNotifierProvider, (prev, next) {
-      if (!next.isAuthenticated && prev?.isAuthenticated == true) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const EntryScreen()),
-          (route) => false,
-        );
-      }
-    });
     final theme = ref.watch(themeNotifierProvider);
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
@@ -45,270 +38,314 @@ class SettingsScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentLang = _getCurrentLanguageName(ref);
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF0F172A)
-          : const Color(0xFFF8FAFC),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 160,
-            pinned: true,
-            backgroundColor: colorScheme.primary,
-            iconTheme: const IconThemeData(color: Colors.white),
-            title: Text(
-              S.of(context).settings,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 19,
-              ),
-            ),
-            actions: [
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                color: colorScheme.surface,
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.logout_rounded,
-                          color: colorScheme.error,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Log out',
-                          style: TextStyle(color: colorScheme.error),
-                        ),
-                      ],
-                    ),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: isDark
+              ? const Color(0xFF0F172A)
+              : const Color(0xFFF8FAFC),
+          body: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 160,
+                pinned: true,
+                backgroundColor: colorScheme.primary,
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  S.of(context).settings,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 19,
                   ),
-                ],
-                onSelected: (val) {
-                  if (val == 'logout') {
-                    // ref.read(authNotifierProvider.notifier).logout();
-                  }
-                },
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: _UserHeaderCard(
-                user: user,
-                colorScheme: colorScheme,
-                isDark: isDark,
-              ),
-            ),
-          ),
-
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _SectionHeader(
-                  label: S.of(context).account,
-                  colorScheme: colorScheme,
                 ),
-                const SizedBox(height: 8),
-                _SettingsCard(
-                  colorScheme: colorScheme,
-                  isDark: isDark,
-                  items: [
-                    _SettingsTile(
-                      icon: Icons.person_rounded,
-                      iconColor: colorScheme.primary,
-                      title: S.of(context).profile,
-                      subtitle: S.of(context).namePhotoBio,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ProfileScreen(),
-                        ),
-                      ),
-                      colorScheme: colorScheme,
-                    ),
-                    _TileDivider(colorScheme: colorScheme),
-                    _SettingsTile(
-                      icon: Icons.shield_rounded,
-                      iconColor: const Color(0xFF10B981),
-                      title: S.of(context).privacySettings,
-                      subtitle: S.of(context).emailPhoneVisibility,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const PrivacySettingsScreen(),
-                          ),
-                        );
-                      },
-                      colorScheme: colorScheme,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                _SectionHeader(
-                  label: S.of(context).preferences,
-                  colorScheme: colorScheme,
-                ),
-                const SizedBox(height: 8),
-                _SettingsCard(
-                  colorScheme: colorScheme,
-                  isDark: isDark,
-                  items: [
-                    _SettingsTile(
-                      icon: Icons.notifications_rounded,
-                      iconColor: const Color(0xFFF59E0B),
-                      title: S.of(context).notifications,
-                      subtitle: S.of(context).soundVibrationAlerts,
-                      onTap: () {},
-                      colorScheme: colorScheme,
-                    ),
-                    _TileDivider(colorScheme: colorScheme),
-                    _SettingsTile(
-                      icon: Icons.language_rounded,
-                      iconColor: const Color(0xFF8B5CF6),
-                      title: S.of(context).language,
-                      subtitle: currentLang,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LanguageWidget(),
-                        ),
-                      ),
-                      colorScheme: colorScheme,
-                    ),
-                    _TileDivider(colorScheme: colorScheme),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color:
-                                  (isDark
-                                          ? const Color(0xFF818CF8)
-                                          : const Color(0xFF6366F1))
-                                      .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(11),
-                            ),
-                            child: Icon(
-                              isDark
-                                  ? Icons.dark_mode_rounded
-                                  : Icons.light_mode_rounded,
-                              size: 20,
-                              color: isDark
-                                  ? const Color(0xFF818CF8)
-                                  : const Color(0xFF6366F1),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  S.of(context).dark,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                                Text(
-                                  isDark
-                                      ? S.of(context).darkModeOn
-                                      : S.of(context).lightModeOn,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Switch.adaptive(
-                            value: theme == ThemeMode.dark,
-                            activeTrackColor: colorScheme.primary,
-                            onChanged: (_) => ref
-                                .read(themeNotifierProvider.notifier)
-                                .toggleTheme(),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // زر تسجيل الخروج
-                OutlinedButton.icon(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text(S.of(context).logOut),
-                          content: Text(S.of(context).logoutConfirmation),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(S.of(context).cancel),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                // ref
-                                //     .read(authNotifierProvider.notifier)
-                                //     .logout(context);
-                              },
-                              child: Text(
-                                S.of(context).logOut,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  icon: authState.isLoading
-                      ? const CupertinoActivityIndicator()
-                      : Icon(Icons.logout_rounded, color: colorScheme.error),
-                  label: Text(
-                    S.of(context).logOut,
-                    style: TextStyle(color: colorScheme.error),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: colorScheme.error.withValues(alpha: 0.4),
-                    ),
+                actions: [
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    minimumSize: const Size(double.infinity, 0),
+                    color: colorScheme.surface,
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'logout',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout_rounded,
+                              color: colorScheme.error,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Log out',
+                              style: TextStyle(color: colorScheme.error),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (val) {
+                      if (val == 'logout') {
+                        _showLogoutDialog(context, ref);
+                      }
+                    },
+                  ),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _UserHeaderCard(
+                    user: user,
+                    colorScheme: colorScheme,
+                    isDark: isDark,
                   ),
                 ),
-              ]),
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _SectionHeader(
+                      label: S.of(context).account,
+                      colorScheme: colorScheme,
+                    ),
+                    const SizedBox(height: 8),
+                    _SettingsCard(
+                      colorScheme: colorScheme,
+                      isDark: isDark,
+                      items: [
+                        _SettingsTile(
+                          icon: Icons.person_rounded,
+                          iconColor: colorScheme.primary,
+                          title: S.of(context).profile,
+                          subtitle: S.of(context).namePhotoBio,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileScreen(),
+                            ),
+                          ),
+                          colorScheme: colorScheme,
+                        ),
+                        _TileDivider(colorScheme: colorScheme),
+                        _SettingsTile(
+                          icon: Icons.shield_rounded,
+                          iconColor: const Color(0xFF10B981),
+                          title: S.of(context).privacySettings,
+                          subtitle: S.of(context).emailPhoneVisibility,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const PrivacySettingsScreen(),
+                              ),
+                            );
+                          },
+                          colorScheme: colorScheme,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    _SectionHeader(
+                      label: S.of(context).preferences,
+                      colorScheme: colorScheme,
+                    ),
+                    const SizedBox(height: 8),
+                    _SettingsCard(
+                      colorScheme: colorScheme,
+                      isDark: isDark,
+                      items: [
+                        _SettingsTile(
+                          icon: Icons.notifications_rounded,
+                          iconColor: const Color(0xFFF59E0B),
+                          title: S.of(context).notifications,
+                          subtitle: S.of(context).soundVibrationAlerts,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const NotificationsSettingsScreen(),
+                            ),
+                          ),
+                          colorScheme: colorScheme,
+                        ),
+                        _TileDivider(colorScheme: colorScheme),
+                        _SettingsTile(
+                          icon: Icons.language_rounded,
+                          iconColor: const Color(0xFF8B5CF6),
+                          title: S.of(context).language,
+                          subtitle: currentLang,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LanguageWidget(),
+                            ),
+                          ),
+                          colorScheme: colorScheme,
+                        ),
+                        _TileDivider(colorScheme: colorScheme),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color:
+                                      (isDark
+                                              ? const Color(0xFF818CF8)
+                                              : const Color(0xFF6366F1))
+                                          .withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(11),
+                                ),
+                                child: Icon(
+                                  isDark
+                                      ? Icons.dark_mode_rounded
+                                      : Icons.light_mode_rounded,
+                                  size: 20,
+                                  color: isDark
+                                      ? const Color(0xFF818CF8)
+                                      : const Color(0xFF6366F1),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      S.of(context).dark,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      isDark
+                                          ? S.of(context).darkModeOn
+                                          : S.of(context).lightModeOn,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch.adaptive(
+                                value: theme == ThemeMode.dark,
+                                activeTrackColor: colorScheme.primary,
+                                onChanged: (_) => ref
+                                    .read(themeNotifierProvider.notifier)
+                                    .toggleTheme(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    OutlinedButton.icon(
+                      onPressed: authState.isLoading
+                          ? null
+                          : () => _showLogoutDialog(context, ref),
+                      icon: authState.isLoading
+                          ? const CupertinoActivityIndicator()
+                          : Icon(
+                              Icons.logout_rounded,
+                              color: colorScheme.error,
+                            ),
+                      label: Text(
+                        S.of(context).logOut,
+                        style: TextStyle(color: colorScheme.error),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: colorScheme.error.withValues(alpha: 0.4),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        minimumSize: const Size(double.infinity, 0),
+                      ),
+                    ),
+                  ]),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        if (authState.isLoading)
+          Container(
+            color: Colors.black.withValues(alpha: 0.45),
+            child: const Center(
+              child: Card(
+                elevation: 4,
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: CupertinoActivityIndicator(radius: 16),
+                ),
+              ),
             ),
           ),
-        ],
-      ),
+      ],
+    );
+  }
+
+  void _showLogoutDialog(BuildContext parentContext, WidgetRef ref) {
+    showDialog(
+      context: parentContext,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(S.of(dialogContext).logOut),
+          content: Text(S.of(dialogContext).logoutConfirmation),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(S.of(dialogContext).cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                // 1. أغلق الـ Dialog بحذر
+                Navigator.of(dialogContext).pop();
+
+                // 2. نفّذ الـ logout وانتظر النتيجة
+                try {
+                  await ref.read(authNotifierProvider.notifier).logout();
+
+                  // 3. التحقق من أمان الـ Context قبل التنقل مباشرة
+                  if (parentContext.mounted) {
+                    Navigator.of(
+                      parentContext,
+                      rootNavigator: true,
+                    ).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const EntryScreen()),
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  debugPrint("Logout error: $e");
+                }
+              },
+              child: Text(
+                S.of(dialogContext).logOut,
+                style: TextStyle(
+                  color: Theme.of(dialogContext).colorScheme.error,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

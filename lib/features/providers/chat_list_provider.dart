@@ -146,6 +146,10 @@ class ChatListNotifier extends _$ChatListNotifier {
     return {};
   }
 
+  void clear() {
+    state = {};
+  }
+
   Future<void> fetchNewMessages() async {
     if (_currentUserId == null) return;
 

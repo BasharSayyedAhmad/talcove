@@ -2,6 +2,7 @@
 const String settingsBox = "settingsBox";
 const String themeModeKey = "themeMode";
 const String languageKey = "language";
+const String notificationsEnabledKey = 'notifications_enabled';
 // const String accessTokenKey = "accessToken";
 const String sessionCookieKey = "sessionCookie";
 const String authMethodKey = "authMethod";

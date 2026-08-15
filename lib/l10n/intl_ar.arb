@@ -105,6 +105,13 @@
   "editFirstName": "تعديل الاسم الأول",
   "editLastName": "تعديل الاسم الأخير",
   "firstNameRequired": "الاسم الأول مطلوب",
-  "lastNameRequired": "الاسم الأخير مطلوب"
+  "lastNameRequired": "الاسم الأخير مطلوب",
+  "notificationsSettings": "إعدادات الإشعارات",
+"enableNotifications": "تفعيل الإشعارات",
+"enableNotificationsSubtitle": "استقبال التنبيهات والرسائل الجديدة داخل التطبيق",
+
+  "phoneValidatorEmpty": "يرجى إدخال رقم الهاتف",
+  "phoneValidatorInvalid": "يرجى إدخال رقم هاتف صحيح"
+
 
 }

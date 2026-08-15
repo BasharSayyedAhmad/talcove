@@ -92,6 +92,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "emailValidatorInvalid": MessageLookupByLibrary.simpleMessage(
       "الرجاء إدخال بريد إلكتروني صحيح",
     ),
+    "enableNotifications": MessageLookupByLibrary.simpleMessage(
+      "تفعيل الإشعارات",
+    ),
+    "enableNotificationsSubtitle": MessageLookupByLibrary.simpleMessage(
+      "استقبال التنبيهات والرسائل الجديدة داخل التطبيق",
+    ),
     "enterUsernameToSearch": MessageLookupByLibrary.simpleMessage(
       "أدخل اسم مستخدم للبحث",
     ),
@@ -138,6 +144,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "noUsersFound": MessageLookupByLibrary.simpleMessage("لا يوجد مستخدمون"),
     "notProvided": MessageLookupByLibrary.simpleMessage("غير مضاف"),
     "notifications": MessageLookupByLibrary.simpleMessage("الإشعارات"),
+    "notificationsSettings": MessageLookupByLibrary.simpleMessage(
+      "إعدادات الإشعارات",
+    ),
     "online": MessageLookupByLibrary.simpleMessage("متصل"),
     "or": MessageLookupByLibrary.simpleMessage("أو"),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage("أو سجّل باستخدام"),
@@ -172,6 +181,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "phoneScreenTitle": MessageLookupByLibrary.simpleMessage(
       "إضافة رقم الهاتف",
+    ),
+    "phoneValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "يرجى إدخال رقم الهاتف",
+    ),
+    "phoneValidatorInvalid": MessageLookupByLibrary.simpleMessage(
+      "يرجى إدخال رقم هاتف صحيح",
     ),
     "preferences": MessageLookupByLibrary.simpleMessage("التفضيلات"),
     "privacySettings": MessageLookupByLibrary.simpleMessage("إعدادات الخصوصية"),

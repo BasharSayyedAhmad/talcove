@@ -9,6 +9,7 @@ import 'package:talcove/core/constants/app_settings_keys.dart';
 import 'package:talcove/core/constants/auth_method.dart';
 import 'package:talcove/core/services/api_service.dart';
 import 'package:talcove/core/services/auth_service.dart';
+import 'package:talcove/features/providers/chat_list_provider.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
 import 'package:talcove/features/providers/contacts_provider.dart';
 import 'package:talcove/features/providers/ordered_contacts_provider.dart';
@@ -521,80 +522,55 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  Future<void> logout(BuildContext context) async {
+  Future<void> logout() async {
+    state = state.copyWith(isLoading: true);
+
     try {
-      state = state.copyWith(isLoading: true);
-
-      try {
-        ref.read(messageNotifierProvider.notifier).disconnectSocket();
-      } catch (e) {
-        print("Error disconnecting socket: $e");
-      }
-
-      if (state.authMethod == AuthMethod.google) {
-        try {
-          await _googleSignIn.signOut();
-        } catch (e) {
-          print("Google sign out error: $e");
-        }
-      }
-
-      try {
-        await _authService.logout();
-      } catch (e) {
-        print("Server logout exception: $e");
-      }
-
-      _apiService.clearAccessToken();
-
-      try {
-        await _apiService.clearAllCookies();
-      } catch (e) {
-        print("Error clearing cookies: $e");
-      }
-
-      try {
-        await LocalStorageService.clearAll();
-      } catch (e) {
-        print("Error clearing local storage: $e");
-      }
-
-      ref.read(messageNotifierProvider.notifier).clearMessages();
-      ref.invalidate(contactsNotifierProvider);
-      ref.invalidate(orderedContactsNotifierProvider);
-      ref.invalidate(messageNotifierProvider);
-
-      state = AuthState(isAuthenticated: false, isLoading: false);
-
-      if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const EntryScreen()),
-          (route) => false,
-        );
-      }
+      ref.read(messageNotifierProvider.notifier).disconnectSocket();
     } catch (e) {
-      state = AuthState(isAuthenticated: false, isLoading: false);
-      WidgetsBinding.instance.addPersistentFrameCallback((_) {
-        if (context.mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const EntryScreen()),
-            (route) => false,
-          );
-        }
-      });
+      debugPrint("Socket disconnect error: $e");
     }
+
+    try {
+      await _authService.logout();
+    } catch (e) {
+      debugPrint("Server logout error: $e");
+    }
+
+    if (state.authMethod == AuthMethod.google) {
+      try {
+        await _googleSignIn.signOut();
+      } catch (e) {
+        debugPrint("Google sign out error: $e");
+      }
+    }
+
+    _apiService.clearAccessToken();
+    try {
+      await _apiService.clearAllCookies();
+      await LocalStorageService.clearAuthData();
+    } catch (e) {
+      debugPrint("Storage clear error: $e");
+    }
+
+    try {
+      ref.read(contactsNotifierProvider.notifier).clear();
+      ref.read(chatListNotifierProvider.notifier).clear();
+      ref.read(messageNotifierProvider.notifier).clear();
+    } catch (e) {
+      debugPrint("Error clearing providers data: $e");
+    }
+
+    state = AuthState(isAuthenticated: false, isLoading: false);
   }
 
   Future<void> updateFirstLastName({String? fName, String? lName}) async {
-    // 1. تفعيل حالة التحميل وتصفير الأخطاء السابقة
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      // 2. تأمين القيم: إذا مررنا قيمة جديدة نأخذها، وإلا نعتمد على القيمة الحالية بـ state لتجنب إرسال null للباك إيند
       final currentFirstName = fName ?? state.user?.firstName;
       final currentLastName = lName ?? state.user?.lastName;
 
-      // استدعاء دالة الخدمة (ApiService) التي قمت بكتابتها
       final result = await _authService.updateFirstLastName(
         currentFirstName,
         currentLastName,
@@ -602,13 +578,11 @@ class AuthNotifier extends _$AuthNotifier {
 
       if (result['success'] == true) {
         if (state.user != null) {
-          // 3. تحديث الكائن محلياً بالقيم الجديدة
           final updatedUser = state.user!.copyWith(
             firstName: currentFirstName,
             lastName: currentLastName,
           );
 
-          // 4. حفظ البيانات المحدثة بالـ Local Storage ومزامنة الـ State
           await LocalStorageService.box.put(userKey, updatedUser.toJson());
           state = state.copyWith(user: updatedUser);
 
@@ -617,7 +591,6 @@ class AuthNotifier extends _$AuthNotifier {
           );
         }
       } else {
-        // إدارة حالة الفشل من استجابة السيرفر
         state = state.copyWith(
           isLoading: false,
           errorMessage: result['error'] ?? "Failed to update profile name",
@@ -630,7 +603,6 @@ class AuthNotifier extends _$AuthNotifier {
         errorMessage: "Failed to update profile name",
       );
     } finally {
-      // إنهاء حالة التحميل دائماً بـ finally
       state = state.copyWith(isLoading: false);
     }
   }

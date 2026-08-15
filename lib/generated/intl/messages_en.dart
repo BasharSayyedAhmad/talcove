@@ -94,6 +94,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "emailValidatorInvalid": MessageLookupByLibrary.simpleMessage(
       "Please enter a valid email address",
     ),
+    "enableNotifications": MessageLookupByLibrary.simpleMessage(
+      "Enable Notifications",
+    ),
+    "enableNotificationsSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Receive alerts and new messages inside the app",
+    ),
     "enterUsernameToSearch": MessageLookupByLibrary.simpleMessage(
       "Enter a username to search",
     ),
@@ -138,6 +144,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "noUsersFound": MessageLookupByLibrary.simpleMessage("No users found"),
     "notProvided": MessageLookupByLibrary.simpleMessage("Not provided"),
     "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
+    "notificationsSettings": MessageLookupByLibrary.simpleMessage(
+      "Notification Settings",
+    ),
     "online": MessageLookupByLibrary.simpleMessage("Online"),
     "or": MessageLookupByLibrary.simpleMessage("OR"),
     "orSignUpWith": MessageLookupByLibrary.simpleMessage("OR"),
@@ -173,6 +182,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "phoneScreenTitle": MessageLookupByLibrary.simpleMessage(
       "Add Phone Number",
+    ),
+    "phoneValidatorEmpty": MessageLookupByLibrary.simpleMessage(
+      "Please enter your phone number",
+    ),
+    "phoneValidatorInvalid": MessageLookupByLibrary.simpleMessage(
+      "Please enter a valid phone number (e.g. +1234567890)",
     ),
     "preferences": MessageLookupByLibrary.simpleMessage("Preferences"),
     "privacySettings": MessageLookupByLibrary.simpleMessage("Privacy Settings"),

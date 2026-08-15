@@ -111,13 +111,12 @@ class PeopleScreen extends ConsumerWidget {
                           : '?';
 
                       String? finalPhotoUrl = user.photoUrl;
-                      if (finalPhotoUrl != null) {
-                        if (finalPhotoUrl.startsWith('http://')) {
-                          finalPhotoUrl = finalPhotoUrl.replaceFirst(
-                            'http://',
-                            'https://',
-                          );
-                        }
+                      if (finalPhotoUrl != null &&
+                          finalPhotoUrl.startsWith('http://')) {
+                        finalPhotoUrl = finalPhotoUrl.replaceFirst(
+                          'http://',
+                          'https://',
+                        );
                       }
 
                       // تخصيص لون الـ Card بناءً على الـ Theme
@@ -141,10 +140,13 @@ class PeopleScreen extends ConsumerWidget {
                             backgroundColor: Theme.of(
                               context,
                             ).colorScheme.primary.withValues(alpha: 0.15),
-                            backgroundImage: finalPhotoUrl?.isNotEmpty == true
-                                ? NetworkImage(finalPhotoUrl!)
+                            backgroundImage:
+                                finalPhotoUrl != null &&
+                                    finalPhotoUrl.isNotEmpty
+                                ? NetworkImage(finalPhotoUrl)
                                 : null,
-                            child: finalPhotoUrl?.isEmpty == true
+                            child:
+                                finalPhotoUrl == null || finalPhotoUrl.isEmpty
                                 ? Text(
                                     firstChar,
                                     style: TextStyle(

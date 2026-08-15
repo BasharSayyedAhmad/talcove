@@ -37,6 +37,11 @@ class MessageNotifier extends _$MessageNotifier {
     return [];
   }
 
+  void clear() {
+    _activeChatUserId = null;
+    state = [];
+  }
+
   String _extractId(dynamic rawData) {
     if (rawData == null) return '';
     if (rawData is Map) {
@@ -226,8 +231,6 @@ class MessageNotifier extends _$MessageNotifier {
 
     // إرسال عبر Socket.io
     _socketService.sendMessage(text.trim(), receiverId);
-
-    // إرسال الإشعار وتمرير بيانات المرسل
     if (finalToken != null && finalToken.isNotEmpty) {
       final currentUser = ref.read(authNotifierProvider).user;
       final senderName = currentUser?.userName ?? 'رسالة جديدة';

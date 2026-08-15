@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:talcove/core/extensions/http_extensions.dart';
 import 'api_service.dart';
 
@@ -382,45 +383,21 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> logout() async {
+  Future<bool> logout() async {
     try {
-      final response = await _apiService.dio.delete(
-        "/api/v1/users",
-        // options: Options(
-        //   headers: {'Authorization': 'Bearer ${_apiService.accessToken}'},
-        // ),
-      );
-      print("Logout data : ${response.data}");
-      print("Logout status code : ${response.statusCode}");
-      if (response.statusCode.isSuccess()) {
-        _apiService.clearAccessToken();
-        await _apiService.clearAllCookies();
-        return {'success': true};
-      } else {
-        return {'success': false, 'error': "Log out failed"};
+      final response = await _apiService.dio.delete('/api/v1/users');
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        return true;
       }
+      return false;
     } on DioException catch (e) {
-      print(e);
-      _apiService.clearAccessToken();
-      await _apiService.clearAllCookies();
-      return {'success': false, 'error': 'Logout failed'};
+      debugPrint("⚠️ Server logout DioException: ${e.message}");
+      return false;
     } catch (e) {
-      _apiService.clearAccessToken();
-      await _apiService.clearAllCookies();
-      return {'success': false, 'error': 'Logout failed'};
+      debugPrint("⚠️ Server logout error: $e");
+      return false;
     }
   }
-
-  //  Logout من سوق الجمعة
-  // Future<void> logout() async {
-  //   try {
-  //     _apiService.clearAccessToken();
-  //     await _apiService.clearAllCookies();
-  //     print('✅ Local session cleared successfully');
-  //   } catch (e) {
-  //     print('⚠️ Error during local logout: $e');
-  //     _apiService.clearAccessToken();
-  //     await _apiService.clearAllCookies();
-  //   }
-  // }
 }
