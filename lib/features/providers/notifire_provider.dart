@@ -1,10 +1,6 @@
 import 'dart:convert';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 import 'package:http/http.dart' as http show Request;
-
-// ... داخل كلاس AuthNotifier ...
 
 // 🔥 1. دالة لتوليد توكن OAuth 2.0 من ملف الـ Service Account
 Future<String?> _getFirebaseServerToken() async {
@@ -48,7 +44,8 @@ Future<void> sendNotificationToUser({
   required String receiverFcmToken, // توكن الجهاز المستقبل
   required String title, // عنوان الإشعار (مثلاً: اسم المرسل)
   required String body, // نص الرسالة
-  String? chatRoomId, // معرف غرفة المحادثة للتوجيه الفوري
+  String? chatRoomId, // معرف غرفة المحادثة
+  Map<String, dynamic>? data, // 👈 التعديل: إمكانية تمرير بيانات إضافية للتوجيه
 }) async {
   final String? firebaseServerToken = await _getFirebaseServerToken();
 
@@ -67,18 +64,27 @@ Future<void> sendNotificationToUser({
     'https://fcm.googleapis.com/v1/projects/talcove-df32e/messages:send',
   );
 
+  // دمج كافة البيانات الممررة في حقل data للـ FCM payload (تحويل كل القيم إلى String لضمان توافق FCM)
+  final Map<String, String> payloadData = {
+    "chat_room_id": chatRoomId ?? "",
+    "click_action": "FLUTTER_NOTIFICATION_CLICK",
+  };
+
+  if (data != null) {
+    data.forEach((key, value) {
+      payloadData[key] = value.toString();
+    });
+  }
+
   var messagePayload = {
     "message": {
-      "token": receiverFcmToken, // 🎯 الإرسال لتوكن الطرف الآخر
+      "token": receiverFcmToken,
       "notification": {"title": title, "body": body},
-      "data": {
-        "chat_room_id": chatRoomId ?? "",
-        "click_action": "FLUTTER_NOTIFICATION_CLICK",
-      },
+      "data": payloadData, // 🎯 البيانات المرسلة داخل الإشعار
       "android": {
         "priority": "HIGH",
         "notification": {
-          "channel_id": "chat_notifications_channel",
+          "channel_id": "high_importance_channel",
           "sound": "default",
           "notification_priority": "PRIORITY_HIGH",
           "visibility": "PUBLIC",

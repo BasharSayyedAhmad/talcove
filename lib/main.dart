@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/core/services/api_service.dart';
+import 'package:talcove/core/services/navigation_services.dart';
 import 'package:talcove/core/services/notification_services.dart';
 import 'package:talcove/core/themes/theme.dart';
 import 'package:talcove/features/home/home_screen.dart';
@@ -17,21 +18,6 @@ import 'package:talcove/shared/services/local_storage_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-// دالة معالجة الإشعارات (للتطبيق في الخلفية)
-// @pragma('vm:entry-point')
-// Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-//   await Firebase.initializeApp();
-
-//   print("📱 رسالة خلفية من النوع: ${message.data}");
-
-//   if (message.data.isNotEmpty) {
-//     final String title = message.data['title'] ?? 'اشعار جديد';
-//     final String body = message.data['body'] ?? '';
-
-//     print("Title: $title");
-//     print("Body: $body");
-//   }
-// }
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -145,6 +131,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     final authState = ref.watch(authNotifierProvider);
 
     return MaterialApp(
+      navigatorKey: NavigationService.navigatorKey,
       home: authState.isAuthenticated
           ? const HomeScreen()
           : const EntryScreen(),

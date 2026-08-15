@@ -111,7 +111,8 @@ class PeopleScreen extends ConsumerWidget {
                           : '?';
 
                       String? finalPhotoUrl = user.photoUrl;
-                      if (finalPhotoUrl!.startsWith('http://')) {
+                      if (finalPhotoUrl != null &&
+                          finalPhotoUrl.startsWith('http://')) {
                         finalPhotoUrl = finalPhotoUrl.replaceFirst(
                           'http://',
                           'https://',
@@ -139,10 +140,13 @@ class PeopleScreen extends ConsumerWidget {
                             backgroundColor: Theme.of(
                               context,
                             ).colorScheme.primary.withValues(alpha: 0.15),
-                            backgroundImage: finalPhotoUrl.isNotEmpty
+                            backgroundImage:
+                                finalPhotoUrl != null &&
+                                    finalPhotoUrl.isNotEmpty
                                 ? NetworkImage(finalPhotoUrl)
                                 : null,
-                            child: finalPhotoUrl.isEmpty
+                            child:
+                                finalPhotoUrl == null || finalPhotoUrl.isEmpty
                                 ? Text(
                                     firstChar,
                                     style: TextStyle(
