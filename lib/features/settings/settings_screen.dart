@@ -156,20 +156,6 @@ class SettingsScreen extends ConsumerWidget {
                       isDark: isDark,
                       items: [
                         _SettingsTile(
-                          icon: Icons.notifications_rounded,
-                          iconColor: const Color(0xFFF59E0B),
-                          title: S.of(context).notifications,
-                          subtitle: S.of(context).soundVibrationAlerts,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const NotificationsSettingsScreen(),
-                            ),
-                          ),
-                          colorScheme: colorScheme,
-                        ),
-                        _TileDivider(colorScheme: colorScheme),
-                        _SettingsTile(
                           icon: Icons.language_rounded,
                           iconColor: const Color(0xFF8B5CF6),
                           title: S.of(context).language,
@@ -315,14 +301,11 @@ class SettingsScreen extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () async {
-                // 1. أغلق الـ Dialog بحذر
                 Navigator.of(dialogContext).pop();
 
-                // 2. نفّذ الـ logout وانتظر النتيجة
                 try {
                   await ref.read(authNotifierProvider.notifier).logout();
 
-                  // 3. التحقق من أمان الـ Context قبل التنقل مباشرة
                   if (parentContext.mounted) {
                     Navigator.of(
                       parentContext,

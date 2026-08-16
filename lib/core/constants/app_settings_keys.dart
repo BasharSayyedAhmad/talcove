@@ -16,6 +16,8 @@ const String lastSeenKey = 'last_seen';
 
 /// قائمة الرسائل المؤقتة عند فقدان الاتصال
 const String pendingMessagesKey = 'pending_messages';
+//خاص بالمحادثات
+const String chatListKey = "chat_list";
 
 /// إعدادات الـ Socket
 const String socketSettingsKey = 'socket_settings';

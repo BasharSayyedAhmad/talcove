@@ -1,6 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talcove/core/constants/app_settings_keys.dart';
+import 'package:talcove/core/services/notification_services.dart';
+import 'package:talcove/core/services/user_service.dart';
 import 'package:talcove/shared/services/local_storage_service.dart';
 
 part 'settings_provider.g.dart';
@@ -21,17 +23,17 @@ class SettingsNotifier extends _$SettingsNotifier {
     }
   }
 
-  void toggleNotifications(bool value) async {
+  Future<void> toggleNotifications(bool value) async {
     state = value;
-    LocalStorageService.box.put(notificationsEnabledKey, state);
+    await LocalStorageService.box.put(notificationsEnabledKey, state);
 
     try {
       await FirebaseMessaging.instance.setAutoInitEnabled(value);
 
       if (!value) {
-        await FirebaseMessaging.instance.deleteToken();
+        await UserService().updateDeviceToken(customToken: "");
       } else {
-        await FirebaseMessaging.instance.getToken();
+        await NotificationService().getDeviceToken();
       }
     } catch (e) {
       print('Error updating FCM token status: $e');

@@ -45,9 +45,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     super.initState();
     _socketService = SocketService();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _syncContacts();
       _connectSocketIfNeeded();
+      await ref.read(chatListNotifierProvider.notifier).fetchNewMessages();
       _startPolling();
     });
   }
@@ -67,16 +68,19 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       try {
         final token = user?.token ?? ApiService().accessToken;
 
-        if (token != null && !_socketService.isConnected) {
-          ref
-              .read(messageNotifierProvider.notifier)
-              .connectSocket(userId, token);
+        if (token != null) {
+          if (!_socketService.isConnected) {
+            ref
+                .read(messageNotifierProvider.notifier)
+                .connectSocket(userId, token);
+          }
+
+          await _syncContacts();
+          await _fetchLastMessages();
         }
       } catch (e) {
-        debugPrint("❌ Error getting dynamic token: $e");
+        debugPrint("❌ Error connecting socket/syncing: $e");
       }
-
-      _fetchLastMessages();
     }
   }
 
@@ -197,6 +201,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       body: RefreshIndicator(
         onRefresh: () async {
           await _fetchLastMessages();
+          await ref.read(chatListNotifierProvider.notifier).fetchNewMessages();
         },
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
