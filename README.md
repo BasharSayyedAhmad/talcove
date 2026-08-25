@@ -207,16 +207,6 @@ refactor: clean login form
 
 ---
 
-# 🗺️ **Roadmap (خطة العمل القادمة)**
-
-- [ ] ربط Google Sign-In مع الـ backend  
-- [ ] بناء صفحة Home  
-- [ ] بناء صفحة Profile  
-- [ ] إضافة نظام محادثات  
-- [ ] إضافة WebSocket  
-- [ ] تحسين UI/UX  
-- [ ] إضافة Notifications  
-
 ---
 
 # 🏁 **الخلاصة**

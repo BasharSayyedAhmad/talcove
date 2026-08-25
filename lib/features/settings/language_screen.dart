@@ -312,13 +312,10 @@ class LanguageWidget extends ConsumerWidget {
     LanguageNotifier notifier,
     Locale newLocale,
   ) {
-    // تأثير اهتزاز خفيف
     HapticFeedback.selectionClick();
 
-    // تغيير اللغة
     notifier.changeLanguage(newLocale);
 
-    // إظهار رسالة تأكيد
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

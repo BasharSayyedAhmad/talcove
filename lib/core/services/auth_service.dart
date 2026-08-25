@@ -51,37 +51,6 @@ class AuthService {
     }
   }
 
-  // Future<Map<String, dynamic>> registerWithUsernamePassword({
-  //   required String userName,
-  //   required String password,
-  //   String? deviceToken,
-  // }) async {
-  //   try {
-  //     final formData = FormData.fromMap({
-  //       'userName': userName,
-  //       'password': password,
-  //       'deviceToken': deviceToken,
-  //     });
-
-  //     final response = await _apiService.dio.post(
-  //       '/api/v1/users/register',
-  //       data: formData,
-  //     );
-  //     print("Full data : ${response.data}");
-
-  //     if (response.statusCode.isSuccess()) {
-  //       final userData = response.data['data'];
-  //       _apiService.setAccessToken(userData['accessToken']);
-  //       return {'success': true, 'user': userData};
-  //     }
-  //     return {'success': false, 'error': 'Registration failed'};
-  //   } on DioException catch (e) {
-  //     return {
-  //       'success': false,
-  //       'error': e.response?.data['message'] ?? e.message,
-  //     };
-  //   }
-  // }
   Future<Map<String, dynamic>> registerWithUsernamePassword({
     required String userName,
     required String password,
@@ -174,48 +143,6 @@ class AuthService {
       return {'success': false, 'error': 'An unexpected error occurred'};
     }
   }
-  // Future<Map<String, dynamic>> loginWithUsernamePassword({
-  //   required String userName,
-  //   required String password,
-  //   String? deviceToken,
-  // }) async {
-  //   try {
-  //     final response = await _apiService.dio.post(
-  //       '/api/v1/users/login',
-  //       data: FormData.fromMap({
-  //         'userName': userName,
-  //         'password': password,
-  //         'deviceToken': deviceToken,
-  //       }),
-  //     );
-  //     print("Full response = ${response.data}");
-  //     print("Status code = ${response.statusCode}");
-  //     if (response.statusCode.isSuccess()) {
-  //       final userData = response.data['data'];
-  //       _apiService.setAccessToken(userData['accessToken']);
-  //       return {'success': true, 'user': userData};
-  //     }
-
-  //     return {'success': false, 'error': 'Invalid credentials'};
-  //   } on DioException catch (e) {
-  //     String error = 'Login failed';
-  //     if (e.response?.data != null && e.response?.data is Map) {
-  //       error =
-  //           e.response?.data['message'] ??
-  //           e.response?.data['error'] ??
-  //           'Invalid credentials';
-  //     } else if (e.type == DioExceptionType.connectionError) {
-  //       error = 'No internet connection';
-  //     }
-  //     return {'success': false, 'error': error};
-  //   } catch (e) {
-  //     return {'success': false, 'error': 'An unexpected error occurred'};
-  //   }
-  //   // on DioException catch (e) {
-  //   //   String error = e.response?.data['message'] ?? e.message ?? 'Login failed';
-  //   //   return {'success': false, 'error': error};
-  //   // }
-  // }
 
   Future<Map<String, dynamic>> updateAvatar(String imagePath) async {
     try {
@@ -307,7 +234,6 @@ class AuthService {
       print('🔄 Refresh body: ${response.data}');
 
       if (response.statusCode.isSuccess()) {
-        //  استخراج الـ accessToken من response.data['data']
         final newAccessToken = response.data['data']['accessToken'];
         _apiService.setAccessToken(newAccessToken);
         print('Token refreshed successfully');

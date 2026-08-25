@@ -1,6 +1,7 @@
 // lib/features/settings/settings_screen.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talcove/authentication/entry_screen.dart';
 import 'package:talcove/features/profile/privacy_settings_screen.dart';
@@ -9,7 +10,6 @@ import 'package:talcove/features/providers/auth_provider.dart';
 import 'package:talcove/features/providers/language_provider.dart';
 import 'package:talcove/features/providers/theme_provider.dart';
 import 'package:talcove/features/settings/language_screen.dart';
-import 'package:talcove/features/settings/notifications_settings_screen.dart';
 import 'package:talcove/generated/l10n.dart';
 
 String _getCurrentLanguageName(WidgetRef ref) {
@@ -59,39 +59,6 @@ class SettingsScreen extends ConsumerWidget {
                     fontSize: 19,
                   ),
                 ),
-                actions: [
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    color: colorScheme.surface,
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: 'logout',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.logout_rounded,
-                              color: colorScheme.error,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              'Log out',
-                              style: TextStyle(color: colorScheme.error),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (val) {
-                      if (val == 'logout') {
-                        _showLogoutDialog(context, ref);
-                      }
-                    },
-                  ),
-                ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: _UserHeaderCard(
                     user: user,
@@ -379,27 +346,63 @@ class _UserHeaderCard extends StatelessWidget {
                     : null,
               ),
               const SizedBox(width: 14),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user?.userName ?? 'User',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user?.userName ?? 'User',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (user?.userName != null) ...[
+                          const SizedBox(width: 4),
+                          GestureDetector(
+                            onTap: () async {
+                              await Clipboard.setData(
+                                ClipboardData(text: user!.userName!),
+                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('تم نسخ اسم المستخدم'),
+                                    duration: Duration(seconds: 2),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.copy_rounded,
+                                size: 16,
+                                color: Colors.white.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ),
-                  if (user?.email != null)
-                    Text(
-                      user!.email!,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.75),
-                        fontSize: 12,
+                    if (user?.email != null)
+                      Text(
+                        user!.email!,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

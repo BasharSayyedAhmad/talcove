@@ -9,13 +9,11 @@ class InternetService {
   InternetService._internal();
   final Connectivity _connectivity = Connectivity();
   Future<bool> hasInternet() async {
-    // print(" hasInternet() CALLED ");
     try {
       final result = await InternetAddress.lookup(
         'google.com',
       ).timeout(const Duration(seconds: 3));
       final hasNet = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-      // print(" hasInternet() result: $hasNet");
       return hasNet;
     } on SocketException catch (e) {
       print(" hasInternet() SocketException: $e");

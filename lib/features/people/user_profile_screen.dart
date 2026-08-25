@@ -11,7 +11,6 @@ class UserProfileScreen extends ConsumerWidget {
 
   const UserProfileScreen({super.key, required this.user});
 
-  // 📅 تنسيق تاريخ آخر ظهور بأسلوب مقروء ومباشر من الـ DateTime
   String _formatLastSeen(DateTime? lastSeenDate) {
     if (lastSeenDate == null) return "غير نشط مؤخراً";
     try {
@@ -24,7 +23,6 @@ class UserProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // التحقق إذا كان المستخدم مضافاً مسبقاً لجهات الاتصال لمنع تكرار الإضافة
     final contacts = ref.watch(contactsNotifierProvider);
     final isAlreadyContact = contacts.any((c) => c.id == user.id);
 
@@ -37,12 +35,10 @@ class UserProfileScreen extends ConsumerWidget {
           children: [
             const SizedBox(height: 24),
 
-            // 👤 الصورة الشخصية الافتراضية أو المرفوعة (تم التعديل هنا لحل مشكلة التحميل والأخطاء)
             Center(
               child: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  // استخدام ClipRRect لقص الصورة بشكل دائري آمن يدعم الـ errorBuilder
                   ClipRRect(
                     borderRadius: BorderRadius.circular(60),
                     child: Container(
@@ -52,11 +48,10 @@ class UserProfileScreen extends ConsumerWidget {
                       child: () {
                         String? rawUrl = user.photoUrl;
 
-                        // 💡 طباعة قيمة الرابط في الـ UI لنعرف ماذا يرى التطبيق فعلياً
                         debugPrint("📸 [UI DEBUG] User: ${user.userName}");
                         debugPrint("📸 [UI DEBUG] rawUrl value is: '$rawUrl'");
 
-                        if (rawUrl!=null&&rawUrl.isNotEmpty) {
+                        if (rawUrl != null && rawUrl.isNotEmpty) {
                           if (rawUrl.startsWith('http://')) {
                             rawUrl = rawUrl.replaceFirst('http://', 'https://');
                           }
@@ -81,7 +76,6 @@ class UserProfileScreen extends ConsumerWidget {
                               );
                             },
                             errorBuilder: (context, error, stackTrace) {
-                              // 🚨 طباعة تفاصيل الخطأ بدقة في حال فشل الاتصال بالخادم
                               debugPrint(
                                 "🚨 [UI DEBUG] ERROR loading image: $error",
                               );
@@ -132,13 +126,11 @@ class UserProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // 📛 اسم المستخدم والمعلومات الأساسية
             Text(
               user.userName,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
-            // 🆕 عرض آخر ظهور مباشرة من الـ user model
             if (user.lastSeen != null) ...[
               const SizedBox(height: 6),
               Text(
@@ -148,7 +140,6 @@ class UserProfileScreen extends ConsumerWidget {
             ],
             const SizedBox(height: 24),
 
-            // 💳 كرت تفاصيل الحساب
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
@@ -194,12 +185,10 @@ class UserProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            // 🎯 أزرار التفاعل (إضافة جهة اتصال / مراسلة)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  // زر الإضافة لجهات الاتصال (يظهر فقط إذا لم يكن مضافاً)
                   if (!isAlreadyContact)
                     SizedBox(
                       width: double.infinity,
@@ -230,7 +219,6 @@ class UserProfileScreen extends ConsumerWidget {
                       ),
                     )
                   else
-                    // تلميح أن المستخدم مضاف بالفعل
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -251,7 +239,6 @@ class UserProfileScreen extends ConsumerWidget {
 
                   const SizedBox(height: 12),
 
-                  // زر بدء المحادثة الفورية
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -264,14 +251,12 @@ class UserProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       onPressed: () {
-                        // إضافة تلقائية لجهات الاتصال عند بدء الشات إذا لم يكن مضافاً
                         if (!isAlreadyContact) {
                           ref
                               .read(contactsNotifierProvider.notifier)
                               .addContact(user);
                         }
 
-                        // الانتقال المباشر لشاشة الشات
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => ChatScreen(
@@ -298,7 +283,6 @@ class UserProfileScreen extends ConsumerWidget {
     );
   }
 
-  // ويدجت فرعي لبناء أسطر البيانات الشخصية بشكل منسق
   Widget _buildInfoRow({
     required IconData icon,
     required String title,

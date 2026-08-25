@@ -60,7 +60,7 @@ class SearchNotifier extends _$SearchNotifier {
       state = state.copyWith(
         results: [],
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: "Search failed",
       );
     }
   }

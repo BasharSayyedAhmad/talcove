@@ -14,11 +14,9 @@ class PeopleScreen extends ConsumerWidget {
     final contacts = ref.watch(contactsNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // تحديد ألوان الأيقونات والنصوص بناءً على الخلفية المتدرجة للـ AppBar (لتكون بيضاء دائماً كالشاشة السابقة)
     const appBarContentColor = Colors.white;
 
     return Scaffold(
-      // التكيف مع الخلفية العامة للتطبيق في الوضعين الداكن والفاتح
       backgroundColor: isDark
           ? Theme.of(context).scaffoldBackgroundColor
           : Colors.grey.shade50,
@@ -26,14 +24,13 @@ class PeopleScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: Text(
-          S.of(context).people, // استخدام ملف الـ localization المتطابق
+          S.of(context).people,
           style: const TextStyle(
             color: appBarContentColor,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
-        // تطبيق نفس التدرج اللوني (Gradient) بحذافيره من الـ ChatListScreen
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -119,7 +116,6 @@ class PeopleScreen extends ConsumerWidget {
                         );
                       }
 
-                      // تخصيص لون الـ Card بناءً على الـ Theme
                       return Card(
                         elevation: 0,
                         color: isDark
@@ -136,7 +132,6 @@ class PeopleScreen extends ConsumerWidget {
                           ),
                           leading: CircleAvatar(
                             radius: 25,
-                            // استخدام لون الـ primary المخفف كخلفية بديلة للحرف الأول
                             backgroundColor: Theme.of(
                               context,
                             ).colorScheme.primary.withValues(alpha: 0.15),
@@ -209,7 +204,6 @@ class PeopleScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
-    // لون الثيم الرئيسي للمساعدة في الحفاظ على التناسق داخل الـ Empty State
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Center(

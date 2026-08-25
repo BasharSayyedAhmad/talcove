@@ -56,7 +56,7 @@ class ApiService {
         },
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
-            print('⚠️ Token expired, need refresh');
+            print('Token expired, need refresh');
           }
           return handler.next(error);
         },

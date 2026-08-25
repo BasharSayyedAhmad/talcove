@@ -337,8 +337,6 @@ import 'package:flutter/material.dart';
 // ======================================================
 // ==================== LIGHT MODE =====================
 // ======================================================
-// Warm Ivory — هادئ، دافئ، أنيق
-// مستوحى من تطبيقات المحادثة الفاخرة
 
 ThemeData lightMode = ThemeData(
   brightness: Brightness.light,
@@ -600,54 +598,3 @@ ThemeData darkMode = ThemeData(
     color: Color(0xFF94A3B8), // Slate 400
   ),
 );
-
-// ======================================================
-// ==================== ملخص الاستخدام ==================
-// ======================================================
-
-/*
-📌 كيف تستخدم الألوان في تطبيقك:
-
-1️⃣ خلفية الـ Scaffold:
-   scaffoldBackgroundColor تنضبط تلقائياً من الـ ThemeData
-
-2️⃣ خلفية الـ Card، Container، Dialog:
-   color: Theme.of(context).colorScheme.surface
-
-3️⃣ النص الرئيسي:
-   color: Theme.of(context).colorScheme.onSurface
-
-4️⃣ النص الثانوي (timestamps، hints):
-   color: Theme.of(context).colorScheme.onSurfaceVariant
-
-5️⃣ فقاعة المستخدم (Sent message):
-   color: Theme.of(context).colorScheme.primary
-   textColor: Theme.of(context).colorScheme.onPrimary
-
-6️⃣ فقاعة المستلِم (Received message):
-   color: Theme.of(context).colorScheme.surface
-   textColor: Theme.of(context).colorScheme.onSurface
-
-7️⃣ Online indicator:
-   color: Theme.of(context).colorScheme.tertiary
-
-8️⃣ رسائل خطأ:
-   color: Theme.of(context).colorScheme.error
-
-9️⃣ الـ AppBar: يأخذ اللون تلقائياً
-
-🔟 الـ BottomNavigationBar:
-   bottomNavigationBarTheme مضبوط — لا تحتاج تلوين يدوي
-   فقط تأكد إنو MyBottomNavBar ما يضبط backgroundColor يدوياً
-   احذف السطر: backgroundColor: Theme.of(context).brightness == ...
-   خليه يورث من الـ Theme تلقائياً
-
-💡 MyBottomNavBar — الكود المصحح:
-   BottomNavigationBar(
-     onTap: onTap,
-     currentIndex: selectedIndex,
-     // ✅ احذف backgroundColor و elevation و type من هون
-     // راح يرثهم تلقائياً من bottomNavigationBarTheme
-     items: [...],
-   )
-*/

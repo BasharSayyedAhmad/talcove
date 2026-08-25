@@ -221,15 +221,11 @@ class MessageNotifier extends _$MessageNotifier {
       isRead: false,
     );
 
-    // تحديث واجهة المحادثة الحالية (Optimistic UI)
     state = [...state, tempMessage];
 
-    // إضافة/تحديث المحادثة فوراً في قائمة المحادثات (ChatList)
     ref
         .read(chatListNotifierProvider.notifier)
         .addOrUpdateContact(contactId: receiverId, lastMessage: tempMessage);
-
-    // إرسال عبر Socket.io
     _socketService.sendMessage(text.trim(), receiverId);
     if (finalToken != null && finalToken.isNotEmpty) {
       final currentUser = ref.read(authNotifierProvider).user;
@@ -247,7 +243,7 @@ class MessageNotifier extends _$MessageNotifier {
         },
       );
     } else {
-      print('⚠️ لم يتم العثور على FCM Token للمستقبل: $receiverId');
+      print(' لم يتم العثور على FCM Token للمستقبل: $receiverId');
     }
   }
 
@@ -312,7 +308,7 @@ class MessageNotifier extends _$MessageNotifier {
         state = page == 1 ? sorted : [...sorted, ...state];
       }
     } catch (e) {
-      print('❌ Error loading messages: $e');
+      print(' Error loading messages: $e');
     } finally {
       _isLoading = false;
     }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talcove/features/people/user_profile_screen.dart';
 import 'package:talcove/features/providers/chat_provider.dart';
 import 'package:talcove/generated/l10n.dart';
 import 'package:talcove/models/message.dart';
+import 'package:talcove/models/user.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -35,8 +37,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-
-    // 💡 نقرأ الـ Notifier ونحفظ المرجع فوراً طالما الـ Widget متصلة بالكامل
     _chatNotifier = ref.read(messageNotifierProvider.notifier);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -52,7 +52,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    // 💡 نستخدم المرجع المحفوظ بدون الحاجة لـ ref.read نهائياً!
     _chatNotifier.detachListeners();
     _chatNotifier.setActiveChatUser(null);
 
@@ -256,7 +255,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 💡 الاستماع لتغيرات قائمة الرسائل مع تنفيذ تمرير تلقائي عند وصول رسالة جديدة
     ref.listen<List<Message>>(messageNotifierProvider, (previous, next) {
       if (previous != null && next.length > previous.length) {
         _scrollToBottom();
@@ -279,25 +277,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               const SizedBox(width: 8),
             ],
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.otherUserName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+            InkWell(
+              onTap: () {
+                final targerUser = User(
+                  id: widget.otherUserId,
+                  userName: widget.otherUserName,
+                  photoUrl: widget.otherUserPhoto,
+                );
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => UserProfileScreen(user: targerUser),
                   ),
-                ),
-                Text(
-                  S.of(context).online,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: colorScheme.tertiary,
-                    fontWeight: FontWeight.w500,
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.otherUserName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                  Text(
+                    S.of(context).online,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: colorScheme.tertiary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

@@ -34,10 +34,10 @@ class AuthNotifier extends _$AuthNotifier {
   Future<String?> _getDeviceToken() async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
-      print("📱 Device Token: $token");
+      print("Device Token: $token");
       return token;
     } catch (e) {
-      print("❌ Error getting device token: $e");
+      print("Error getting device token: $e");
       return null;
     }
   }
@@ -129,7 +129,10 @@ class AuthNotifier extends _$AuthNotifier {
     } catch (e, stack) {
       print(e);
       print(stack);
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: "Google sign in failed",
+      );
     }
   }
 

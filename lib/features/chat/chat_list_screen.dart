@@ -123,7 +123,6 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // الاستماع لتغيرات جهات الاتصال لجلب أحدث الرسائل
     ref.listen(contactsNotifierProvider, (previous, next) {
       if ((previous == null || previous.isEmpty) && next.isNotEmpty) {
         _fetchLastMessages();

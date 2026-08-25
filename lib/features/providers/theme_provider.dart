@@ -43,16 +43,6 @@ class ThemeNotifier extends _$ThemeNotifier {
     LocalStorageService.box.put(themeModeKey, themeIndex);
   }
 
-  // void toggleTheme() {
-  //   final brightness = WidgetsBinding.instance.window.platformBrightness;
-  //   final isSystemDark = brightness == Brightness.dark;
-  //   if (state == ThemeMode.dark) {
-  //     state = ThemeMode.light;
-  //   } else {
-  //     state = ThemeMode.dark;
-  //   }
-  //   _saveThemeToHive(state);
-  // }
   void toggleTheme() {
     final brightness = WidgetsBinding.instance.window.platformBrightness;
     final isSystemDark = brightness == Brightness.dark;

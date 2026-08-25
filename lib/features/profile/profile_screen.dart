@@ -318,10 +318,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       ),
     );
   }
-
-  Future<void> _updateField(String field, String value) async {
-    AppSnackBar.show(context, message: '$field updated successfully');
-  }
 }
 
 class _ProfileHeader extends StatelessWidget {

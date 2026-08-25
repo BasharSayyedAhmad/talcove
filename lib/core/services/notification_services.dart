@@ -35,7 +35,7 @@ class NotificationService {
     await _fcm.requestPermission(alert: true, badge: true, sound: true);
 
     _fcm.onTokenRefresh.listen((newToken) async {
-      debugPrint('🔔 FCM Token refreshed: $newToken');
+      debugPrint('FCM Token refreshed: $newToken');
       await _userService.updateDeviceToken(customToken: newToken);
     });
 

@@ -176,9 +176,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: Icon(Icons.chat_bubble_outline, color: Colors.blue),
           ),
           onTap: () {
-            debugPrint(
-              "🔍 [SearchScreen] Viewing profile of: ${user.userName}",
-            );
+            debugPrint(" [SearchScreen] Viewing profile of: ${user.userName}");
 
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => UserProfileScreen(user: user)),

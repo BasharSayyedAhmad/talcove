@@ -1,4 +1,3 @@
-// models/chat_contact.dart
 import 'package:talcove/models/message.dart';
 import 'package:talcove/models/user.dart';
 

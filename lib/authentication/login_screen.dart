@@ -36,9 +36,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isMobile = width < AppBreakpoints.tablet;
     final authState = ref.watch(authNotifierProvider);
 
-    // 👈 الاستماع للتغيرات بأمان تام بدون clearError() وبحماية للـ Context
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
-      // 1. عرض رسالة الخطأ
       if (next.errorMessage != null && next.errorMessage!.trim().isNotEmpty) {
         AppSnackBar.show(
           context,
@@ -47,19 +45,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       }
 
-      // 2. النجاح والانتقال الآمن لـ HomeScreen
       if (next.isAuthenticated && prev?.isAuthenticated != true) {
         AppSnackBar.show(
           context,
-          message: S
-              .of(context)
-              .signupSuccess, // أو رسالة النجاح الخاصة بالـ Login
+          message: S.of(context).signupSuccess,
           backgroundColor: Colors.green,
         );
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return; // 👈 حماية الـ Context من الكراش
-
+          if (!mounted) return;
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const HomeScreen()),
             (Route<dynamic> route) => false,

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:talcove/core/services/internet_service.dart';
 import 'package:talcove/features/providers/auth_provider.dart';
+import 'package:talcove/shared/services/socket_service.dart';
 
 final internetMonitorProvider =
     StateNotifierProvider<InternetMonitorNotifier, InternetMonitorState>((ref) {
@@ -42,10 +44,25 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
 
   Timer? _pollingTimer;
   final InternetService _internetService = InternetService();
+  late final _AppLifecycleObserver _lifecycleObserver;
 
   InternetMonitorNotifier(this.ref) : super(InternetMonitorState.initial()) {
     _init();
     _startPolling();
+    _lifecycleObserver = _AppLifecycleObserver(
+      onPause: () {
+        print("🔌 App in background: Disconnecting socket...");
+        SocketService().disconnect();
+      },
+      onResume: () {
+        print("⚡ App resumed: Reconnecting socket...");
+        if (state.hasInternet) {
+          SocketService().reconnect();
+        }
+      },
+    );
+
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
   }
 
   void _startPolling() {
@@ -76,8 +93,7 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
     ) async {
       print("onConnectivityChanged FIRED with: $result");
 
-      final previousState =
-          state.hasInternet; // الحفاظ على الحالة السابقة قبل التحديث
+      final previousState = state.hasInternet;
       final hasRealInternet = await _internetService.hasInternet();
 
       print("hasRealInternet: $hasRealInternet");
@@ -85,7 +101,6 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
 
       final connectionType = result;
 
-      // 1. تحديث حالة الـ Monitor كـ UI أولاً
       state = state.copyWith(
         hasInternet: hasRealInternet,
         connectionType: connectionType,
@@ -93,8 +108,6 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
 
       print("state.hasInternet after update: ${state.hasInternet}");
 
-      // 2. 🛡️ الفحص الذكي والآمن لمنع التكرار والـ Race Condition:
-      // لا نطلب تحديث الـ Socket والـ Session إلا إذا تغيرت حالة الإنترنت الفعلية (مثلاً من قطع لاتصال أو العكس)
       if (previousState != hasRealInternet) {
         print(
           "🌐 Internet status changed from $previousState to $hasRealInternet. Updating Auth...",
@@ -107,7 +120,6 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
           await _onInternetRestored();
         }
       } else {
-        // إذا انضربت الدالة عند الإقلاع والإنترنت متصل أصلاً (true -> true)، سيتخطى استدعاء السوكيت المكرر بسلام
         print(
           "ℹ️ Internet status remains unchanged ($hasRealInternet). Skipping redundant socket update.",
         );
@@ -128,13 +140,30 @@ class InternetMonitorNotifier extends StateNotifier<InternetMonitorState> {
 
   Future<void> _onInternetRestored() async {
     print("Internet restored - refreshing session automatically");
-    // تم حذف استدعاء updateInternetStatus الزائد هنا لأن الدالة الأب أصبحت تستدعيه بشكل صحيح عند تحقق الشرط
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
     _subscription.cancel();
     _pollingTimer?.cancel();
     super.dispose();
+  }
+}
+
+class _AppLifecycleObserver with WidgetsBindingObserver {
+  final VoidCallback onPause;
+  final VoidCallback onResume;
+
+  _AppLifecycleObserver({required this.onPause, required this.onResume});
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      onPause();
+    } else if (state == AppLifecycleState.resumed) {
+      onResume();
+    }
   }
 }

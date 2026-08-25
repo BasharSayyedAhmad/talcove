@@ -9,10 +9,10 @@ class UserService {
   Future<String?> _getDeviceToken() async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
-      print("📱 Device Token: $token");
+      print(" Device Token: $token");
       return token;
     } catch (e) {
-      print("❌ Error getting device token: $e");
+      print(" Error getting device token: $e");
       return null;
     }
   }
@@ -29,9 +29,9 @@ class UserService {
         }
       }
     } on DioException catch (e) {
-      print("❌ Dio Error: ${e.response?.data ?? e.message}");
+      print(" Dio Error: ${e.response?.data ?? e.message}");
     } catch (e) {
-      print("❌ Error: $e");
+      print(" Error: $e");
     }
     return [];
   }
@@ -40,7 +40,7 @@ class UserService {
     try {
       final String? token = customToken ?? await _getDeviceToken();
       if (token == null || token.isEmpty) {
-        debugPrint("⚠️ No device token available to send.");
+        debugPrint(" No device token available to send.");
         return {'success': false, 'error': 'Device token is null or empty'};
       }
       final formData = FormData.fromMap({'deviceToken': token});
